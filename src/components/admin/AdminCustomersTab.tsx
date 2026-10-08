@@ -1,306 +1,207 @@
 import React, { useState } from 'react';
-import { 
-  Search, 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  DollarSign, 
-  ShoppingBag, 
-  Edit3, 
-  Check, 
-  Tag, 
-  Calendar,
-  X
-} from 'lucide-react';
+import { Search, User, Mail, Phone, MapPin, Tag, Plus } from 'lucide-react';
 import { Customer } from '../../types';
 
 interface AdminCustomersTabProps {
   customers: Customer[];
-  onUpdateCustomer: (customerId: string, updates: Partial<Customer>) => void;
+  onSaveCustomers: (customers: Customer[]) => void;
 }
 
 export const AdminCustomersTab: React.FC<AdminCustomersTabProps> = ({
   customers,
-  onUpdateCustomer,
+  onSaveCustomers
 }) => {
-  const [search, setSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-  const [editingNotes, setEditingNotes] = useState('');
-  const [isEditingNotes, setIsEditingNotes] = useState(false);
+  const [newTag, setNewTag] = useState('');
 
-  const handleSelectCustomer = (customer: Customer) => {
-    setSelectedCustomer(customer);
-    setEditingNotes(customer.notes || '');
-    setIsEditingNotes(false);
-  };
-
-  const handleSaveNotes = () => {
-    if (!selectedCustomer) return;
-    onUpdateCustomer(selectedCustomer.id, { notes: editingNotes });
-    setSelectedCustomer({ ...selectedCustomer, notes: editingNotes });
-    setIsEditingNotes(false);
-  };
-
-  const filteredCustomers = customers.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) ||
-    c.email.toLowerCase().includes(search.toLowerCase()) ||
-    (c.phone && c.phone.includes(search)) ||
-    c.tags.some(t => t.toLowerCase().includes(search.toLowerCase()))
+  const filtered = customers.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleAddTag = (customerId: string) => {
+    if (!newTag.trim()) return;
+    const updated = customers.map((c) =>
+      c.id === customerId ? { ...c, tags: [...(c.tags || []), newTag.trim()] } : c
+    );
+    onSaveCustomers(updated);
+    setNewTag('');
+    if (selectedCustomer && selectedCustomer.id === customerId) {
+      setSelectedCustomer(updated.find((c) => c.id === customerId) || null);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-anton text-2xl uppercase tracking-wide text-slate-950">
-            Customer Profiles &amp; Loyalty
-          </h2>
-          <p className="text-xs text-slate-500">
-            {customers.length} verified skincare clients with lifetime value metrics
+          <h2 className="text-xl font-bold text-stone-900">Customers & VIP Accounts</h2>
+          <p className="text-xs text-stone-500">
+            View customer profiles, purchase history, order volumes, and lifetime value
           </p>
         </div>
       </div>
 
-      {/* Search */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between">
-        <div className="relative w-full max-w-md">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, email, phone, or tags (VIP)..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#EC3460] focus:bg-white transition-colors"
-          />
+      <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-stone-200 shadow-2xs">
+        <Search className="w-4 h-4 text-stone-400 ml-2" />
+        <input
+          type="text"
+          placeholder="Search by customer name, email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1 text-xs text-stone-800 placeholder-stone-400 focus:outline-none"
+        />
+        <span className="text-xs text-stone-400 font-medium mr-2">
+          {filtered.length} customers
+        </span>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-stone-50 border-b border-stone-200 text-stone-400 uppercase font-semibold">
+              <tr>
+                <th className="py-3 px-4">Customer</th>
+                <th className="py-3 px-4">Orders</th>
+                <th className="py-3 px-4">Total Spent</th>
+                <th className="py-3 px-4">Last Order</th>
+                <th className="py-3 px-4">Tags</th>
+                <th className="py-3 px-4 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100 text-stone-700">
+              {filtered.map((customer) => (
+                <tr key={customer.id} className="hover:bg-stone-50/60 transition-colors">
+                  <td className="py-3.5 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-stone-900 text-white flex items-center justify-center font-bold text-xs">
+                        {customer.name.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-bold text-stone-900">{customer.name}</div>
+                        <div className="text-[11px] text-stone-400">{customer.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-4 font-semibold text-stone-800">
+                    {customer.ordersCount} orders
+                  </td>
+                  <td className="py-3.5 px-4 font-bold text-stone-900">
+                    ${customer.totalSpent.toFixed(2)}
+                  </td>
+                  <td className="py-3.5 px-4 text-stone-500">{customer.lastOrderDate}</td>
+                  <td className="py-3.5 px-4">
+                    <div className="flex flex-wrap gap-1">
+                      {(customer.tags || []).map((tag, i) => (
+                        <span
+                          key={i}
+                          className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200/60"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <button
+                      onClick={() => setSelectedCustomer(customer)}
+                      className="px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold rounded-lg transition-colors cursor-pointer"
+                    >
+                      Profile
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Customers Table & Details Drawer */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Table (2 cols) */}
-        <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                  <th className="py-3.5 px-4">Customer</th>
-                  <th className="py-3.5 px-4">Orders</th>
-                  <th className="py-3.5 px-4">Total Spent</th>
-                  <th className="py-3.5 px-4">Tags</th>
-                  <th className="py-3.5 px-4 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {filteredCustomers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-12 text-center text-slate-400">
-                      No customers found.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredCustomers.map((cust) => {
-                    const isSelected = selectedCustomer?.id === cust.id;
-                    return (
-                      <tr
-                        key={cust.id}
-                        onClick={() => handleSelectCustomer(cust)}
-                        className={`hover:bg-slate-50/60 transition-colors cursor-pointer ${
-                          isSelected ? 'bg-rose-50/40' : ''
-                        }`}
-                      >
-                        <td className="py-3.5 px-4">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center shrink-0 uppercase border border-slate-200">
-                              {cust.name.substring(0, 2)}
-                            </div>
-                            <div>
-                              <h4 className="font-bold text-slate-950 truncate max-w-[150px]">
-                                {cust.name}
-                              </h4>
-                              <span className="text-[10px] text-slate-500 block truncate max-w-[150px]">
-                                {cust.email}
-                              </span>
-                            </div>
-                          </div>
-                        </td>
+      {/* Customer Profile Modal */}
+      {selectedCustomer && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-stone-200 overflow-hidden text-xs">
+            <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50">
+              <h3 className="font-bold text-stone-900 text-base">Customer Details</h3>
+              <button
+                onClick={() => setSelectedCustomer(null)}
+                className="p-1.5 text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
 
-                        <td className="py-3.5 px-4 font-mono font-semibold text-slate-800">
-                          {cust.ordersCount} {cust.ordersCount === 1 ? 'order' : 'orders'}
-                        </td>
-
-                        <td className="py-3.5 px-4 font-mono font-bold text-slate-950">
-                          ${cust.totalSpent.toFixed(2)}
-                        </td>
-
-                        <td className="py-3.5 px-4">
-                          <div className="flex flex-wrap gap-1">
-                            {cust.tags.slice(0, 2).map((tag, i) => (
-                              <span key={i} className="text-[9px] font-bold bg-[#FFF0F9] text-[#EC3460] px-2 py-0.5 rounded-full border border-[#FFCDF2]/50">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-
-                        <td className="py-3.5 px-4 text-right">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSelectCustomer(cust);
-                            }}
-                            className="px-2.5 py-1 bg-slate-100 hover:bg-[#FFF0F9] text-slate-700 hover:text-[#EC3460] rounded-xl font-bold text-[10px] transition-colors cursor-pointer"
-                          >
-                            View
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Customer Profile Card (1 col) */}
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 flex flex-col justify-between">
-          {selectedCustomer ? (
-            <div className="space-y-5 text-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                  Profile Details
-                </span>
-                <span className="text-[10px] font-mono text-slate-500">
-                  ID: {selectedCustomer.id}
-                </span>
-              </div>
-
-              {/* Name & Avatar */}
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[#EC3460] to-[#DF4D6E] text-white font-anton text-xl flex items-center justify-center uppercase shadow-raspberry">
-                  {selectedCustomer.name.substring(0, 2)}
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-stone-900 text-white flex items-center justify-center font-bold text-base">
+                  {selectedCustomer.name.slice(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-anton text-lg uppercase text-slate-950">
-                    {selectedCustomer.name}
-                  </h3>
-                  <div className="flex items-center gap-1.5 text-slate-500 text-[11px] mt-0.5">
-                    <Calendar size={12} />
-                    <span>Member since {selectedCustomer.joinedDate}</span>
-                  </div>
+                  <h4 className="font-bold text-stone-900 text-base">{selectedCustomer.name}</h4>
+                  <p className="text-stone-500">{selectedCustomer.email}</p>
+                  <p className="text-stone-500">{selectedCustomer.phone || 'No phone recorded'}</p>
                 </div>
               </div>
 
-              {/* Contact info */}
-              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-50 border border-slate-100">
-                <div className="flex items-center gap-2 text-slate-700">
-                  <Mail size={13} className="text-[#EC3460]" />
-                  <span className="truncate">{selectedCustomer.email}</span>
-                </div>
-                {selectedCustomer.phone && (
-                  <div className="flex items-center gap-2 text-slate-700">
-                    <Phone size={13} className="text-[#EC3460]" />
-                    <span>{selectedCustomer.phone}</span>
-                  </div>
-                )}
-                {selectedCustomer.shippingAddress && (
-                  <div className="flex items-start gap-2 text-slate-700 pt-1 border-t border-slate-200/60">
-                    <MapPin size={13} className="text-[#EC3460] shrink-0 mt-0.5" />
-                    <span>
-                      {selectedCustomer.shippingAddress.address}, {selectedCustomer.shippingAddress.city} {selectedCustomer.shippingAddress.zip}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Financial Stats */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/60 text-center">
-                  <span className="text-[10px] font-bold text-emerald-800 uppercase block">Lifetime Value</span>
-                  <span className="font-anton text-xl text-emerald-950 block mt-0.5">
+              <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-stone-50 border border-stone-200">
+                <div>
+                  <span className="text-stone-400 block text-[10px] uppercase font-bold">Lifetime Spend</span>
+                  <span className="text-base font-extrabold text-stone-900">
                     ${selectedCustomer.totalSpent.toFixed(2)}
                   </span>
                 </div>
-
-                <div className="p-3 rounded-2xl bg-blue-50/70 border border-blue-200/60 text-center">
-                  <span className="text-[10px] font-bold text-blue-800 uppercase block">Total Orders</span>
-                  <span className="font-anton text-xl text-blue-950 block mt-0.5">
-                    {selectedCustomer.ordersCount}
+                <div>
+                  <span className="text-stone-400 block text-[10px] uppercase font-bold">Total Orders</span>
+                  <span className="text-base font-extrabold text-stone-900">
+                    {selectedCustomer.ordersCount} completed
                   </span>
                 </div>
               </div>
 
-              {/* Tags */}
+              {selectedCustomer.shippingAddress && (
+                <div>
+                  <h5 className="font-bold text-stone-900 mb-1">Saved Address</h5>
+                  <p className="text-stone-600">{selectedCustomer.shippingAddress.address}</p>
+                  <p className="text-stone-600">
+                    {selectedCustomer.shippingAddress.city}, {selectedCustomer.shippingAddress.country}
+                  </p>
+                </div>
+              )}
+
+              {selectedCustomer.notes && (
+                <div>
+                  <h5 className="font-bold text-stone-900 mb-1">Internal Notes</h5>
+                  <p className="text-stone-600 bg-amber-50/60 p-2.5 rounded-lg border border-amber-200/60">
+                    {selectedCustomer.notes}
+                  </p>
+                </div>
+              )}
+
+              {/* Tag Add */}
               <div>
-                <span className="font-bold text-slate-700 block mb-1.5 uppercase text-[10px]">
-                  Customer Tags
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {selectedCustomer.tags.map((tag, i) => (
-                    <span key={i} className="text-[10px] font-bold bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full border border-slate-200">
-                      #{tag}
-                    </span>
-                  ))}
+                <h5 className="font-bold text-stone-900 mb-1.5">Add VIP Tag</h5>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g. VIP, Influencer, Fragile Barrier"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-stone-200"
+                  />
+                  <button
+                    onClick={() => handleAddTag(selectedCustomer.id)}
+                    className="px-3 py-1.5 bg-stone-900 hover:bg-black text-white font-bold rounded-lg cursor-pointer"
+                  >
+                    Add Tag
+                  </button>
                 </div>
               </div>
-
-              {/* Editable Notes */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-slate-700 uppercase text-[10px]">
-                    Customer Notes
-                  </span>
-                  {!isEditingNotes && (
-                    <button
-                      onClick={() => setIsEditingNotes(true)}
-                      className="text-[#EC3460] font-bold text-[10px] hover:underline cursor-pointer"
-                    >
-                      Edit Notes
-                    </button>
-                  )}
-                </div>
-
-                {isEditingNotes ? (
-                  <div className="space-y-2">
-                    <textarea
-                      rows={3}
-                      value={editingNotes}
-                      onChange={(e) => setEditingNotes(e.target.value)}
-                      placeholder="Add private customer preference notes, skin concerns, or special requests..."
-                      className="w-full p-2.5 bg-slate-50 border border-[#EC3460] rounded-xl text-xs focus:outline-none text-slate-900"
-                    />
-                    <div className="flex justify-end gap-2">
-                      <button
-                        onClick={() => setIsEditingNotes(false)}
-                        className="px-3 py-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] font-bold cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleSaveNotes}
-                        className="px-3 py-1 bg-[#EC3460] text-white rounded-lg text-[10px] font-bold cursor-pointer"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 text-slate-600 text-xs italic">
-                    {selectedCustomer.notes || 'No notes on this customer yet.'}
-                  </div>
-                )}
-              </div>
             </div>
-          ) : (
-            <div className="py-20 text-center text-slate-400">
-              <User size={36} className="mx-auto mb-2 opacity-30" />
-              <p className="text-xs">Select a customer from the table to view their full profile, orders, and notes.</p>
-            </div>
-          )}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

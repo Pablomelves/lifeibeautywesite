@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Sun, Shield, Sparkles, Droplets, CheckCircle2, ArrowRight, ShoppingBag } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Sun, Shield, Sparkles, Droplets, CheckCircle2, ArrowRight, ShoppingBag, Heart, Scale } from 'lucide-react';
 import { SKIN_CONCERNS, STORE_PRODUCTS } from '../data/storeData';
 import { Product } from '../types';
 
@@ -7,18 +7,45 @@ interface SkinConcernSectionProps {
   onQuickView: (product: Product) => void;
   onAddToCart: (product: Product) => void;
   products?: Product[];
+  wishlistIds?: number[];
+  onToggleWishlist?: (productId: number) => void;
+  comparisonIds?: number[];
+  onToggleComparison?: (productId: number) => void;
 }
 
 export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
   onQuickView,
   onAddToCart,
   products,
+  wishlistIds = [],
+  onToggleWishlist,
+  comparisonIds = [],
+  onToggleComparison,
 }) => {
   const [activeConcernId, setActiveConcernId] = useState<string>('dullness');
+  const [isAdded, setIsAdded] = useState(false);
+  const [justWishlisted, setJustWishlisted] = useState(false);
 
   const catalog = products && products.length > 0 ? products : STORE_PRODUCTS;
   const activeConcern = SKIN_CONCERNS.find((c) => c.id === activeConcernId) || SKIN_CONCERNS[0];
   const recommendedProduct = catalog.find((p) => p.id === activeConcern.recommendedProductId) || catalog[0];
+
+  const isWishlisted = wishlistIds.includes(recommendedProduct.id);
+
+  // Trigger pop animation when this product is wishlisted
+  useEffect(() => {
+    if (isWishlisted) {
+      setJustWishlisted(true);
+      const timer = setTimeout(() => setJustWishlisted(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isWishlisted]);
+
+  const handleAddToCartWithAnim = (product: Product) => {
+    onAddToCart(product);
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 1000);
+  };
 
   const getIcon = (name: string) => {
     switch (name) {
@@ -71,22 +98,57 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
           {/* Left: Product Feature & Visual */}
           <div className="w-full lg:w-1/2 flex flex-col items-center justify-center">
             <div 
-              className="relative w-full max-w-md aspect-square rounded-3xl overflow-hidden flex items-center justify-center shadow-md cursor-pointer border border-[#FFCDF2]/60"
+              className="relative w-full max-w-md aspect-square rounded-3xl overflow-hidden flex items-center justify-center shadow-md cursor-pointer border border-[#FFCDF2]/60 group"
               style={{ backgroundColor: recommendedProduct.panel }}
               onClick={() => onQuickView(recommendedProduct)}
             >
               <span className="absolute top-4 left-4 z-10 bg-[#EC3460] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-xs">
                 Target Solution
               </span>
-              {recommendedProduct.src ? (
-                <img
-                  src={recommendedProduct.src}
-                  alt={recommendedProduct.name}
-                  className="w-full h-full object-cover object-center drop-shadow-md hover:scale-105 transition-transform duration-500"
-                />
-              ) : (
-                <div className="w-full h-full bg-slate-200" />
+
+              {/* Wishlist Button */}
+              {onToggleWishlist && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleWishlist(recommendedProduct.id);
+                  }}
+                  className={`absolute top-4 right-4 z-20 w-10 h-10 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
+                    isWishlisted
+                      ? 'bg-white text-[#EC3460] shadow-raspberry'
+                      : 'bg-white/95 text-slate-400 hover:text-[#EC3460] hover:bg-white'
+                  } ${justWishlisted ? 'animate-pop' : ''}`}
+                >
+                  <Heart
+                    size={18}
+                    fill={isWishlisted ? '#EC3460' : 'none'}
+                    className={isWishlisted ? 'text-[#EC3460]' : ''}
+                  />
+                </button>
               )}
+
+              {onToggleComparison && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleComparison(recommendedProduct.id);
+                  }}
+                  className={`absolute top-16 right-4 z-20 w-10 h-10 rounded-full shadow-md flex items-center justify-center cursor-pointer transition-all hover:scale-110 ${
+                    comparisonIds.includes(recommendedProduct.id)
+                      ? 'bg-[#EC3460] text-white border-[#EC3460] shadow-raspberry'
+                      : 'bg-white/95 text-slate-400 hover:text-[#EC3460] hover:bg-white'
+                  }`}
+                  title="Compare Formula"
+                >
+                  <Scale size={18} />
+                </button>
+              )}
+
+              <img
+                src={recommendedProduct.src}
+                alt={recommendedProduct.name}
+                className="w-full h-full object-cover object-center drop-shadow-md group-hover:scale-105 transition-transform duration-500"
+              />
             </div>
           </div>
 
@@ -137,19 +199,19 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
             {/* Actions: Add to Cart (Left) and Buy Now (Right) */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 border-t border-slate-200/70">
               <button
-                onClick={() => onAddToCart(recommendedProduct)}
-                className="w-full sm:flex-1 bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-semibold text-[11px] uppercase tracking-wider py-4 px-6 rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-2"
+                onClick={() => handleAddToCartWithAnim(recommendedProduct)}
+                className={`w-full sm:flex-1 bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-semibold text-[11px] uppercase tracking-wider py-4 px-6 rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-2 ${isAdded ? 'animate-pop' : ''}`}
               >
                 <ShoppingBag size={16} />
-                <span>Add To Cart</span>
+                <span>{isAdded ? 'Added to Bag!' : 'Add To Cart'}</span>
               </button>
 
               <button
                 onClick={() => {
-                  onAddToCart(recommendedProduct);
+                  handleAddToCartWithAnim(recommendedProduct);
                   // In a real app, this would trigger checkout
                 }}
-                className="w-full sm:flex-1 bg-[#EC3460] hover:bg-[#D8224F] text-white font-semibold text-[11px] uppercase tracking-wider py-4 px-6 rounded-2xl shadow-raspberry transition-all cursor-pointer flex items-center justify-center gap-2"
+                className={`w-full sm:flex-1 bg-[#EC3460] hover:bg-[#D8224F] text-white font-semibold text-[11px] uppercase tracking-wider py-4 px-6 rounded-2xl shadow-raspberry transition-all cursor-pointer flex items-center justify-center gap-2 ${isAdded ? 'animate-pop' : ''}`}
               >
                 <Sparkles size={16} />
                 <span>Buy Now · {recommendedProduct.price}</span>

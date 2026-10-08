@@ -9,7 +9,8 @@ import {
   Trash2,
   CheckCircle2,
   ShieldCheck,
-  Star
+  Star,
+  Scale
 } from 'lucide-react';
 import { Product } from '../types';
 
@@ -21,6 +22,8 @@ interface MyFavoritesSectionProps {
   onBuyNow?: (product: Product) => void;
   onQuickView: (product: Product) => void;
   onNavigateSection?: (sectionId: string) => void;
+  comparisonIds?: number[];
+  onToggleComparison?: (productId: number) => void;
 }
 
 export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
@@ -31,12 +34,28 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
   onBuyNow,
   onQuickView,
   onNavigateSection,
+  comparisonIds = [],
+  onToggleComparison,
 }) => {
   const [addedIds, setAddedIds] = useState<Record<number, boolean>>({});
   const [addedAll, setAddedAll] = useState(false);
+  const [popId, setPopId] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+
+  React.useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Filter products by wishlistIds
   const favoriteProducts = products.filter((p) => wishlistIds.includes(p.id));
+
+  const handleToggleWithAnim = (id: number) => {
+    setPopId(id);
+    onToggleWishlist(id);
+    setTimeout(() => setPopId(null), 300);
+  };
 
   const handleAddSingle = (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
@@ -143,14 +162,14 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
           </div>
         ) : (
           /* Favorites Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 items-stretch">
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8 items-stretch">
             {favoriteProducts.map((product) => {
               const isAdded = !!addedIds[product.id];
 
               return (
                 <div
                   key={product.id}
-                  className="bg-white rounded-3xl p-4 sm:p-5 border border-[#FFCDF2]/80 hover:border-[#EC3460] transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between group relative"
+                  className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#FFCDF2]/80 hover:border-[#EC3460] transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between group relative"
                 >
                   {/* Image Backdrop & Thumbnail: Horizontal Scrollable Gallery */}
                   <div className="relative mb-4">
@@ -185,24 +204,44 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                     </div>
 
                     {/* Unfavorite / Remove Button (Top Right) */}
-                    <button
-                      type="button"
-                      onClick={() => onToggleWishlist(product.id)}
-                      className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white text-[#EC3460] shadow-md border border-[#FFCDF2] transition-transform hover:scale-110 active:scale-95 cursor-pointer"
-                      title="Remove from favorites"
-                      aria-label={`Remove ${product.name} from favorites`}
-                    >
-                      <Heart size={16} fill="#EC3460" />
-                    </button>
+                    <div className="absolute top-3 right-3 flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleWithAnim(product.id)}
+                        className={`p-2 rounded-full bg-white/90 hover:bg-white text-[#EC3460] shadow-md border border-[#FFCDF2] transition-transform hover:scale-110 active:scale-95 cursor-pointer ${popId === product.id ? 'animate-pop' : ''}`}
+                        title="Remove from favorites"
+                        aria-label={`Remove ${product.name} from favorites`}
+                      >
+                        <Heart size={16} fill="#EC3460" />
+                      </button>
+
+                      {onToggleComparison && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleComparison(product.id);
+                          }}
+                          className={`p-2 rounded-full shadow-md border transition-all hover:scale-110 active:scale-95 cursor-pointer ${
+                            comparisonIds.includes(product.id)
+                              ? 'bg-[#EC3460] text-white border-[#EC3460] shadow-raspberry'
+                              : 'bg-white/90 text-slate-400 border-[#FFCDF2] hover:text-[#EC3460]'
+                          }`}
+                          title="Compare Formula"
+                        >
+                          <Scale size={16} />
+                        </button>
+                      )}
+                    </div>
 
                     {/* Badge or Category (Top Left) */}
-                    <div className="absolute top-3 left-3 flex flex-col gap-1">
+                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
                       {product.badge ? (
-                        <span className="bg-slate-950/80 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-white/20">
+                        <span className="bg-slate-950/80 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-white/20">
                           {product.badge}
                         </span>
                       ) : (
-                        <span className="bg-[#FFF0F9]/90 backdrop-blur-md text-[#B31940] text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border border-[#FFCDF2]">
+                        <span className="bg-[#FFF0F9]/90 backdrop-blur-md text-[#B31940] text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-[#FFCDF2]">
                           {product.category}
                         </span>
                       )}
@@ -213,13 +252,12 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                   <div className="flex-1 flex flex-col justify-between">
                     <div>
                       {/* Rating & Stock */}
-                      <div className="flex items-center justify-between text-xs mb-1.5">
+                      <div className="flex items-center justify-between text-xs mb-1 sm:mb-1.5">
                         <div className="flex items-center gap-1 text-amber-400">
-                          <Star size={13} fill="currentColor" />
-                          <span className="text-slate-900 font-bold text-xs">{product.rating}</span>
-                          <span className="text-slate-400 text-[11px]">({product.reviewsCount})</span>
+                          <Star size={isMobile ? 10 : 13} fill="currentColor" />
+                          <span className="text-slate-900 font-bold text-[10px] sm:text-xs">{product.rating}</span>
                         </div>
-                        <span className="text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
+                        <span className="hidden xs:inline text-[9px] sm:text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
                           {product.stockStatus}
                         </span>
                       </div>
@@ -227,49 +265,44 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                       {/* Title */}
                       <h3
                         onClick={() => onQuickView(product)}
-                        className="font-anton text-base sm:text-lg uppercase text-slate-900 tracking-tight leading-snug hover:text-[#EC3460] transition-colors cursor-pointer line-clamp-1"
+                        className="font-anton text-xs sm:text-lg uppercase text-slate-900 tracking-tight leading-tight sm:leading-snug hover:text-[#EC3460] transition-colors cursor-pointer line-clamp-1"
                         title={product.name}
                       >
                         {product.name}
                       </h3>
 
                       {/* Subtitle & Volume */}
-                      <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                      <p className="text-[10px] sm:text-xs text-slate-500 line-clamp-1 mt-0.5">
                         {product.subtitle} · {product.volume}
                       </p>
 
-                      {/* Key Benefit Snippet */}
+                      {/* Key Benefit Snippet - Hidden on small mobile */}
                       {product.benefits && product.benefits.length > 0 && (
-                        <p className="text-[11px] text-slate-600 line-clamp-2 mt-2 leading-relaxed bg-[#FFF5FA] p-2 rounded-xl border border-[#FFCDF2]/50">
+                        <p className="hidden sm:block text-[11px] text-slate-600 line-clamp-2 mt-2 leading-relaxed bg-[#FFF5FA] p-2 rounded-xl border border-[#FFCDF2]/50">
                           {product.benefits[0]}
                         </p>
                       )}
                     </div>
 
                     {/* Price and Action Buttons */}
-                    <div className="mt-4 pt-3 border-t border-slate-100">
-                      <div className="flex items-baseline justify-between mb-3">
-                        <div className="flex items-baseline gap-2">
-                          <span className="font-mono text-base font-bold text-slate-900">
+                    <div className="mt-2 sm:mt-4 pt-2 sm:pt-3 border-t border-slate-100">
+                      <div className="flex items-baseline justify-between mb-2 sm:mb-3">
+                        <div className="flex items-baseline gap-1 sm:gap-2">
+                          <span className="font-mono text-xs sm:text-base font-bold text-slate-900">
                             {product.price}
                           </span>
-                          {product.originalPrice && (
-                            <span className="font-mono text-xs text-slate-400 line-through">
-                              {product.originalPrice}
-                            </span>
-                          )}
                         </div>
-                        <span className="text-[10px] text-slate-400 uppercase font-semibold">
+                        <span className="hidden sm:inline text-[10px] text-slate-400 uppercase font-semibold">
                           Seoul Dispatch
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-col xs:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2">
                         {/* Direct Add to Cart Button */}
                         <button
                           type="button"
                           onClick={(e) => handleAddSingle(e, product)}
-                          className={`flex-1 py-2.5 px-3 rounded-xl font-semibold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs ${
+                          className={`flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl font-semibold text-[9px] sm:text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 shadow-xs ${
                             isAdded
                               ? 'bg-emerald-600 text-white'
                               : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50'
@@ -278,13 +311,13 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                         >
                           {isAdded ? (
                             <>
-                              <Check size={14} strokeWidth={3} />
+                              <Check size={isMobile ? 12 : 14} strokeWidth={3} />
                               <span>Added</span>
                             </>
                           ) : (
                             <>
-                              <ShoppingBag size={14} />
-                              <span>Add to Bag</span>
+                              <ShoppingBag size={isMobile ? 12 : 14} />
+                              <span>Cart</span>
                             </>
                           )}
                         </button>
@@ -299,17 +332,17 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                               onAddToCart(product);
                             }
                           }}
-                          className="flex-1 py-2.5 px-3 bg-[#EC3460] hover:bg-[#D8224F] text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-raspberry flex items-center justify-center gap-1.5"
+                          className="flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 bg-[#EC3460] hover:bg-[#D8224F] text-white rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-raspberry flex items-center justify-center gap-1"
                         >
-                          <Sparkles size={14} />
-                          <span>Buy Now</span>
+                          <Sparkles size={isMobile ? 12 : 14} />
+                          <span>Buy</span>
                         </button>
 
-                        {/* Quick View Button */}
+                        {/* Quick View Button - Hidden on very small mobile */}
                         <button
                           type="button"
                           onClick={() => onQuickView(product)}
-                          className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors cursor-pointer shrink-0"
+                          className="hidden sm:flex p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl transition-colors cursor-pointer shrink-0"
                           title="Quick View Details"
                           aria-label={`Quick View ${product.name}`}
                         >

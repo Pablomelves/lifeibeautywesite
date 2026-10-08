@@ -1,276 +1,177 @@
 import React, { useState } from 'react';
-import { 
-  AlertTriangle, 
-  CheckCircle, 
-  Plus, 
-  Minus, 
-  Save, 
-  Search, 
-  Package, 
-  RefreshCw,
-  ArrowUpDown
-} from 'lucide-react';
-import { AdminProduct } from '../../types';
+import { Package, AlertTriangle, CheckCircle, Save, Search } from 'lucide-react';
+import { Product } from '../../types';
 
 interface AdminInventoryTabProps {
-  products: AdminProduct[];
-  onUpdateStock: (productId: number, newStock: number) => void;
+  products: Product[];
+  onSaveProducts: (products: Product[]) => void;
 }
 
 export const AdminInventoryTab: React.FC<AdminInventoryTabProps> = ({
   products,
-  onUpdateStock,
+  onSaveProducts
 }) => {
-  const [search, setSearch] = useState('');
-  const [filterMode, setFilterMode] = useState<'all' | 'low_stock' | 'out_of_stock'>('all');
-  const [editingStocks, setEditingStocks] = useState<Record<number, number>>({});
-  const [savedNoticeId, setSavedNoticeId] = useState<number | null>(null);
-
-  const getStockVal = (p: AdminProduct) => {
-    return editingStocks[p.id] !== undefined ? editingStocks[p.id] : p.stockQuantity;
-  };
-
-  const handleAdjust = (productId: number, current: number, delta: number) => {
-    const nextVal = Math.max(0, current + delta);
-    setEditingStocks(prev => ({ ...prev, [productId]: nextVal }));
-  };
-
-  const handleSaveStock = (productId: number) => {
-    const val = editingStocks[productId];
-    if (val !== undefined) {
-      onUpdateStock(productId, val);
-      setSavedNoticeId(productId);
-      setTimeout(() => setSavedNoticeId(null), 1800);
-    }
-  };
-
-  const filteredProducts = products.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.sku.toLowerCase().includes(search.toLowerCase()) ||
-      p.category.toLowerCase().includes(search.toLowerCase());
-
-    if (!matchesSearch) return false;
-
-    if (filterMode === 'low_stock') return p.stockQuantity > 0 && p.stockQuantity < 10;
-    if (filterMode === 'out_of_stock') return p.stockQuantity === 0;
-    return true;
+  const [stockMap, setStockMap] = useState<Record<number, number>>(() => {
+    const map: Record<number, number> = {};
+    products.forEach((p) => {
+      map[p.id] = p.stockQuantity !== undefined ? p.stockQuantity : 35;
+    });
+    return map;
   });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [savedNotice, setSavedNotice] = useState(false);
 
-  const lowStockCount = products.filter(p => p.stockQuantity > 0 && p.stockQuantity < 10).length;
-  const outOfStockCount = products.filter(p => p.stockQuantity === 0).length;
+  const filtered = products.filter((p) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.sku && p.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
+
+  const handleStockChange = (productId: number, val: number) => {
+    setStockMap((prev) => ({ ...prev, [productId]: Math.max(0, val) }));
+  };
+
+  const handleSaveAll = () => {
+    const updated = products.map((p) => ({
+      ...p,
+      stockQuantity: stockMap[p.id] !== undefined ? stockMap[p.id] : 35,
+      stockStatus: (stockMap[p.id] || 0) > 0 ? 'In Stock' : 'Out of Stock'
+    }));
+    onSaveProducts(updated);
+    setSavedNotice(true);
+    setTimeout(() => setSavedNotice(false), 2000);
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-anton text-2xl uppercase tracking-wide text-slate-950">
-            Real-Time Inventory &amp; Stock Matrix
-          </h2>
-          <p className="text-xs text-slate-500">
-            Monitor Seoul warehouse stock, trigger reorder thresholds, and adjust inventory quantities.
+          <h2 className="text-xl font-bold text-stone-900">Inventory & Warehouse Stock</h2>
+          <p className="text-xs text-stone-500">
+            Real-time stock counts, SKU management, low stock warnings, and Seoul batch adjustments
           </p>
         </div>
-
-        {/* Quick summary badges */}
-        <div className="flex items-center gap-2">
-          {lowStockCount > 0 && (
-            <span className="px-3 py-1 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold flex items-center gap-1.5">
-              <AlertTriangle size={13} /> {lowStockCount} Low Stock
-            </span>
-          )}
-          {outOfStockCount > 0 && (
-            <span className="px-3 py-1 bg-rose-50 text-rose-800 border border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5">
-              {outOfStockCount} Out of Stock
-            </span>
-          )}
-        </div>
+        <button
+          onClick={handleSaveAll}
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-900 hover:bg-black text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer shrink-0"
+        >
+          <Save className="w-4 h-4" />
+          Save Stock Adjustments
+        </button>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full md:w-80">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search SKU or product name..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:border-[#EC3460] focus:bg-white transition-colors"
-          />
+      {savedNotice && (
+        <div className="p-3 bg-emerald-50 text-emerald-800 rounded-xl border border-emerald-200 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+          <CheckCircle className="w-4 h-4 text-emerald-600" />
+          <span>Inventory levels successfully updated across public storefront!</span>
         </div>
+      )}
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setFilterMode('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              filterMode === 'all'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-            }`}
-          >
-            All Products ({products.length})
-          </button>
-          <button
-            onClick={() => setFilterMode('low_stock')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              filterMode === 'low_stock'
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
-            }`}
-          >
-            Low Stock (&lt; 10)
-          </button>
-          <button
-            onClick={() => setFilterMode('out_of_stock')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              filterMode === 'out_of_stock'
-                ? 'bg-rose-600 text-white shadow-xs'
-                : 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100'
-            }`}
-          >
-            Out of Stock
-          </button>
-        </div>
+      {/* Search */}
+      <div className="flex items-center gap-3 bg-white p-3 rounded-2xl border border-stone-200 shadow-2xs">
+        <Search className="w-4 h-4 text-stone-400 ml-2" />
+        <input
+          type="text"
+          placeholder="Filter by SKU or formula name..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1 text-xs text-stone-800 placeholder-stone-400 focus:outline-none"
+        />
+        <span className="text-xs text-stone-400 font-medium mr-2">
+          {filtered.length} items
+        </span>
       </div>
 
-      {/* Inventory Matrix Table */}
-      <div className="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
+      {/* Stock Table */}
+      <div className="bg-white rounded-2xl border border-stone-200 overflow-hidden shadow-2xs">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200/80 text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                <th className="py-3.5 px-4">Formula Visual</th>
-                <th className="py-3.5 px-4">SKU &amp; Product</th>
-                <th className="py-3.5 px-4">Unit Price</th>
-                <th className="py-3.5 px-4">Current Stock</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-right">Inline Stock Adjustment</th>
+          <table className="w-full text-left text-xs">
+            <thead className="bg-stone-50 border-b border-stone-200 text-stone-400 uppercase font-semibold">
+              <tr>
+                <th className="py-3 px-4">Item</th>
+                <th className="py-3 px-4">SKU Code</th>
+                <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4">Unit Price</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4 text-right">Available Stock Units</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredProducts.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    No products matching this filter.
-                  </td>
-                </tr>
-              ) : (
-                filteredProducts.map((p) => {
-                  const currentStock = getStockVal(p);
-                  const isModified = editingStocks[p.id] !== undefined && editingStocks[p.id] !== p.stockQuantity;
-                  const isSaved = savedNoticeId === p.id;
+            <tbody className="divide-y divide-stone-100 text-stone-700">
+              {filtered.map((product) => {
+                const currentStock = stockMap[product.id] !== undefined ? stockMap[product.id] : 35;
+                const isLow = currentStock <= 10;
+                const isOut = currentStock === 0;
 
-                  return (
-                    <tr key={p.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-4">
-                        <div 
-                          className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200/80 flex items-center justify-center shrink-0"
-                          style={{ backgroundColor: p.panel }}
+                return (
+                  <tr key={product.id} className="hover:bg-stone-50/60 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-10 h-10 rounded-lg p-1 flex items-center justify-center shrink-0 border border-stone-200"
+                          style={{ backgroundColor: product.panel || '#FAF5F7' }}
                         >
-                          <img src={p.src} alt={p.name} className="w-full h-full object-cover object-center" />
-                        </div>
-                      </td>
-
-                      <td className="py-3 px-4 max-w-[220px]">
-                        <span className="font-mono text-[10px] text-slate-400 block font-bold">
-                          {p.sku}
-                        </span>
-                        <h4 className="font-bold uppercase text-slate-900 truncate">
-                          {p.name}
-                        </h4>
-                        <span className="text-[10px] text-slate-500 block truncate">
-                          {p.volume}
-                        </span>
-                      </td>
-
-                      <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                        {p.price}
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <span className="font-mono text-sm font-bold text-slate-900">
-                          {currentStock}
-                        </span>
-                        <span className="text-[10px] text-slate-400 block">units in stock</span>
-                      </td>
-
-                      <td className="py-3 px-4">
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full inline-block border ${
-                          currentStock === 0
-                            ? 'bg-rose-50 text-rose-700 border-rose-200'
-                            : currentStock < 10
-                            ? 'bg-amber-50 text-amber-800 border-amber-200'
-                            : 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                        }`}>
-                          {currentStock === 0 ? 'Out of Stock' : currentStock < 10 ? 'Low Stock' : 'Optimal'}
-                        </span>
-                      </td>
-
-                      {/* Adjuster */}
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => handleAdjust(p.id, currentStock, -5)}
-                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center cursor-pointer text-[10px]"
-                            title="Subtract 5 units"
-                          >
-                            -5
-                          </button>
-                          <button
-                            onClick={() => handleAdjust(p.id, currentStock, -1)}
-                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center cursor-pointer"
-                            title="Subtract 1 unit"
-                          >
-                            <Minus size={13} />
-                          </button>
-
-                          <input
-                            type="number"
-                            min="0"
-                            value={currentStock}
-                            onChange={(e) => {
-                              const v = parseInt(e.target.value, 10);
-                              setEditingStocks(prev => ({ ...prev, [p.id]: isNaN(v) ? 0 : Math.max(0, v) }));
-                            }}
-                            className="w-16 p-1.5 text-center bg-slate-50 border border-slate-200 rounded-lg font-mono font-bold text-xs focus:outline-none focus:border-[#EC3460]"
-                          />
-
-                          <button
-                            onClick={() => handleAdjust(p.id, currentStock, 1)}
-                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center cursor-pointer"
-                            title="Add 1 unit"
-                          >
-                            <Plus size={13} />
-                          </button>
-                          <button
-                            onClick={() => handleAdjust(p.id, currentStock, 10)}
-                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center cursor-pointer text-[10px]"
-                            title="Add 10 units"
-                          >
-                            +10
-                          </button>
-
-                          {isModified && (
-                            <button
-                              onClick={() => handleSaveStock(p.id)}
-                              className="px-3 py-1.5 bg-[#EC3460] hover:bg-[#D8224F] text-white rounded-lg font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-xs cursor-pointer animate-pulse"
-                            >
-                              <Save size={12} /> Save
-                            </button>
-                          )}
-
-                          {isSaved && (
-                            <span className="text-emerald-600 font-bold text-[10px] flex items-center gap-1 animate-fadeIn">
-                              <CheckCircle size={14} /> Saved
-                            </span>
+                          {product.src ? (
+                            <img src={product.src} alt={product.name} className="max-h-full w-auto object-contain" />
+                          ) : (
+                            <Package className="w-4 h-4 text-stone-400" />
                           )}
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
+                        <div>
+                          <div className="font-bold text-stone-900">{product.name}</div>
+                          <div className="text-[11px] text-stone-400">{product.subtitle}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4 font-mono font-semibold text-stone-600">
+                      {product.sku || `LF-${product.id}`}
+                    </td>
+                    <td className="py-3.5 px-4 font-medium">{product.category}</td>
+                    <td className="py-3.5 px-4 font-bold text-stone-900">{product.price}</td>
+                    <td className="py-3.5 px-4">
+                      {isOut ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-rose-100 text-rose-800">
+                          <AlertTriangle className="w-3 h-3" />
+                          Sold Out
+                        </span>
+                      ) : isLow ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-800">
+                          <AlertTriangle className="w-3 h-3" />
+                          Low Stock
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
+                          <CheckCircle className="w-3 h-3" />
+                          Healthy
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="inline-flex items-center border border-stone-200 rounded-lg overflow-hidden bg-stone-50">
+                        <button
+                          type="button"
+                          onClick={() => handleStockChange(product.id, currentStock - 5)}
+                          className="px-2 py-1 hover:bg-stone-200 cursor-pointer text-stone-600 font-bold"
+                        >
+                          -5
+                        </button>
+                        <input
+                          type="number"
+                          min="0"
+                          value={currentStock}
+                          onChange={(e) => handleStockChange(product.id, parseInt(e.target.value) || 0)}
+                          className="w-14 text-center py-1 bg-white border-x border-stone-200 font-bold text-stone-900 focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleStockChange(product.id, currentStock + 5)}
+                          className="px-2 py-1 hover:bg-stone-200 cursor-pointer text-stone-600 font-bold"
+                        >
+                          +5
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

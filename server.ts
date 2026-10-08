@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
+import { GoogleGenAI, Type } from "@google/genai";
 import { 
   INITIAL_ADMIN_PRODUCTS, 
   INITIAL_ORDERS, 
@@ -74,6 +75,16 @@ function saveDB(state: DBState): void {
 }
 
 let db = loadDB();
+
+// Initialize Gemini API
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || '',
+  httpOptions: {
+    headers: {
+      'User-Agent': 'aistudio-build',
+    }
+  }
+});
 
 app.use(express.json({ limit: '15mb' }));
 
@@ -388,6 +399,64 @@ app.post('/api/upload', (req: Request, res: Response) => {
   } catch (err: any) {
     console.error('Upload error:', err);
     res.status(500).json({ error: 'Failed to process image' });
+  }
+});
+
+// ----------------------------------------------------------------------
+// 10. AI Recommendations API
+// ----------------------------------------------------------------------
+app.post('/api/gemini/recommendations', async (req: Request, res: Response) => {
+  try {
+    const { profileInfo, products } = req.body;
+
+    if (!profileInfo || !products || !Array.isArray(products)) {
+      res.status(400).json({ error: 'Missing profileInfo or products' });
+      return;
+    }
+
+    const { skinGoal, skinType } = profileInfo;
+
+    const productContext = products.map(p => ({
+      id: p.id,
+      name: p.name,
+      category: p.category,
+      skinType: p.skinType,
+      benefits: p.benefits,
+      fullDescription: p.fullDescription
+    }));
+
+    const prompt = `
+      Based on the following user skin profile and product catalog, recommend the top 3 products that would best help the user achieve their skin goals.
+
+      USER PROFILE:
+      - Skin Goal: ${skinGoal || 'General glow'}
+      - Skin Type: ${skinType || 'Not specified'}
+
+      PRODUCT CATALOG:
+      ${JSON.stringify(productContext, null, 2)}
+
+      Provide your recommendations as a JSON array of product IDs only, sorted by most relevant to least relevant.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.8-flash",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.NUMBER,
+          }
+        }
+      }
+    });
+
+    const recommendedIds = JSON.parse(response.text || '[]');
+    res.json({ recommendedIds });
+  } catch (err: any) {
+    console.error('Gemini Recommendation Error:', err);
+    res.status(500).json({ error: 'Failed to generate recommendations', message: err.message });
   }
 });
 

@@ -15,12 +15,12 @@ import {
   CheckCircle2,
   Share2,
   Loader2,
-  Heart
+  Heart,
+  Scale
 } from 'lucide-react';
-import { Product, Review } from '../types';
+import { Product } from '../types';
 import { STORE_PRODUCTS, STORE_REVIEWS } from '../data/storeData';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
-import { ProductReviewSection } from './reviews/ProductReviewSection';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -31,6 +31,8 @@ interface ProductDetailModalProps {
   onBuyNowDirect?: (product: Product, quantity: number) => void;
   isWishlisted?: boolean;
   onToggleWishlist?: (productId: number) => void;
+  comparisonIds?: number[];
+  onToggleComparison?: (productId: number) => void;
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
@@ -42,11 +44,24 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onBuyNowDirect,
   isWishlisted = false,
   onToggleWishlist,
+  comparisonIds = [],
+  onToggleComparison,
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'benefits' | 'ingredients' | 'howTo' | 'results'>('benefits');
   const [added, setAdded] = useState(false);
+  const [justWishlisted, setJustWishlisted] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
+
+  // Trigger pop animation when this product is wishlisted
+  useEffect(() => {
+    if (isWishlisted) {
+      setJustWishlisted(true);
+      const timer = setTimeout(() => setJustWishlisted(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isWishlisted]);
+
   const [isBuyingNow, setIsBuyingNow] = useState(false);
   const [activeImage, setActiveImage] = useState<string>(product?.src || '');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -99,11 +114,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const currentNumericPrice = selectedVariant ? selectedVariant.numericPrice : product.numericPrice;
 
   const productReviews = STORE_REVIEWS.filter((r) => r.productId === product.id);
-  const avgRating = productReviews.length > 0 
-    ? productReviews.reduce((acc, r) => acc + r.rating, 0) / productReviews.length 
-    : product.rating;
-  const totalReviews = productReviews.length > 0 ? productReviews.length : product.reviewsCount;
-
   const recommended = (allProducts && allProducts.length > 0 ? allProducts : STORE_PRODUCTS)
     .filter((p) => p.id !== product.id)
     .slice(0, 3);
@@ -159,26 +169,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   return (
     <>
-      <Helmet>
-        <title>{`${product.name} | LI FEI BEAUTY`}</title>
-        <meta name="description" content={product.subtitle || product.benefits.join('. ')} />
-        
-        {/* OpenGraph / Facebook */}
-        <meta property="og:type" content="product" />
-        <meta property="og:title" content={`${product.name} | LI FEI BEAUTY`} />
-        <meta property="og:description" content={product.subtitle || product.benefits.join('. ')} />
-        <meta property="og:image" content={product.src} />
-        <meta property="og:url" content={window.location.href} />
-        
-        {/* Twitter */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={`${product.name} | LI FEI BEAUTY`} />
-        <meta name="twitter:description" content={product.subtitle || product.benefits.join('. ')} />
-        <meta name="twitter:image" content={product.src} />
-
-        {/* Structured Data (JSON-LD) */}
-        <script type="application/ld+json">
-          {JSON.stringify({
+      <Helmet
+        script={[{
+          type: 'application/ld+json',
+          innerHTML: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Product",
             "name": product.name,
@@ -198,11 +192,27 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             },
             "aggregateRating": {
               "@type": "AggregateRating",
-              "ratingValue": avgRating,
-              "reviewCount": totalReviews
+              "ratingValue": product.rating,
+              "reviewCount": product.reviewsCount
             }
-          })}
-        </script>
+          })
+        }]}
+      >
+        <title>{`${product.name} | LI FEI BEAUTY`}</title>
+        <meta name="description" content={product.subtitle || product.benefits.join('. ')} />
+        
+        {/* OpenGraph / Facebook */}
+        <meta property="og:type" content="product" />
+        <meta property="og:title" content={`${product.name} | LI FEI BEAUTY`} />
+        <meta property="og:description" content={product.subtitle || product.benefits.join('. ')} />
+        <meta property="og:image" content={product.src} />
+        <meta property="og:url" content={window.location.href} />
+        
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={`${product.name} | LI FEI BEAUTY`} />
+        <meta name="twitter:description" content={product.subtitle || product.benefits.join('. ')} />
+        <meta name="twitter:image" content={product.src} />
       </Helmet>
 
       <div 
@@ -233,7 +243,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   isWishlisted
                     ? 'bg-[#FFF0F9] text-[#B31940] border-[#FFCDF2] shadow-xs'
                     : 'bg-white text-slate-600 border-slate-200 hover:text-[#EC3460] hover:border-[#FFCDF2]'
-                }`}
+                } ${justWishlisted ? 'animate-pop' : ''}`}
                 title={isWishlisted ? 'Saved to Wishlist' : 'Save to Wishlist'}
                 aria-label={isWishlisted ? 'Saved to Wishlist' : 'Save to Wishlist'}
               >
@@ -243,6 +253,22 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   className={isWishlisted ? 'text-[#EC3460]' : ''}
                 />
                 <span>{isWishlisted ? 'Wishlisted' : 'Save'}</span>
+              </button>
+            )}
+
+            {onToggleComparison && (
+              <button
+                type="button"
+                onClick={() => onToggleComparison(product.id)}
+                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold border ${
+                  comparisonIds.includes(product.id)
+                    ? 'bg-[#EC3460] text-white border-[#EC3460] shadow-raspberry'
+                    : 'bg-white text-slate-600 border-slate-200 hover:text-[#EC3460] hover:border-[#FFCDF2]'
+                }`}
+                title="Add to comparison"
+              >
+                <Scale size={15} />
+                <span>{comparisonIds.includes(product.id) ? 'Comparing' : 'Compare'}</span>
               </button>
             )}
 
@@ -271,7 +297,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 style={{ backgroundColor: activeImage === product.src ? product.panel : '#F8FAFC' }}
               >
                 {product.badge && (
-                  <span className="absolute top-4 left-4 z-10 bg-slate-900 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+                  <span className="absolute top-2.5 left-2.5 z-10 bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-white/10">
                     {product.badge}
                   </span>
                 )}
@@ -300,18 +326,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </>
                 )}
 
-                {activeImage ? (
-                  <img
-                    src={activeImage}
-                    alt={product.name}
-                    referrerPolicy="no-referrer"
-                    className={`w-full h-full drop-shadow-xl transition-all duration-300 ${
-                      activeImage === product.src ? 'object-contain sm:scale-105' : 'object-cover rounded-2xl'
-                    }`}
-                  />
-                ) : (
-                  <div className="w-full h-full bg-slate-200 animate-pulse rounded-2xl" />
-                )}
+                <img
+                  src={activeImage}
+                  alt={product.name}
+                  referrerPolicy="no-referrer"
+                  className={`w-full h-full drop-shadow-xl transition-all duration-300 ${
+                    activeImage === product.src ? 'object-contain sm:scale-105' : 'object-cover rounded-2xl'
+                  }`}
+                />
 
                 {/* Dots Indicator */}
                 {galleryImages.length > 1 && (
@@ -345,16 +367,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           : 'border-slate-100 hover:border-[#FFCDF2]'
                       }`}
                     >
-                      {imgItem.url ? (
-                        <img
-                          src={imgItem.url}
-                          alt={imgItem.label}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-slate-200" />
-                      )}
+                      <img
+                        src={imgItem.url}
+                        alt={imgItem.label}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
@@ -382,11 +400,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <div className="flex items-center gap-2 mt-3">
                   <div className="flex items-center text-amber-400">
                     {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={15} fill={i < Math.floor(avgRating) ? "currentColor" : "none"} className={i < Math.floor(avgRating) ? "" : "text-slate-200"} />
+                      <Star key={i} size={15} fill="currentColor" />
                     ))}
                   </div>
-                  <span className="text-xs font-bold text-slate-900">{avgRating.toFixed(1)}</span>
-                  <span className="text-xs text-slate-400">({totalReviews} reviews)</span>
+                  <span className="text-xs font-bold text-slate-900">{product.rating}</span>
+                  <span className="text-xs text-slate-400">({product.reviewsCount} reviews)</span>
                   <span className="text-slate-300">·</span>
                   <span className="text-xs text-emerald-700 font-semibold">{product.stockStatus}</span>
                 </div>
@@ -506,7 +524,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                         isWishlisted
                           ? 'bg-[#FFF0F9] text-[#EC3460] border-[#FFCDF2] shadow-xs'
                           : 'bg-white text-slate-400 border-slate-200 hover:text-[#EC3460] hover:border-[#FFCDF2]'
-                      }`}
+                      } ${justWishlisted ? 'animate-pop' : ''}`}
                       title={isWishlisted ? 'Saved in Wishlist' : 'Save to Wishlist'}
                       aria-label={isWishlisted ? 'Saved in Wishlist' : 'Save to Wishlist'}
                     >
@@ -696,7 +714,36 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </div>
 
           {/* Section: Verified Customer Reviews */}
-          <ProductReviewSection product={product} reviews={productReviews as any} />
+          <div className="py-10">
+            <h3 className="font-anton text-2xl uppercase tracking-tight text-slate-900 mb-4">
+              CUSTOMER REVIEWS ({productReviews.length || '380+'})
+            </h3>
+            <div className="space-y-4">
+              {productReviews.length > 0 ? (
+                productReviews.map((rev) => (
+                  <div key={rev.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/70">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-1 text-amber-400">
+                        {[...Array(rev.rating)].map((_, i) => (
+                          <Star key={i} size={13} fill="currentColor" />
+                        ))}
+                      </div>
+                      <span className="text-[11px] text-slate-400">{rev.date}</span>
+                    </div>
+                    <h4 className="text-xs font-bold text-slate-900 mb-1">"{rev.title}"</h4>
+                    <p className="text-xs text-slate-600 leading-relaxed">{rev.comment}</p>
+                    <span className="text-[10px] text-slate-400 block mt-2">
+                      — {rev.author} ({rev.location}) · Verified Purchase
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="p-4 bg-slate-50 rounded-2xl text-xs text-slate-600">
+                  Rated 4.9/5 by 380+ verified Korean beauty enthusiasts worldwide.
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Section: Recommended Products */}
           <div className="pt-10">
@@ -718,7 +765,24 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </div>
                   <div>
                     <h4 className="text-xs font-bold uppercase truncate text-slate-900">{rec.name}</h4>
-                    <span className="text-xs font-mono font-bold text-slate-900 block mt-1">{rec.price}</span>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-xs font-mono font-bold text-slate-900">{rec.price}</span>
+                      {onToggleComparison && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleComparison(rec.id);
+                          }}
+                          className={`p-1.5 rounded-lg transition-all cursor-pointer border ${
+                            comparisonIds.includes(rec.id)
+                              ? 'bg-[#EC3460] text-white border-[#EC3460]'
+                              : 'bg-white text-slate-400 border-slate-200 hover:text-[#EC3460]'
+                          }`}
+                        >
+                          <Scale size={12} />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

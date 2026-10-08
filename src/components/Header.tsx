@@ -14,6 +14,8 @@ import { CATEGORIES } from '../data/storeData';
 
 interface HeaderProps {
   cartCount: number;
+  wishlistCount: number;
+  profileIncomplete?: boolean;
   onOpenCart: () => void;
   onOpenSearch: () => void;
   onOpenAccount: (tab?: 'points' | 'orders' | 'tracking' | 'profile' | 'wishlist' | 'favorites') => void;
@@ -29,6 +31,8 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   cartCount,
+  wishlistCount,
+  profileIncomplete,
   onOpenCart,
   onOpenSearch,
   onOpenAccount,
@@ -68,18 +72,20 @@ export const Header: React.FC<HeaderProps> = ({
           : 'bg-white/85 sm:bg-white/70 backdrop-blur-sm border-b border-slate-200/40 text-slate-900 py-4'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 sm:px-8 flex items-center justify-between">
         {/* Left: Brand Mark */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button 
             onClick={() => onNavigateSection('hero')}
             className="text-left cursor-pointer group"
           >
-            <span className="font-anton text-2xl sm:text-3xl tracking-tight uppercase block leading-none text-slate-950 group-hover:opacity-80 transition-opacity">
-              LI FEI BEAUTY
-            </span>
-            <span className="font-inter text-[9px] uppercase tracking-[0.28em] text-slate-500 font-medium block mt-0.5">
-              Seoul · Premium Skincare
+            <img 
+              src="/BC0C39FF-CA32-434C-8D58-12498BC5C2E2.png" 
+              alt="LI FEI BEAUTY" 
+              className="block h-9 sm:h-12 w-auto object-contain transition-opacity group-hover:opacity-80"
+            />
+            <span className="font-inter text-[8px] sm:text-[9px] uppercase tracking-[0.28em] text-slate-500 font-medium block mt-0.5">
+              Life looks better with lifei
             </span>
           </button>
         </div>
@@ -175,10 +181,15 @@ export const Header: React.FC<HeaderProps> = ({
             {/* Wishlist Menu Link */}
             <button 
               onClick={() => onOpenAccount('favorites')}
-              className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800 flex items-center gap-1.5"
+              className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800 flex items-center gap-1.5 relative group"
             >
-              <Heart size={13} className="text-[#EC3460]" />
+              <Heart size={13} className="text-[#EC3460] group-hover:scale-110 transition-transform" />
               <span>Wishlist</span>
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1.5 -right-2.5 w-4 h-4 bg-[#EC3460] text-white rounded-full text-[9px] font-bold flex items-center justify-center shadow-xs animate-pop">
+                  {wishlistCount}
+                </span>
+              )}
             </button>
 
             <button 
@@ -206,42 +217,41 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Action Icons: Shopify, Search, Account, Cart */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5">
-            {/* Admin Hub Button */}
+          <div className="flex items-center gap-1 sm:gap-2.5">
+            {/* Admin Hub Button - Hidden on small mobile */}
             {onOpenAdmin && (
               <button
                 onClick={onOpenAdmin}
                 aria-label="Open Store Admin Hub"
                 title="Store Operations & Admin Hub"
-                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-xl border border-slate-900 bg-slate-950 text-white hover:bg-slate-800 transition-all cursor-pointer shadow-2xs hover:scale-102"
+                className="hidden md:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-xl border border-slate-900 bg-slate-950 text-white hover:bg-slate-800 transition-all cursor-pointer shadow-2xs hover:scale-102"
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#EC3460] animate-pulse" />
-                <span className="hidden sm:inline">Admin Hub</span>
-                <span className="sm:hidden">Admin</span>
+                <span>Admin Hub</span>
               </button>
             )}
 
-            {/* Shopify Storefront indicator / button */}
+            {/* Shopify Storefront indicator / button - Hidden on small mobile */}
             {onOpenShopifyConnect && (
               <button
                 onClick={onOpenShopifyConnect}
                 aria-label="Shopify Storefront Settings"
                 title={isShopifyConnected ? "Shopify Headless Storefront Connected" : "Connect Shopify Storefront API"}
-                className={`flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer ${
+                className={`hidden md:flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer ${
                   isShopifyConnected
                     ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
                     : 'bg-[#FFF0F9] text-[#B31940] border-[#FFCDF2] hover:bg-[#FFE6F6]'
                 }`}
               >
                 <span className={`w-1.5 h-1.5 rounded-full ${isShopifyConnected ? 'bg-emerald-500 animate-pulse' : 'bg-[#EC3460]'}`} />
-                <span className="hidden sm:inline">{isShopifyConnected ? 'Shopify Live' : 'Shopify'}</span>
+                <span>{isShopifyConnected ? 'Shopify Live' : 'Shopify'}</span>
               </button>
             )}
 
             <button
               onClick={onOpenSearch}
               aria-label="Search products"
-              className="p-2 text-slate-700 hover:text-[#EC3460] hover:bg-[#FFF0F9] rounded-full transition-colors cursor-pointer"
+              className="p-1.5 sm:p-2 text-slate-700 hover:text-[#EC3460] hover:bg-[#FFF0F9] rounded-full transition-colors cursor-pointer"
               title="Search formulas"
             >
               <Search size={18} strokeWidth={2} />
@@ -250,16 +260,19 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => onOpenAccount()}
               aria-label="Account and Glow Club"
-              className="p-2 text-slate-700 hover:text-[#EC3460] hover:bg-[#FFF0F9] rounded-full transition-colors cursor-pointer"
+              className="relative p-1.5 sm:p-2 text-slate-700 hover:text-[#EC3460] hover:bg-[#FFF0F9] rounded-full transition-colors cursor-pointer"
               title="Account & Glow Rewards"
             >
               <User size={18} strokeWidth={2} />
+              {profileIncomplete && (
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EC3460] rounded-full border border-white animate-pulse" />
+              )}
             </button>
 
             <button
               onClick={onOpenCart}
               aria-label="Shopping Cart"
-              className="relative p-2 text-slate-700 hover:text-[#EC3460] hover:bg-[#FFF0F9] rounded-full transition-colors cursor-pointer"
+              className="relative p-1.5 sm:p-2 text-slate-700 hover:text-[#EC3460] hover:bg-[#FFF0F9] rounded-full transition-colors cursor-pointer"
               title="View Bag"
             >
               <ShoppingBag size={18} strokeWidth={2} />
@@ -274,7 +287,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => setMobileNavOpen(prev => !prev)}
               aria-label="Toggle menu"
-              className="lg:hidden p-2 text-slate-700 hover:text-slate-950 hover:bg-slate-100 rounded-full cursor-pointer"
+              className="lg:hidden p-1.5 sm:p-2 text-slate-700 hover:text-slate-950 hover:bg-slate-100 rounded-full cursor-pointer"
             >
               {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -346,13 +359,40 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => {
-                onOpenAccount('favorites');
+                onOpenAccount('profile');
                 setMobileNavOpen(false);
               }}
               className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm flex items-center gap-2"
             >
-              <Heart size={14} className="text-[#EC3460]" />
-              <span>My Wishlist</span>
+              <User size={14} className="text-slate-500" />
+              <span>My Account & Orders</span>
+            </button>
+            <button
+              onClick={() => {
+                onOpenSearch();
+                setMobileNavOpen(false);
+              }}
+              className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm flex items-center gap-2"
+            >
+              <Search size={14} className="text-slate-500" />
+              <span>Search Products</span>
+            </button>
+            <button
+              onClick={() => {
+                onOpenAccount('favorites');
+                setMobileNavOpen(false);
+              }}
+              className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm flex items-center justify-between group"
+            >
+              <div className="flex items-center gap-2">
+                <Heart size={14} className="text-[#EC3460]" />
+                <span>My Wishlist</span>
+              </div>
+              {wishlistCount > 0 && (
+                <span className="bg-[#EC3460] text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                  {wishlistCount}
+                </span>
+              )}
             </button>
             <button
               onClick={() => {
@@ -384,6 +424,18 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full font-bold">
                   Tracking
                 </span>
+              </button>
+            )}
+            {onOpenAdmin && (
+              <button
+                onClick={() => {
+                  onOpenAdmin();
+                  setMobileNavOpen(false);
+                }}
+                className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm flex items-center gap-2"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-[#EC3460]" />
+                <span>Admin Hub Operations</span>
               </button>
             )}
             {onOpenShopifyConnect && (

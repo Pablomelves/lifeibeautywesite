@@ -45,42 +45,25 @@ export interface Product {
   images?: string[];
 }
 
-export interface ReviewMedia {
-  type: 'image' | 'video';
-  url: string;
-  thumbnailUrl?: string;
-}
-
 export interface Review {
-  id: string;
+  id: number;
   productId: number;
   productName: string;
   author: string;
-  email?: string;
+  location: string;
   rating: number;
   date: string;
   title: string;
   comment: string;
   verified: boolean;
-  media?: ReviewMedia[];
-  helpfulCount?: number;
-  skinConcern?: string;
-  skinType?: string;
-  location?: string;
+  skinConcern: string;
+  skinType: string;
   beforeAfterTimeframe?: string;
   measuredMetric?: string;
   beforeImg?: string;
   afterImg?: string;
   routineUsed?: string;
   likes?: number;
-}
-
-export interface ReviewStats {
-  averageRating: number;
-  totalReviews: number;
-  ratingBreakdown: {
-    [key: number]: number;
-  };
 }
 
 export interface CartItem {
@@ -96,6 +79,12 @@ export interface CartNotificationData {
   quantity: number;
   timestamp: number;
   variantTitle?: string;
+}
+
+export interface WishlistNotificationData {
+  product: Product;
+  timestamp: number;
+  isRemoved?: boolean;
 }
 
 export interface ShopifyConfig {

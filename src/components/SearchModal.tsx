@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, X, Sparkles, ArrowRight, Loader2 } from 'lucide-react';
+import { Search, X, Sparkles, ArrowRight, Loader2, Scale } from 'lucide-react';
 import { STORE_PRODUCTS } from '../data/storeData';
 import { Product } from '../types';
 import { searchShopifyProducts, getShopifyConfig } from '../services/shopify';
@@ -9,6 +9,8 @@ interface SearchModalProps {
   onClose: () => void;
   onSelectProduct: (product: Product) => void;
   products?: Product[];
+  comparisonIds?: number[];
+  onToggleComparison?: (productId: number) => void;
 }
 
 export const SearchModal: React.FC<SearchModalProps> = ({
@@ -16,6 +18,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   onClose,
   onSelectProduct,
   products,
+  comparisonIds = [],
+  onToggleComparison,
 }) => {
   const [query, setQuery] = useState('');
   const [isSearchingShopify, setIsSearchingShopify] = useState(false);
@@ -143,11 +147,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center" style={{ backgroundColor: prod.panel }}>
-                        {prod.src ? (
-                          <img src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center" />
-                        ) : (
-                          <div className="w-full h-full bg-slate-200" />
-                        )}
+                        <img src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center" />
                       </div>
                       <div>
                         <h4 className="text-xs font-bold uppercase text-slate-900">{prod.name}</h4>
@@ -194,11 +194,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   >
                     <div className="flex items-center gap-3.5">
                       <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center" style={{ backgroundColor: prod.panel }}>
-                        {prod.src ? (
-                          <img src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform" />
-                        ) : (
-                          <div className="w-full h-full bg-slate-200" />
-                        )}
+                        <img src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform" />
                       </div>
                       <div>
                         <h4 className="text-xs font-bold uppercase text-slate-900 group-hover:text-rose-600 transition-colors">
@@ -216,6 +212,22 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-bold font-mono text-slate-900">{prod.price}</span>
+                      {onToggleComparison && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleComparison(prod.id);
+                          }}
+                          className={`p-2 rounded-xl transition-all cursor-pointer border ${
+                            comparisonIds.includes(prod.id)
+                              ? 'bg-[#EC3460] text-white border-[#EC3460]'
+                              : 'bg-white text-slate-400 border-slate-200 hover:text-[#EC3460]'
+                          }`}
+                          title="Add to comparison"
+                        >
+                          <Scale size={14} />
+                        </button>
+                      )}
                       <ArrowRight size={14} className="text-slate-400 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>

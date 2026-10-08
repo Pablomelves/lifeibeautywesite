@@ -26,12 +26,13 @@ import { ShopifyConnectModal } from './components/ShopifyConnectModal';
 import { QuickAddWidget } from './components/QuickAddWidget';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { TrackOrderModal } from './components/TrackOrderModal';
+import { ComparisonModal } from './components/ComparisonModal';
 
-import { Product, CartItem, StoreContentSettings, CartNotificationData } from './types';
+import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData } from './types';
 import { createShopifyCheckout, getShopifyConfig, getShopifyProducts } from './services/shopify';
 import { STORE_PRODUCTS } from './data/storeData';
 import { getAdminProducts, getStoreContentSettings } from './services/adminService';
-import { Check, SlidersHorizontal } from 'lucide-react';
+import { Check, SlidersHorizontal, Scale } from 'lucide-react';
 
 export default function App() {
   // Storefront products & admin sync
@@ -46,6 +47,33 @@ export default function App() {
 
   // Storefront dynamic content
   const [contentSettings, setContentSettings] = useState<StoreContentSettings>(() => getStoreContentSettings());
+
+  // Personal Information State (Lifted for global reactivity)
+  const [profileInfo, setProfileInfo] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('lifei_profile_info');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {
+        // ignore
+      }
+    }
+    return {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      country: 'South Korea',
+      zip: '',
+      skinGoal: 'Glass Skin Luminosity & Firming',
+      skinType: 'Combination / Dehydrated',
+      sensitivity: 'Mild (Prefers Fragrance-Free Korean Formulations)'
+    };
+  });
+
+  const profileIncomplete = !profileInfo.firstName || !profileInfo.lastName || !profileInfo.email;
 
   // Admin Hub Open state
   const [adminOpen, setAdminOpen] = useState(() => {
@@ -76,6 +104,8 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountTab, setAccountTab] = useState<'points' | 'orders' | 'tracking' | 'profile' | 'wishlist' | 'favorites'>('points');
+
+
   const [trackOrderOpen, setTrackOrderOpen] = useState(false);
   const [trackOrderParams, setTrackOrderParams] = useState({ orderNumber: '', email: '' });
   const [policyType, setPolicyType] = useState<'shipping' | 'returns' | 'privacy' | 'terms' | null>(null);
@@ -88,6 +118,24 @@ export default function App() {
 
   // Category filter state for BestSellers
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+
+  // Comparison state
+  const [comparisonIds, setComparisonIds] = useState<number[]>([]);
+  const [comparisonOpen, setComparisonOpen] = useState(false);
+
+  const handleToggleComparison = (productId: number) => {
+    setComparisonIds((prev) => {
+      const exists = prev.includes(productId);
+      if (exists) return prev.filter((id) => id !== productId);
+      if (prev.length >= 3) {
+        showToast('Limit reached: Compare up to 3 products.');
+        return prev;
+      }
+      return [...prev, productId];
+    });
+  };
+
+  const comparisonProducts = products.filter((p) => comparisonIds.includes(p.id));
 
   // Wishlist state
   const [wishlistIds, setWishlistIds] = useState<number[]>(() => {
@@ -102,6 +150,21 @@ export default function App() {
     return [1, 8]; // Medicube PDRN Pink & Rose Quartz Roller as default favorites
   });
 
+  // Sync mechanism for wishlistIds backup
+  useEffect(() => {
+    // Immediate save for responsiveness is already in handleToggleWishlist
+    // but we add a robust periodic sync for consistency during rapid changes
+    const syncInterval = setInterval(() => {
+      try {
+        localStorage.setItem('lifei_wishlist', JSON.stringify(wishlistIds));
+      } catch (e) {
+        // ignore
+      }
+    }, 5000); // Sync every 5 seconds
+
+    return () => clearInterval(syncInterval);
+  }, [wishlistIds]);
+
   const handleToggleWishlist = (productId: number) => {
     setWishlistIds((prev) => {
       const exists = prev.includes(productId);
@@ -114,6 +177,7 @@ export default function App() {
       const prod = products.find((p) => p.id === productId) || STORE_PRODUCTS.find((p) => p.id === productId);
       if (prod) {
         showToast(exists ? `Removed ${prod.name} from wishlist` : `Saved ${prod.name} to wishlist ❤️`);
+        triggerWishlistNotification(prod, exists);
       }
       return updated;
     });
@@ -126,10 +190,15 @@ export default function App() {
   const [cartNotification, setCartNotification] = useState<CartNotificationData | null>(null);
   const cartTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Added to Wishlist notification state
+  const [wishlistNotification, setWishlistNotification] = useState<WishlistNotificationData | null>(null);
+  const wishlistTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const triggerCartNotification = (product: Product, quantity = 1, variantTitle?: string) => {
     if (cartTimerRef.current) {
       clearTimeout(cartTimerRef.current);
     }
+    setWishlistNotification(null); // Clear wishlist notification if cart is triggered
     setCartNotification({
       product,
       quantity,
@@ -141,11 +210,44 @@ export default function App() {
     }, 4500);
   };
 
+  const triggerWishlistNotification = (product: Product, isRemoved = false) => {
+    if (wishlistTimerRef.current) {
+      clearTimeout(wishlistTimerRef.current);
+    }
+    setCartNotification(null); // Clear cart notification if wishlist is triggered
+    setWishlistNotification({
+      product,
+      timestamp: Date.now(),
+      isRemoved,
+    });
+    wishlistTimerRef.current = setTimeout(() => {
+      setWishlistNotification(null);
+    }, 4500);
+  };
+
   const handleDismissCartNotification = () => {
     if (cartTimerRef.current) {
       clearTimeout(cartTimerRef.current);
     }
     setCartNotification(null);
+  };
+
+  const handleDismissWishlistNotification = () => {
+    if (wishlistTimerRef.current) {
+      clearTimeout(wishlistTimerRef.current);
+    }
+    setWishlistNotification(null);
+  };
+
+  const handleUpdateProfile = (newInfo: any) => {
+    setProfileInfo(newInfo);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('lifei_profile_info', JSON.stringify(newInfo));
+      } catch (e) {
+        // ignore
+      }
+    }
   };
 
   const showToast = (message: string) => {
@@ -280,10 +382,13 @@ export default function App() {
       {/* 2. Main Navigation Header */}
       <Header
         cartCount={totalCartCount}
+        wishlistCount={wishlistIds.length}
+        profileIncomplete={profileIncomplete}
         onOpenCart={() => setCartOpen(true)}
         onOpenSearch={() => setSearchOpen(true)}
         onOpenAccount={(tab) => {
           if (tab) setAccountTab(tab);
+          else if (profileIncomplete) setAccountTab('profile');
           else setAccountTab('points');
           setAccountOpen(true);
         }}
@@ -308,6 +413,10 @@ export default function App() {
         onBuyNow={handleBuyNow}
         onQuickView={(p) => setQuickViewProduct(p)}
         onExploreCatalog={() => scrollToSection('bestsellers')}
+        wishlistIds={wishlistIds}
+        onToggleWishlist={handleToggleWishlist}
+        comparisonIds={comparisonIds}
+        onToggleComparison={handleToggleComparison}
       />
 
       {/* 4. Authenticity & Trust Bar */}
@@ -328,6 +437,8 @@ export default function App() {
         onBuyNow={handleBuyNow}
         wishlistIds={wishlistIds}
         onToggleWishlist={handleToggleWishlist}
+        comparisonIds={comparisonIds}
+        onToggleComparison={handleToggleComparison}
       />
 
       {/* 5b. Dedicated My Favorites Section */}
@@ -338,6 +449,8 @@ export default function App() {
         onAddToCart={(p) => handleAddToCart(p)}
         onQuickView={(p) => setQuickViewProduct(p)}
         onNavigateSection={scrollToSection}
+        comparisonIds={comparisonIds}
+        onToggleComparison={handleToggleComparison}
       />
 
       {/* 6. Shop by Category Grid */}
@@ -359,6 +472,10 @@ export default function App() {
         products={products}
         onQuickView={(p) => setQuickViewProduct(p)}
         onAddToCart={(p) => handleAddToCart(p)}
+        wishlistIds={wishlistIds}
+        onToggleWishlist={handleToggleWishlist}
+        comparisonIds={comparisonIds}
+        onToggleComparison={handleToggleComparison}
       />
 
       {/* 9. Why Li Fei Beauty (Core Value Pillars) */}
@@ -410,6 +527,8 @@ export default function App() {
         onSelectRecommended={(p) => setQuickViewProduct(p)}
         isWishlisted={quickViewProduct ? wishlistIds.includes(quickViewProduct.id) : false}
         onToggleWishlist={handleToggleWishlist}
+        comparisonIds={comparisonIds}
+        onToggleComparison={handleToggleComparison}
       />
 
       {/* Cart Slide-Over Drawer */}
@@ -429,6 +548,8 @@ export default function App() {
         products={products}
         onClose={() => setSearchOpen(false)}
         onSelectProduct={(p) => setQuickViewProduct(p)}
+        comparisonIds={comparisonIds}
+        onToggleComparison={handleToggleComparison}
       />
 
       {/* Customer Account & Glow Rewards Modal */}
@@ -446,6 +567,8 @@ export default function App() {
         initialTab={accountTab}
         onNavigateSection={scrollToSection}
         onOpenTrackOrder={(num, mail) => handleOpenTrackOrder(num, mail)}
+        profileInfo={profileInfo}
+        onUpdateProfile={handleUpdateProfile}
       />
 
       {/* Track My Order Modal */}
@@ -468,6 +591,15 @@ export default function App() {
         onClose={() => setAboutContactMode(null)}
       />
 
+      {/* Product Comparison Modal */}
+      <ComparisonModal
+        isOpen={comparisonOpen}
+        onClose={() => setComparisonOpen(false)}
+        products={comparisonProducts}
+        onAddToCart={handleAddToCart}
+        onRemove={handleToggleComparison}
+      />
+
       {/* Shopify Headless Storefront Connect Modal */}
       <ShopifyConnectModal
         isOpen={shopifyConnectOpen}
@@ -483,7 +615,11 @@ export default function App() {
         onOpenCart={() => setCartOpen(true)}
         cartCount={totalCartCount}
         cartNotification={cartNotification}
+        wishlistNotification={wishlistNotification}
         onDismissNotification={handleDismissCartNotification}
+        onDismissWishlistNotification={handleDismissWishlistNotification}
+        comparisonIds={comparisonIds}
+        onToggleComparison={handleToggleComparison}
       />
 
       {/* Floating Store Admin Trigger */}
@@ -498,6 +634,22 @@ export default function App() {
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
       </button>
 
+      {/* Floating Comparison Trigger */}
+      {comparisonIds.length > 0 && (
+        <button
+          onClick={() => setComparisonOpen(true)}
+          className="fixed bottom-22 left-6 z-[120] bg-white/95 text-slate-900 px-4.5 py-3 rounded-full border border-[#FFCDF2] shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-bottom duration-300 hover:scale-105 cursor-pointer group"
+        >
+          <div className="w-6 h-6 rounded-lg bg-[#EC3460] flex items-center justify-center text-white shadow-raspberry">
+            <Scale size={14} />
+          </div>
+          <span className="text-[11px] font-bold uppercase tracking-wider">Compare ({comparisonIds.length}/3)</span>
+          {comparisonIds.length >= 2 && (
+            <span className="w-1.5 h-1.5 rounded-full bg-[#EC3460] animate-pulse" />
+          )}
+        </button>
+      )}
+
       {/* Master Admin Portal Modal */}
       {adminOpen && (
         <AdminPortal
@@ -506,13 +658,13 @@ export default function App() {
         />
       )}
 
-      {/* General Notification (Wishlist, Promo, Sync in Darker Pink theme) */}
+      {/* General Notification (Wishlist, Promo, Sync in Light Theme) */}
       {toastMessage && !cartNotification && (
         <aside 
           aria-live="polite"
-          className="fixed bottom-22 right-6 z-[95] bg-gradient-to-br from-[#9E1438] via-[#8C0D30] to-[#730823] text-white px-4.5 py-3 rounded-2xl shadow-2xl shadow-[#4A0818]/50 flex items-center gap-3 animate-in slide-in-from-bottom duration-200 border border-[#EC3460]/40 backdrop-blur-md"
+          className="fixed bottom-22 right-6 z-[95] bg-white/95 text-slate-900 px-4.5 py-3 rounded-2xl shadow-2xl shadow-slate-200/50 flex items-center gap-3 animate-in slide-in-from-bottom duration-200 border border-[#FFCDF2] backdrop-blur-md"
         >
-          <div className="w-5 h-5 rounded-full bg-white/20 border border-white/30 text-white flex items-center justify-center shrink-0">
+          <div className="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
             <Check size={12} strokeWidth={3} />
           </div>
           <span className="text-xs font-semibold">{toastMessage}</span>

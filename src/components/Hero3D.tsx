@@ -8,7 +8,9 @@ import {
   Volume2, 
   VolumeX, 
   RotateCw, 
-  ShoppingBag 
+  ShoppingBag,
+  Heart,
+  Scale
 } from 'lucide-react';
 import { Product } from '../types';
 import { STORE_PRODUCTS } from '../data/storeData';
@@ -20,6 +22,10 @@ interface Hero3DProps {
   onBuyNow?: (product: Product) => void;
   products?: Product[];
   autoSlide?: boolean;
+  wishlistIds?: number[];
+  onToggleWishlist?: (productId: number) => void;
+  comparisonIds?: number[];
+  onToggleComparison?: (productId: number) => void;
 }
 
 export const Hero3D: React.FC<Hero3DProps> = ({
@@ -29,21 +35,37 @@ export const Hero3D: React.FC<Hero3DProps> = ({
   onBuyNow,
   products,
   autoSlide = true,
+  wishlistIds = [],
+  onToggleWishlist,
+  comparisonIds = [],
+  onToggleComparison,
 }) => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
-  const [isMobile, setIsMobile] = useState<boolean>(() => {
+  const [justWishlisted, setJustWishlisted] = useState(false);
+  const [isAdded, setIsAdded] = useState(false);
+  const [dragX, setDragX] = useState(0);
+  const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>(() => {
     if (typeof window !== 'undefined') {
-      return window.innerWidth < 640;
+      if (window.innerWidth >= 1024) return 'desktop';
+      if (window.innerWidth >= 640) return 'tablet';
     }
-    return false;
+    return 'mobile';
   });
+
+  const isMobile = deviceType === 'mobile';
+  const isTablet = deviceType === 'tablet';
+  const isDesktop = deviceType === 'desktop';
 
   // 3D Parallax & Tilt State
   const [tilt3DEnabled, setTilt3DEnabled] = useState<boolean>(true);
   const [particlesEnabled, setParticlesEnabled] = useState<boolean>(true);
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [isFlipped3D, setIsFlipped3D] = useState<boolean>(false);
+
+  // Swipe / Drag detection
+  const dragStartX = useRef<number | null>(null);
+  const isDragging = useRef<boolean>(false);
+  const SWIPE_THRESHOLD = 50;
 
   // Mouse / Touch Tilt Physics (normalized -1 to 1)
   const targetTilt = useRef({ x: 0, y: 0 });
@@ -54,57 +76,24 @@ export const Hero3D: React.FC<Hero3DProps> = ({
   const heroProducts = products && products.length > 0 ? products : STORE_PRODUCTS;
   const activeProduct = heroProducts[activeIndex] || heroProducts[0];
 
-  // Gentle Web Audio feedback
-  const playSound = useCallback((type: 'switch' | 'add') => {
-    if (!soundEnabled) return;
-    try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioContextClass) return;
-      const ctx = new AudioContextClass();
+  const isWishlisted = wishlistIds.includes(activeProduct.id);
 
-      if (type === 'switch') {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
-        gain.gain.setValueAtTime(0.04, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.2);
-      } else if (type === 'add') {
-        const osc1 = ctx.createOscillator();
-        const osc2 = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc1.type = 'sine';
-        osc2.type = 'triangle';
-        osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
-        osc1.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + 0.2);
-        osc2.frequency.setValueAtTime(659.25, ctx.currentTime);
-        gain.gain.setValueAtTime(0.05, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
-        osc1.connect(gain);
-        osc2.connect(gain);
-        gain.connect(ctx.destination);
-        osc1.start();
-        osc2.start();
-        osc1.stop(ctx.currentTime + 0.36);
-        osc2.stop(ctx.currentTime + 0.36);
-      }
-    } catch {
-      // Ignore audio constraints
+  // Trigger pop animation when this product is wishlisted
+  useEffect(() => {
+    if (isWishlisted) {
+      setJustWishlisted(true);
+      const timer = setTimeout(() => setJustWishlisted(false), 300);
+      return () => clearTimeout(timer);
     }
-  }, [soundEnabled]);
+  }, [isWishlisted]);
 
   // Navigate carousel
   const navigate = useCallback((direction: 'next' | 'prev') => {
     if (isAnimating) return;
 
-    playSound('switch');
     setIsAnimating(true);
     setIsFlipped3D(false);
+    setDragX(0);
 
     if (direction === 'next') {
       setActiveIndex((prev) => (prev + 1) % heroProducts.length);
@@ -115,7 +104,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
     setTimeout(() => {
       setIsAnimating(false);
     }, 650);
-  }, [isAnimating, heroProducts.length, playSound]);
+  }, [isAnimating, heroProducts.length]);
 
   // Auto-slide effect
   useEffect(() => {
@@ -160,7 +149,9 @@ export const Hero3D: React.FC<Hero3DProps> = ({
   // Window resize listener
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 640);
+      if (window.innerWidth >= 1024) setDeviceType('desktop');
+      else if (window.innerWidth >= 640) setDeviceType('tablet');
+      else setDeviceType('mobile');
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -195,7 +186,16 @@ export const Hero3D: React.FC<Hero3DProps> = ({
   }, []);
 
   // Mouse handlers
+  const handleMouseDown = (e: React.MouseEvent<HTMLElement>) => {
+    dragStartX.current = e.clientX;
+    isDragging.current = true;
+  };
+
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    if (isDragging.current && dragStartX.current !== null) {
+      const diff = e.clientX - dragStartX.current;
+      setDragX(diff);
+    }
     if (!tilt3DEnabled) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
@@ -203,21 +203,61 @@ export const Hero3D: React.FC<Hero3DProps> = ({
     targetTilt.current = { x: Math.max(-1, Math.min(1, x)), y: Math.max(-1, Math.min(1, y)) };
   };
 
+  const handleMouseUp = (e: React.MouseEvent<HTMLElement>) => {
+    if (isDragging.current && dragStartX.current !== null) {
+      const diff = e.clientX - dragStartX.current;
+      if (Math.abs(diff) > SWIPE_THRESHOLD) {
+        if (diff > 0) navigate('prev');
+        else navigate('next');
+      } else {
+        setDragX(0);
+      }
+    }
+    dragStartX.current = null;
+    isDragging.current = false;
+    targetTilt.current = { x: 0, y: 0 };
+  };
+
   const handleMouseLeave = () => {
+    dragStartX.current = null;
+    isDragging.current = false;
     targetTilt.current = { x: 0, y: 0 };
   };
 
   // Touch handlers
+  const handleTouchStart = (e: React.TouchEvent<HTMLElement>) => {
+    if (e.touches.length > 0) {
+      dragStartX.current = e.touches[0].clientX;
+      isDragging.current = true;
+    }
+  };
+
   const handleTouchMove = (e: React.TouchEvent<HTMLElement>) => {
-    if (!tilt3DEnabled || e.touches.length === 0) return;
+    if (e.touches.length === 0) return;
     const touch = e.touches[0];
+    if (isDragging.current && dragStartX.current !== null) {
+      const diff = touch.clientX - dragStartX.current;
+      setDragX(diff);
+    }
+    if (!tilt3DEnabled) return;
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
     const y = ((touch.clientY - rect.top) / rect.height) * 2 - 1;
     targetTilt.current = { x: Math.max(-1, Math.min(1, x)), y: Math.max(-1, Math.min(1, y)) };
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent<HTMLElement>) => {
+    if (isDragging.current && dragStartX.current !== null && e.changedTouches.length > 0) {
+      const diff = e.changedTouches[0].clientX - dragStartX.current;
+      if (Math.abs(diff) > SWIPE_THRESHOLD) {
+        if (diff > 0) navigate('prev');
+        else navigate('next');
+      } else {
+        setDragX(0);
+      }
+    }
+    dragStartX.current = null;
+    isDragging.current = false;
     targetTilt.current = { x: 0, y: 0 };
   };
 
@@ -234,7 +274,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
     // Center product: fills page, covers GLOW, subtle mouse-follow parallax movement for deep-space feel
     if (index === centerIndex) {
       // Subtle mouse-follow translation (moves product smoothly with cursor)
-      const mouseParallaxX = currentTilt.x * (isMobile ? 14 : 32);
+      const mouseParallaxX = currentTilt.x * (isMobile ? 14 : 32) + dragX;
       const mouseParallaxY = currentTilt.y * (isMobile ? 10 : 22);
 
       // Deep perspective rotation
@@ -242,13 +282,27 @@ export const Hero3D: React.FC<Hero3DProps> = ({
       const rotY = currentTilt.x * 13;
       const transZ = 55;
 
+      let width = '90%';
+      let height = '80%';
+      let scale = 1.1;
+
+      if (isMobile) {
+        width = '100%';
+        height = '90%';
+        scale = 1.05;
+      } else if (isTablet) {
+        width = '95%';
+        height = '85%';
+        scale = 1.08;
+      }
+
       return {
         left: '50%',
         top: '50%',
-        width: isMobile ? '106vw' : '96vw',
-        maxWidth: '1680px',
-        height: isMobile ? '78vh' : '90vh',
-        transform: `translate(calc(-50% + ${mouseParallaxX}px), calc(-50% + ${mouseParallaxY}px)) translateZ(${transZ}px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${isMobile ? 1.05 : 1.12})`,
+        width,
+        maxWidth: isDesktop ? '1680px' : 'none',
+        height,
+        transform: `translate(calc(-50% + ${mouseParallaxX}px), calc(-50% + ${mouseParallaxY}px)) translateZ(${transZ}px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${scale})`,
         opacity: 1,
         filter: 'none',
         zIndex: 25,
@@ -259,15 +313,23 @@ export const Hero3D: React.FC<Hero3DProps> = ({
 
     // Left product: subtle deep-space offset (hidden unless animating)
     if (index === leftIndex) {
-      const leftParallaxX = currentTilt.x * 16;
+      const leftParallaxX = currentTilt.x * 16 + (dragX < 0 ? 0 : dragX * 0.8);
       const leftParallaxY = currentTilt.y * 10;
+
+      let width = '40%';
+      let height = '52%';
+
+      if (isMobile) {
+        width = '45%';
+        height = '38%';
+      }
 
       return {
         left: isMobile ? '4%' : '8%',
         top: '50%',
-        width: isMobile ? '45vw' : '40vw',
+        width,
         maxWidth: '700px',
-        height: isMobile ? '38vh' : '52vh',
+        height,
         transform: `translate(calc(-50% + ${leftParallaxX}px), calc(-50% + ${leftParallaxY}px)) translateZ(-340px) rotateY(${32 + currentTilt.x * 5}deg) scale(0.6)`,
         opacity: isAnimating ? 0.35 : 0,
         filter: 'blur(3px)',
@@ -278,15 +340,23 @@ export const Hero3D: React.FC<Hero3DProps> = ({
     }
 
     // Right product: subtle deep-space offset
-    const rightParallaxX = currentTilt.x * 16;
+    const rightParallaxX = currentTilt.x * 16 + (dragX > 0 ? 0 : dragX * 0.8);
     const rightParallaxY = currentTilt.y * 10;
+
+    let rWidth = '40%';
+    let rHeight = '52%';
+
+    if (isMobile) {
+      rWidth = '45%';
+      rHeight = '38%';
+    }
 
     return {
       left: isMobile ? '96%' : '92%',
       top: '50%',
-      width: isMobile ? '45vw' : '40vw',
+      width: rWidth,
       maxWidth: '700px',
-      height: isMobile ? '38vh' : '52vh',
+      height: rHeight,
       transform: `translate(calc(-50% + ${rightParallaxX}px), calc(-50% + ${rightParallaxY}px)) translateZ(-340px) rotateY(${-32 + currentTilt.x * 5}deg) scale(0.6)`,
       opacity: isAnimating ? 0.35 : 0,
       filter: 'blur(3px)',
@@ -299,14 +369,15 @@ export const Hero3D: React.FC<Hero3DProps> = ({
   return (
     <section 
       id="hero"
+      onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      className="relative w-full overflow-hidden flex flex-col justify-between perspective-1200 preserve-3d"
+      className="relative w-full overflow-hidden flex flex-col justify-between perspective-1200 preserve-3d aspect-[9/16] sm:aspect-[4/3] lg:aspect-[16/9]"
       style={{
-        height: 'calc(100vh - 40px)',
-        minHeight: isMobile ? '680px' : '720px',
         backgroundColor: activeProduct.bg,
         transition: 'background-color 650ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
@@ -316,15 +387,11 @@ export const Hero3D: React.FC<Hero3DProps> = ({
         className="absolute inset-0 pointer-events-none opacity-30 mix-blend-screen transition-opacity duration-700 overflow-hidden" 
         aria-hidden="true"
       >
-        {activeProduct.src ? (
-          <img 
-            src={activeProduct.src} 
-            alt="" 
-            className="w-full h-full object-cover blur-3xl scale-125 opacity-40"
-          />
-        ) : (
-          <div className="w-full h-full bg-slate-900/20" />
-        )}
+        <img 
+          src={activeProduct.src} 
+          alt="" 
+          className="w-full h-full object-cover blur-3xl scale-125 opacity-40"
+        />
       </div>
 
       {/* Dynamic 3D lighting halo following mouse */}
@@ -359,7 +426,11 @@ export const Hero3D: React.FC<Hero3DProps> = ({
         <span
           className="font-anton uppercase tracking-[-0.04em] select-none text-center leading-[0.8] whitespace-nowrap"
           style={{
-            fontSize: isMobile ? 'clamp(110px, 32vw, 240px)' : 'clamp(150px, 32vw, 480px)',
+            fontSize: isMobile 
+              ? 'clamp(110px, 32vw, 240px)' 
+              : isTablet 
+                ? 'clamp(130px, 30vw, 360px)'
+                : 'clamp(150px, 32vw, 480px)',
             fontWeight: 900,
             color: activeProduct.darkTone ? 'rgba(255, 255, 255, 0.42)' : 'rgba(255, 255, 255, 0.7)',
           }}
@@ -434,16 +505,55 @@ export const Hero3D: React.FC<Hero3DProps> = ({
               {/* Add to Cart (Left) and Buy Now (Right) Buttons for Center Product */}
               {isCenter && !isAnimating && (
                 <>
+                  {/* Wishlist Button for Hero */}
+                  {onToggleWishlist && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleWishlist(product.id);
+                      }}
+                      className={`absolute top-[10%] right-[-10%] sm:right-[-15%] z-[50] w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-2 border-white/40 backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-white shadow-xl ${
+                        isWishlisted
+                          ? 'bg-white text-[#EC3460] shadow-raspberry'
+                          : 'bg-black/20 text-white/80 hover:text-white'
+                      } ${justWishlisted ? 'animate-pop' : ''}`}
+                    >
+                      <Heart
+                        size={isMobile ? 20 : 26}
+                        fill={isWishlisted ? '#EC3460' : 'none'}
+                        className={isWishlisted ? 'text-[#EC3460]' : ''}
+                      />
+                    </button>
+                  )}
+
+                  {onToggleComparison && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onToggleComparison(product.id);
+                      }}
+                      className={`absolute top-[28%] right-[-10%] sm:right-[-15%] z-[50] w-12 h-12 sm:w-16 sm:h-16 rounded-full flex items-center justify-center border-2 border-white/40 backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-white shadow-xl ${
+                        comparisonIds.includes(product.id)
+                          ? 'bg-[#EC3460] text-white border-[#EC3460] shadow-raspberry'
+                          : 'bg-black/20 text-white/80 hover:text-white'
+                      }`}
+                    >
+                      <Scale size={isMobile ? 20 : 26} />
+                    </button>
+                  )}
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onAddToCart(product);
+                      setIsAdded(true);
+                      setTimeout(() => setIsAdded(false), 2000);
                     }}
-                    className="absolute left-[-12%] sm:left-[-18%] top-1/2 -translate-y-1/2 z-[50] flex flex-col items-center gap-2 group"
+                    className={`absolute left-[-12%] sm:left-[-18%] top-1/2 -translate-y-1/2 z-[50] flex flex-col items-center gap-2 group ${isAdded ? 'animate-pop' : ''}`}
+                    style={{ backgroundColor: `${product.themeColor}aa` }}
                   >
                     <div 
                       className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-white border-2 border-white/40 backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:border-white group-active:scale-95 shadow-xl"
-                      style={{ backgroundColor: `${product.themeColor}aa` }}
                     >
                       <ShoppingBag size={isMobile ? 20 : 28} />
                     </div>
@@ -458,12 +568,14 @@ export const Hero3D: React.FC<Hero3DProps> = ({
                       } else {
                         onAddToCart(product);
                       }
+                      setIsAdded(true);
+                      setTimeout(() => setIsAdded(false), 2000);
                     }}
-                    className="absolute right-[-12%] sm:right-[-18%] top-1/2 -translate-y-1/2 z-[50] flex flex-col items-center gap-2 group"
+                    className={`absolute right-[-12%] sm:right-[-18%] top-1/2 -translate-y-1/2 z-[50] flex flex-col items-center gap-2 group ${isAdded ? 'animate-pop' : ''}`}
+                    style={{ backgroundColor: `${product.themeColor}` }}
                   >
                     <div 
                       className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-white border-2 border-white/40 backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:border-white group-active:scale-95 shadow-xl"
-                      style={{ backgroundColor: `${product.themeColor}` }}
                     >
                       <Sparkles size={isMobile ? 20 : 28} />
                     </div>
@@ -495,16 +607,12 @@ export const Hero3D: React.FC<Hero3DProps> = ({
                   )}
 
                   {/* The Full-Page 3D Product Visual */}
-                  {product.src ? (
-                    <img
-                      src={product.src}
-                      alt={`${product.name} 3D animated Korean skincare hero visual`}
-                      draggable={false}
-                      className="w-full h-full object-contain object-center drop-shadow-[0_30px_70px_rgba(0,0,0,0.35)] select-none"
-                    />
-                  ) : (
-                    <div className="w-48 h-64 bg-slate-200/20 animate-pulse rounded-3xl" />
-                  )}
+                  <img
+                    src={product.src}
+                    alt={`${product.name} 3D animated Korean skincare hero visual`}
+                    draggable={false}
+                    className="w-full h-full object-contain object-center drop-shadow-[0_30px_70px_rgba(0,0,0,0.35)] select-none"
+                  />
 
                   {/* 3D Specular Light Sheen tracking cursor light source */}
                   {isCenter && (
@@ -633,14 +741,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({
           >
             <Layers size={15} />
           </button>
-          <button
-            onClick={() => setSoundEnabled(prev => !prev)}
-            aria-label="Toggle haptic audio"
-            title={soundEnabled ? "Mute audio chimes" : "Enable audio chimes"}
-            className="p-1.5 rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
-          >
-            {soundEnabled ? <Volume2 size={15} /> : <VolumeX size={15} />}
-          </button>
         </div>
       </div>
 
@@ -721,7 +821,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({
                   onClick={() => {
                     if (!isAnimating) {
                       setActiveIndex(i);
-                      playSound('switch');
                     }
                   }}
                   className={`h-1.5 rounded-full transition-all cursor-pointer ${

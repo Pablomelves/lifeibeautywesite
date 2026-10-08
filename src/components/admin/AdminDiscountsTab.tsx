@@ -1,315 +1,255 @@
 import React, { useState } from 'react';
-import { 
-  Plus, 
-  Trash2, 
-  Tag, 
-  Check, 
-  X, 
-  Percent, 
-  DollarSign, 
-  Calendar, 
-  Copy, 
-  AlertCircle 
-} from 'lucide-react';
+import { Plus, Tag, Trash2, Edit2, CheckCircle, Percent, DollarSign } from 'lucide-react';
 import { Discount } from '../../types';
 
 interface AdminDiscountsTabProps {
   discounts: Discount[];
-  onAddDiscount: (discount: Omit<Discount, 'id' | 'usageCount'>) => void;
-  onUpdateDiscount: (id: string, updates: Partial<Discount>) => void;
-  onDeleteDiscount: (id: string) => void;
+  onSaveDiscounts: (discounts: Discount[]) => void;
 }
 
 export const AdminDiscountsTab: React.FC<AdminDiscountsTabProps> = ({
   discounts,
-  onAddDiscount,
-  onUpdateDiscount,
-  onDeleteDiscount,
+  onSaveDiscounts
 }) => {
+  const [editingDiscount, setEditingDiscount] = useState<Discount | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
-  // Form
-  const [code, setCode] = useState('');
-  const [type, setType] = useState<'percentage' | 'fixed'>('percentage');
-  const [value, setValue] = useState(15);
-  const [minPurchase, setMinPurchase] = useState(40);
-  const [usageLimit, setUsageLimit] = useState(500);
-  const [description, setDescription] = useState('');
-  const [expiresAt, setExpiresAt] = useState('2026-12-31');
-
-  const handleCopy = (couponCode: string) => {
-    navigator.clipboard?.writeText(couponCode);
-    setCopiedCode(couponCode);
-    setTimeout(() => setCopiedCode(null), 1800);
+  const handleOpenNew = () => {
+    setEditingDiscount({
+      id: `DISC-${Date.now().toString().slice(-4)}`,
+      code: '',
+      type: 'percentage',
+      value: 15,
+      minPurchase: 40,
+      usageCount: 0,
+      usageLimit: 500,
+      active: true,
+      expiresAt: '2026-12-31',
+      description: 'Promotional discount campaign'
+    });
+    setIsModalOpen(true);
   };
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleToggleActive = (id: string) => {
+    const updated = discounts.map((d) => (d.id === id ? { ...d, active: !d.active } : d));
+    onSaveDiscounts(updated);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Delete this discount code?')) {
+      const updated = discounts.filter((d) => d.id !== id);
+      onSaveDiscounts(updated);
+    }
+  };
+
+  const handleSaveModal = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!code) return;
+    if (!editingDiscount || !editingDiscount.code) return;
 
-    onAddDiscount({
-      code: code.trim().toUpperCase(),
-      type,
-      value: Number(value) || 10,
-      minPurchase: Number(minPurchase) || 0,
-      usageLimit: Number(usageLimit) || undefined,
-      active: true,
-      expiresAt: expiresAt || undefined,
-      description: description.trim() || `${type === 'percentage' ? `${value}% off` : `$${value} off`} on orders over $${minPurchase}`,
-    });
+    const formatted: Discount = {
+      ...editingDiscount,
+      code: editingDiscount.code.trim().toUpperCase()
+    };
 
+    const idx = discounts.findIndex((d) => d.id === formatted.id);
+    if (idx !== -1) {
+      const updated = [...discounts];
+      updated[idx] = formatted;
+      onSaveDiscounts(updated);
+    } else {
+      onSaveDiscounts([formatted, ...discounts]);
+    }
     setIsModalOpen(false);
-    setCode('');
-    setDescription('');
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="font-anton text-2xl uppercase tracking-wide text-slate-950">
-            Promotional Coupons &amp; Discount Engine
-          </h2>
-          <p className="text-xs text-slate-500">
-            Create percentage or fixed cash discounts, set minimum cart rules, and manage promo codes.
+          <h2 className="text-xl font-bold text-stone-900">Discounts & Coupon Codes</h2>
+          <p className="text-xs text-stone-500">
+            Create promotional voucher codes, minimum purchase requirements, and flash sale discounts
           </p>
         </div>
-
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-raspberry cursor-pointer"
+          onClick={handleOpenNew}
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-sm cursor-pointer shrink-0"
         >
-          <Plus size={16} />
-          <span>Create Coupon Code</span>
+          <Plus className="w-4 h-4" />
+          Create Discount Code
         </button>
       </div>
 
-      {/* Coupons Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {discounts.map((disc) => {
-          const isExpired = disc.expiresAt && new Date(disc.expiresAt) < new Date();
-          const isCopied = copiedCode === disc.code;
-
-          return (
-            <div
-              key={disc.id}
-              className={`p-5 rounded-3xl border transition-all relative flex flex-col justify-between ${
-                disc.active && !isExpired
-                  ? 'bg-white border-slate-200/80 shadow-xs hover:border-[#FFCDF2]'
-                  : 'bg-slate-50 border-slate-200 opacity-60'
-              }`}
-            >
-              <div>
-                {/* Top Badge & Delete */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${
-                    disc.type === 'percentage'
-                      ? 'bg-rose-50 text-[#EC3460] border-rose-200'
-                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  }`}>
-                    {disc.type === 'percentage' ? `${disc.value}% OFF` : `$${disc.value}.00 OFF`}
-                  </span>
-
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => onUpdateDiscount(disc.id, { active: !disc.active })}
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-md cursor-pointer ${
-                        disc.active
-                          ? 'text-emerald-700 bg-emerald-50'
-                          : 'text-slate-500 bg-slate-200'
-                      }`}
-                    >
-                      {disc.active ? 'Active' : 'Disabled'}
-                    </button>
-                    <button
-                      onClick={() => onDeleteDiscount(disc.id)}
-                      className="p-1 text-slate-300 hover:text-rose-600 transition-colors cursor-pointer"
-                      title="Delete Coupon"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Code Pill */}
-                <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-2.5 mb-3">
-                  <span className="font-mono text-base font-anton tracking-wider text-slate-900">
-                    {disc.code}
-                  </span>
-                  <button
-                    onClick={() => handleCopy(disc.code)}
-                    className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 hover:text-[#EC3460] transition-colors cursor-pointer text-[10px] font-bold flex items-center gap-1"
-                  >
-                    {isCopied ? <Check size={12} className="text-emerald-600" /> : <Copy size={12} />}
-                    <span>{isCopied ? 'Copied' : 'Copy'}</span>
-                  </button>
-                </div>
-
-                <p className="text-xs text-slate-600 font-medium line-clamp-2 mb-3">
-                  {disc.description || `Save ${disc.type === 'percentage' ? `${disc.value}%` : `$${disc.value}`} on eligible orders.`}
-                </p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {discounts.map((disc) => (
+          <div
+            key={disc.id}
+            className={`p-5 rounded-2xl border transition-all flex flex-col justify-between ${
+              disc.active
+                ? 'bg-white border-stone-200 shadow-2xs'
+                : 'bg-stone-50 border-stone-200 opacity-60'
+            }`}
+          >
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-mono font-bold text-base text-stone-900 bg-stone-100 px-3 py-1 rounded-lg border border-stone-200">
+                  {disc.code}
+                </span>
+                <button
+                  onClick={() => handleToggleActive(disc.id)}
+                  className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full cursor-pointer ${
+                    disc.active ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-200 text-stone-600'
+                  }`}
+                >
+                  {disc.active ? 'Active' : 'Paused'}
+                </button>
               </div>
 
-              {/* Rules and Usage Footer */}
-              <div className="pt-3 border-t border-slate-100 space-y-1.5 text-[11px] text-slate-500">
+              <div className="text-2xl font-extrabold text-stone-900 mb-1">
+                {disc.type === 'percentage' ? `${disc.value}% OFF` : `$${disc.value} OFF`}
+              </div>
+              <p className="text-xs text-stone-500 mb-4">{disc.description}</p>
+
+              <div className="space-y-1 text-[11px] text-stone-500 border-t border-stone-100 pt-3">
                 <div className="flex justify-between">
-                  <span>Min. Order Value:</span>
-                  <span className="font-mono font-bold text-slate-800">
-                    {disc.minPurchase === 0 ? 'No minimum' : `$${disc.minPurchase.toFixed(2)}`}
+                  <span>Minimum Order:</span>
+                  <span className="font-semibold text-stone-700">
+                    {disc.minPurchase ? `$${disc.minPurchase}` : 'None'}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Usage Count:</span>
-                  <span className="font-mono text-slate-800">
-                    {disc.usageCount} {disc.usageLimit ? `/ ${disc.usageLimit}` : 'times'}
-                  </span>
+                  <span>Usage Redemptions:</span>
+                  <span className="font-semibold text-stone-700">{disc.usageCount} times</span>
                 </div>
                 {disc.expiresAt && (
-                  <div className="flex justify-between text-slate-400 text-[10px]">
-                    <span>Valid Until:</span>
-                    <span>{disc.expiresAt}</span>
+                  <div className="flex justify-between">
+                    <span>Expiration Date:</span>
+                    <span className="font-semibold text-stone-700">{disc.expiresAt}</span>
                   </div>
                 )}
               </div>
             </div>
-          );
-        })}
+
+            <div className="pt-4 mt-3 border-t border-stone-100 flex items-center justify-end gap-2">
+              <button
+                onClick={() => {
+                  setEditingDiscount(disc);
+                  setIsModalOpen(true);
+                }}
+                className="p-1.5 text-stone-500 hover:text-stone-900 rounded-lg hover:bg-stone-100 cursor-pointer"
+                title="Edit discount"
+              >
+                <Edit2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleDelete(disc.id)}
+                className="p-1.5 text-stone-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 cursor-pointer"
+                title="Delete discount"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* ================================================================= */}
-      {/* Create Coupon Modal */}
-      {/* ================================================================= */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 p-6 sm:p-7">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 mb-5">
-              <h3 className="font-anton text-xl uppercase tracking-wide text-slate-950">
-                Create Promotional Code
+      {/* Modal */}
+      {isModalOpen && editingDiscount && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl border border-stone-200 overflow-hidden text-xs">
+            <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50">
+              <h3 className="font-bold text-stone-900 text-base">
+                {editingDiscount.code ? 'Edit Discount' : 'Create Voucher Code'}
               </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-900 rounded-full cursor-pointer"
+                className="p-1.5 text-stone-400 hover:text-stone-700 cursor-pointer"
               >
-                <X size={18} />
+                ✕
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveModal} className="p-6 space-y-4">
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Coupon Code *
-                </label>
+                <label className="block font-bold text-stone-700 mb-1">Coupon Code (Uppercase)</label>
                 <input
                   type="text"
                   required
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
-                  placeholder="e.g. SEOUL25 / SPRINGGLOW"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EC3460] font-mono font-bold text-slate-900 uppercase"
+                  placeholder="e.g. SEOUL25"
+                  value={editingDiscount.code}
+                  onChange={(e) => setEditingDiscount({ ...editingDiscount, code: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200 uppercase font-mono font-bold"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Discount Type
-                  </label>
+                  <label className="block font-bold text-stone-700 mb-1">Discount Type</label>
                   <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value as any)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EC3460] text-slate-900 font-semibold cursor-pointer"
+                    value={editingDiscount.type}
+                    onChange={(e) => setEditingDiscount({ ...editingDiscount, type: e.target.value as any })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
                   >
                     <option value="percentage">Percentage (%)</option>
                     <option value="fixed">Fixed Amount ($)</option>
                   </select>
                 </div>
-
                 <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Value {type === 'percentage' ? '(%)' : '($)'} *
-                  </label>
+                  <label className="block font-bold text-stone-700 mb-1">Discount Value</label>
                   <input
                     type="number"
-                    min="1"
                     required
-                    value={value}
-                    onChange={(e) => setValue(Number(e.target.value))}
-                    placeholder={type === 'percentage' ? '15' : '10'}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EC3460] font-mono font-bold text-slate-900"
+                    value={editingDiscount.value}
+                    onChange={(e) => setEditingDiscount({ ...editingDiscount, value: parseFloat(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Min Order Spend ($)
-                  </label>
+                  <label className="block font-bold text-stone-700 mb-1">Min Order Amount ($)</label>
                   <input
                     type="number"
-                    min="0"
-                    value={minPurchase}
-                    onChange={(e) => setMinPurchase(Number(e.target.value))}
-                    placeholder="40.00"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EC3460] font-mono text-slate-900"
+                    value={editingDiscount.minPurchase || 0}
+                    onChange={(e) => setEditingDiscount({ ...editingDiscount, minPurchase: parseFloat(e.target.value) || 0 })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
                   />
                 </div>
-
                 <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                    Max Redemptions
-                  </label>
+                  <label className="block font-bold text-stone-700 mb-1">Expiration Date</label>
                   <input
-                    type="number"
-                    min="1"
-                    value={usageLimit}
-                    onChange={(e) => setUsageLimit(Number(e.target.value))}
-                    placeholder="500"
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EC3460] font-mono text-slate-900"
+                    type="date"
+                    value={editingDiscount.expiresAt || ''}
+                    onChange={(e) => setEditingDiscount({ ...editingDiscount, expiresAt: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-200"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Expiration Date
-                </label>
+                <label className="block font-bold text-stone-700 mb-1">Description / Customer Note</label>
                 <input
-                  type="date"
-                  value={expiresAt}
-                  onChange={(e) => setExpiresAt(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EC3460] text-slate-900"
+                  type="text"
+                  value={editingDiscount.description || ''}
+                  onChange={(e) => setEditingDiscount({ ...editingDiscount, description: e.target.value })}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-200"
                 />
               </div>
 
-              <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Description / Storefront Note
-                </label>
-                <textarea
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="e.g. 15% VIP autumn barrier hydration discount on orders over $40"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-[#EC3460] text-slate-900"
-                />
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+              <div className="pt-4 border-t border-stone-100 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-stone-600 hover:bg-stone-100 font-semibold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#EC3460] hover:bg-[#D8224F] text-white rounded-xl font-bold uppercase tracking-wider shadow-raspberry cursor-pointer"
+                  className="px-5 py-2 bg-stone-900 hover:bg-black text-white font-bold rounded-xl cursor-pointer"
                 >
-                  Publish Coupon
+                  Save Code
                 </button>
               </div>
             </form>

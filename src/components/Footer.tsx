@@ -1,209 +1,97 @@
 import React from 'react';
-import { ShieldCheck, ArrowUp, Instagram, Youtube } from 'lucide-react';
+import { ShieldCheck, Heart, Lock } from 'lucide-react';
 
 interface FooterProps {
-  onOpenPolicy: (type: 'shipping' | 'returns' | 'privacy' | 'terms') => void;
+  onOpenPolicy: (type: string) => void;
   onOpenAbout: () => void;
-  onOpenContact: () => void;
-  onNavigateSection: (sectionId: string) => void;
-  onOpenTrackOrder?: () => void;
+  onOpenAdmin: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({
-  onOpenPolicy,
-  onOpenAbout,
-  onOpenContact,
-  onNavigateSection,
-  onOpenTrackOrder,
-}) => {
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
+export const Footer: React.FC<FooterProps> = ({ onOpenPolicy, onOpenAbout, onOpenAdmin }) => {
   return (
-    <footer className="bg-slate-950 text-white font-inter border-t border-white/10 pt-16 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-white/10">
-          {/* Brand Column */}
-          <div className="lg:col-span-2">
-            <h3 className="font-anton text-3xl uppercase tracking-tight text-white mb-2">
+    <footer className="bg-stone-950 text-stone-400 text-xs py-14 border-t border-stone-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
+          {/* Brand Col */}
+          <div className="space-y-3">
+            <span className="font-anton text-2xl text-white tracking-widest uppercase block">
               LI FEI BEAUTY
-            </h3>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[#FFCDF2] block mb-4">
-              SEOUL · AUTHENTIC KOREAN SKINCARE
             </span>
-            <p className="text-xs text-white/70 max-w-sm leading-relaxed mb-6">
-              Curated clinical skincare from certified Seoul laboratories. Engineered for authentic glass-skin radiance, barrier integrity, and cellular rejuvenation.
+            <p className="text-xs text-stone-500 leading-relaxed">
+              Curated clinical Korean skincare and bio-compatible facial sculpting essentials direct from Seoul's top dermatological laboratories.
             </p>
-
-            <div className="flex items-center gap-2 text-xs text-[#FFCDF2] font-semibold bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl inline-flex">
-              <ShieldCheck size={16} className="text-[#EC3460]" />
-              <span>100% Seoul Direct Batch Authenticity</span>
+            <div className="flex items-center gap-2 text-stone-400 text-[11px] pt-2">
+              <ShieldCheck className="w-4 h-4 text-rose-500" />
+              <span>Certified 100% Authentic Korean Formulations</span>
             </div>
           </div>
 
-          {/* Column 1: Shop */}
+          {/* Quick Links */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-white/90 mb-4">
-              Shop Collections
-            </h4>
-            <ul className="space-y-2.5 text-xs text-white/70">
+            <h4 className="font-bold text-white uppercase tracking-wider text-xs mb-3">Shop & Rituals</h4>
+            <ul className="space-y-2">
+              <li><a href="#bestsellers" className="hover:text-white transition-colors">Curated Serums</a></li>
+              <li><a href="#rolling-facial" className="hover:text-white transition-colors">Rose Quartz Cryo Sculpt</a></li>
+              <li><a href="#skincare-routine" className="hover:text-white transition-colors">4-Step Glass Skin Ritual</a></li>
+              <li><a href="#faq-section" className="hover:text-white transition-colors">Seoul Efficacy Studies</a></li>
+            </ul>
+          </div>
+
+          {/* Customer Care */}
+          <div>
+            <h4 className="font-bold text-white uppercase tracking-wider text-xs mb-3">Customer Care</h4>
+            <ul className="space-y-2">
               <li>
-                <button 
-                  onClick={() => onNavigateSection('bestsellers')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Best Sellers
+                <button onClick={() => onOpenPolicy('shipping')} className="hover:text-white transition-colors cursor-pointer text-left">
+                  Global Shipping & Delivery
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={() => onNavigateSection('concerns')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  PDRN & Peptide Serums
+                <button onClick={() => onOpenPolicy('returns')} className="hover:text-white transition-colors cursor-pointer text-left">
+                  30-Day Satisfaction Guarantee
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={() => onNavigateSection('bestsellers')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Bio-Collagen Masks
+                <button onClick={() => onOpenPolicy('privacy')} className="hover:text-white transition-colors cursor-pointer text-left">
+                  Privacy Policy & Data Security
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={() => onNavigateSection('bestsellers')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Barrier Cushion Creams
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => onNavigateSection('routine')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  5-Step Korean Sets
+                <button onClick={onOpenAbout} className="hover:text-white transition-colors cursor-pointer text-left">
+                  About Li Fei Beauty & Seoul Labs
                 </button>
               </li>
             </ul>
           </div>
 
-          {/* Column 2: Customer Care */}
+          {/* Owner & Admin */}
           <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-white/90 mb-4">
-              Customer Care
-            </h4>
-            <ul className="space-y-2.5 text-xs text-white/70">
-              {onOpenTrackOrder && (
-                <li>
-                  <button 
-                    onClick={onOpenTrackOrder}
-                    className="hover:text-white transition-colors cursor-pointer text-[#FFCDF2] font-semibold flex items-center gap-1.5"
-                  >
-                    <span>Track My Order</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#EC3460] animate-pulse" />
-                  </button>
-                </li>
-              )}
-              <li>
-                <button 
-                  onClick={() => onOpenPolicy('shipping')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Shipping & Delivery
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => onOpenPolicy('returns')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Returns & Refunds (30 Days)
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => onNavigateSection('faq')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  FAQ & Sourcing Guide
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={onOpenContact}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Contact Skincare Support
-                </button>
-              </li>
-            </ul>
-          </div>
-
-          {/* Column 3: The House */}
-          <div>
-            <h4 className="text-xs font-bold uppercase tracking-widest text-white/90 mb-4">
-              The House
-            </h4>
-            <ul className="space-y-2.5 text-xs text-white/70">
-              <li>
-                <button 
-                  onClick={onOpenAbout}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  About Li Fei Beauty
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => onOpenPolicy('privacy')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Privacy Policy
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => onOpenPolicy('terms')}
-                  className="hover:text-white transition-colors cursor-pointer"
-                >
-                  Terms of Service
-                </button>
-              </li>
-              <li>
-                <span className="text-white/40 block">
-                  Seoul Office: Gangnam-gu, Teheran-ro 152
-                </span>
-              </li>
-            </ul>
+            <h4 className="font-bold text-white uppercase tracking-wider text-xs mb-3">Store Administration</h4>
+            <p className="text-[11px] text-stone-500 mb-3">
+              Store owner dashboard for products, inventory, discounts, visual customizer, and analytics.
+            </p>
+            <button
+              onClick={onOpenAdmin}
+              className="inline-flex items-center gap-1.5 px-3 py-2 bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white rounded-xl border border-stone-800 text-xs transition-colors cursor-pointer"
+            >
+              <Lock className="w-3.5 h-3.5 text-rose-500" />
+              <span>Owner Admin Login</span>
+            </button>
           </div>
         </div>
 
-        {/* Bottom Strip */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
-          <div>
-            © {new Date().getFullYear()} LI FEI BEAUTY CO., LTD. All rights reserved.
+        {/* Bottom Bar */}
+        <div className="pt-8 border-t border-stone-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-stone-500 text-[11px]">
+          <p>© {new Date().getFullYear()} Li Fei Beauty Inc. All rights reserved. Seoul · New York.</p>
+          <div className="flex items-center gap-4">
+            <button onClick={() => onOpenPolicy('terms')} className="hover:text-stone-300 cursor-pointer">
+              Terms of Service
+            </button>
+            <span>·</span>
+            <button onClick={() => onOpenPolicy('privacy')} className="hover:text-stone-300 cursor-pointer">
+              Privacy Policy
+            </button>
           </div>
-
-          {/* Payment Badges Simulator */}
-          <div className="flex items-center gap-3 text-[11px] font-semibold tracking-wider text-white/60">
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Apple Pay</span>
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Visa</span>
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Mastercard</span>
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Shop Pay</span>
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">PayPal</span>
-          </div>
-
-          <button
-            onClick={scrollToTop}
-            className="flex items-center gap-1.5 text-white/70 hover:text-white transition-colors cursor-pointer"
-          >
-            <span>Back to top</span>
-            <ArrowUp size={14} />
-          </button>
         </div>
       </div>
     </footer>

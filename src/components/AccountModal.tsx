@@ -116,6 +116,8 @@ interface AccountModalProps {
   initialTab?: 'points' | 'orders' | 'tracking' | 'profile' | 'wishlist' | 'favorites';
   onNavigateSection?: (sectionId: string) => void;
   onOpenTrackOrder?: (orderNumber: string, email: string) => void;
+  profileInfo: any;
+  onUpdateProfile: (info: any) => void;
 }
 
 export const AccountModal: React.FC<AccountModalProps> = ({ 
@@ -129,6 +131,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   initialTab = 'points',
   onNavigateSection,
   onOpenTrackOrder,
+  profileInfo,
+  onUpdateProfile,
 }) => {
   const [activeTab, setActiveTab] = useState<'points' | 'orders' | 'tracking' | 'profile' | 'wishlist' | 'favorites'>(initialTab);
   const [pastOrders, setPastOrders] = useState<PastOrder[]>(() => {
@@ -142,6 +146,75 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     }
     return INITIAL_ORDERS;
   });
+
+  // Personal Information State (Lifted to App.tsx)
+  const isProfileIncomplete = !profileInfo.firstName || !profileInfo.lastName || !profileInfo.email;
+
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [isAutoSaving, setIsAutoSaving] = useState(false);
+  const [recommendedIds, setRecommendedIds] = useState<number[]>([]);
+  const [isRecLoading, setIsRecLoading] = useState(false);
+
+  const catalog = products && products.length > 0 ? products : STORE_PRODUCTS;
+
+  // AI Recommendations Fetcher
+  const fetchRecommendations = async () => {
+    if (!profileInfo.skinGoal && !profileInfo.skinType) return;
+    setIsRecLoading(true);
+    try {
+      const response = await fetch('/api/gemini/recommendations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          profileInfo: {
+            skinGoal: profileInfo.skinGoal,
+            skinType: profileInfo.skinType,
+          },
+          products: catalog,
+        }),
+      });
+      const data = await response.json();
+      if (data.recommendedIds) {
+        setRecommendedIds(data.recommendedIds);
+      }
+    } catch (err) {
+      console.error('Failed to fetch recommendations:', err);
+    } finally {
+      setIsRecLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'profile' && (profileInfo.skinGoal || profileInfo.skinType)) {
+      fetchRecommendations();
+    }
+  }, [activeTab, profileInfo.skinGoal, profileInfo.skinType]);
+
+  // Auto-save feedback loop
+  useEffect(() => {
+    if (isOpen) {
+      setIsAutoSaving(true);
+      const timer = setTimeout(() => setIsAutoSaving(false), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [profileInfo, isOpen]);
+
+  useEffect(() => {
+    if (activeTab === 'profile' && isProfileIncomplete) {
+      setIsEditingProfile(true);
+    }
+  }, [activeTab, isProfileIncomplete]);
+
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setTrackingNotice('Profile information updated successfully!');
+      setIsEditingProfile(false);
+      setTimeout(() => setTrackingNotice(null), 3000);
+    } catch (e) {
+      // ignore
+    }
+  };
 
   // Order Tracking Form State
   const [trackingOrderNumber, setTrackingOrderNumber] = useState('#LF-94108');
@@ -159,7 +232,6 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
   if (!isOpen) return null;
 
-  const catalog = products && products.length > 0 ? products : STORE_PRODUCTS;
   const wishlistedProducts = catalog.filter((p) => wishlistIds.includes(p.id));
 
   const handleAddAllWishlist = () => {
@@ -386,13 +458,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
           <button
             onClick={() => setActiveTab('profile')}
-            className={`py-3 px-3 border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
+            className={`py-3 px-3 border-b-2 transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
               activeTab === 'profile'
                 ? 'border-[#EC3460] text-[#EC3460]'
                 : 'border-transparent text-slate-400 hover:text-slate-700'
             }`}
           >
-            Skin Profile
+            <User size={13} />
+            <span>My Profile</span>
           </button>
         </div>
 
@@ -939,28 +1012,286 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           )}
 
           {/* =========================================================
-              5. Skin Profile Tab
+              5. Customer Profile Tab
           ========================================================= */}
           {activeTab === 'profile' && (
-            <div className="space-y-4 text-xs">
-              <div>
-                <label className="font-bold text-slate-900 uppercase block text-[11px] mb-1">Primary Skin Goal</label>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium">
-                  Glass Skin Luminosity & Firming
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#EC3460] block">
+                    ACCOUNT PREFERENCES
+                  </span>
+                  <h4 className="font-anton text-xl uppercase text-slate-900 tracking-tight flex items-center gap-2">
+                    MY PROFILE 
+                    {isProfileIncomplete && <span className="text-rose-500 text-xs font-sans font-bold">(Incomplete)</span>}
+                    {isAutoSaving && (
+                      <span className="text-emerald-600 text-[10px] font-sans font-bold animate-pulse flex items-center gap-1 ml-2">
+                        <CheckCircle size={10} />
+                        Changes Saved
+                      </span>
+                    )}
+                  </h4>
                 </div>
+                {!isEditingProfile && (
+                  <button
+                    onClick={() => setIsEditingProfile(true)}
+                    className="text-xs font-bold text-[#EC3460] hover:text-[#D8224F] px-3 py-1.5 rounded-xl bg-[#FFF0F9] border border-[#FFCDF2] transition-colors cursor-pointer"
+                  >
+                    Edit Profile
+                  </button>
+                )}
               </div>
-              <div>
-                <label className="font-bold text-slate-900 uppercase block text-[11px] mb-1">Skin Type</label>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium">
-                  Combination / Dehydrated
+
+              {isEditingProfile ? (
+                <form onSubmit={handleSaveProfile} className="space-y-4">
+                  {isProfileIncomplete && (
+                    <div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-800 text-[11px] font-medium leading-relaxed">
+                      Welcome to Li Fei Beauty! Please complete your personal information to unlock full Glow Club benefits and faster Seoul dispatch.
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">First Name</label>
+                      <input
+                        type="text"
+                        value={profileInfo.firstName}
+                        onChange={(e) => onUpdateProfile({ ...profileInfo, firstName: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#EC3460]"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Last Name</label>
+                      <input
+                        type="text"
+                        value={profileInfo.lastName}
+                        onChange={(e) => onUpdateProfile({ ...profileInfo, lastName: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#EC3460]"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={profileInfo.email}
+                      onChange={(e) => onUpdateProfile({ ...profileInfo, email: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#EC3460]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Phone Number</label>
+                    <input
+                      type="text"
+                      value={profileInfo.phone}
+                      onChange={(e) => onUpdateProfile({ ...profileInfo, phone: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#EC3460]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Primary Skin Goal</label>
+                      <select
+                        value={profileInfo.skinGoal || ''}
+                        onChange={(e) => onUpdateProfile({ ...profileInfo, skinGoal: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#EC3460] appearance-none"
+                      >
+                        <option value="">Select Goal</option>
+                        <option value="Glass Skin Glow">Glass Skin Glow</option>
+                        <option value="Anti-Aging & Firmness">Anti-Aging & Firmness</option>
+                        <option value="Pore Refinement">Pore Refinement</option>
+                        <option value="Brightening & Dark Spots">Brightening & Dark Spots</option>
+                        <option value="Barrier Repair">Barrier Repair</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Skin Type</label>
+                      <select
+                        value={profileInfo.skinType || ''}
+                        onChange={(e) => onUpdateProfile({ ...profileInfo, skinType: e.target.value })}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#EC3460] appearance-none"
+                      >
+                        <option value="">Select Type</option>
+                        <option value="Dry">Dry</option>
+                        <option value="Oily">Oily</option>
+                        <option value="Combination">Combination</option>
+                        <option value="Sensitive">Sensitive</option>
+                        <option value="Normal">Normal</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-2">Shipping Destination</span>
+                    <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">Street Address</label>
+                        <input
+                          type="text"
+                          value={profileInfo.address}
+                          onChange={(e) => onUpdateProfile({ ...profileInfo, address: e.target.value })}
+                          className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#EC3460]"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">City</label>
+                          <input
+                            type="text"
+                            value={profileInfo.city}
+                            onChange={(e) => onUpdateProfile({ ...profileInfo, city: e.target.value })}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#EC3460]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">ZIP Code</label>
+                          <input
+                            type="text"
+                            value={profileInfo.zip}
+                            onChange={(e) => onUpdateProfile({ ...profileInfo, zip: e.target.value })}
+                            className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-[#EC3460]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="submit"
+                      className="flex-1 bg-[#EC3460] hover:bg-[#D8224F] text-white py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-raspberry transition-all"
+                    >
+                      Done
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingProfile(false)}
+                      className="px-6 bg-slate-100 hover:bg-slate-200 text-slate-600 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="space-y-5">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Full Name</span>
+                      <span className="text-xs font-bold text-slate-900">{profileInfo.firstName} {profileInfo.lastName}</span>
+                    </div>
+                    <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Phone</span>
+                      <span className="text-xs font-bold text-slate-900">{profileInfo.phone}</span>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/60">
+                    <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Email Address</span>
+                    <span className="text-xs font-bold text-slate-900">{profileInfo.email}</span>
+                  </div>
+
+                  <div className="p-4 bg-[#FFF5FA] rounded-2xl border border-[#FFCDF2]/60">
+                    <div className="flex items-center gap-2 mb-2">
+                      <MapPin size={14} className="text-[#EC3460]" />
+                      <span className="text-[10px] font-bold uppercase text-[#EC3460]">Default Shipping Address</span>
+                    </div>
+                    <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                      {profileInfo.address}<br />
+                      {profileInfo.city}, {profileInfo.zip}<br />
+                      {profileInfo.country}
+                    </p>
+                  </div>
+
+                  <div className="pt-4">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-3 flex items-center gap-2">
+                      <ShieldCheck size={14} className="text-emerald-600" />
+                      SKIN GENETIC PROFILE
+                    </span>
+                    <div className="space-y-3">
+                      <div>
+                        <label className="font-bold text-slate-900 uppercase block text-[10px] mb-1">Primary Skin Goal</label>
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 text-xs font-medium">
+                          {profileInfo.skinGoal || 'Not specified'}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="font-bold text-slate-900 uppercase block text-[10px] mb-1">Skin Type</label>
+                        <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 text-xs font-medium">
+                          {profileInfo.skinType || 'Not specified'}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Recommendations Section */}
+                  <div className="pt-6 mt-6 border-t border-slate-100">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#EC3460] flex items-center gap-2">
+                        <Sparkles size={14} className="text-[#EC3460] animate-pulse" />
+                        Recommended for You
+                      </span>
+                      {isRecLoading && (
+                        <div className="flex items-center gap-1">
+                          <div className="w-1 h-1 bg-[#EC3460] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <div className="w-1 h-1 bg-[#EC3460] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <div className="w-1 h-1 bg-[#EC3460] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      )}
+                    </div>
+
+                    {recommendedIds.length > 0 ? (
+                      <div className="space-y-3">
+                        {recommendedIds.map(id => {
+                          const product = catalog.find(p => p.id === id);
+                          if (!product) return null;
+                          const isAdded = !!addedModalIds[product.id];
+
+                          return (
+                            <div key={id} className="p-3 bg-white border border-slate-100 rounded-2xl flex items-center gap-3 hover:border-[#FFCDF2] transition-colors group">
+                              <div 
+                                className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-100 cursor-pointer"
+                                onClick={() => onQuickView && onQuickView(product)}
+                              >
+                                <img src={product.src} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <h5 
+                                  className="text-[11px] font-bold text-slate-900 truncate hover:text-[#EC3460] cursor-pointer uppercase"
+                                  onClick={() => onQuickView && onQuickView(product)}
+                                >
+                                  {product.name}
+                                </h5>
+                                <p className="text-[10px] text-slate-500 truncate">{product.subtitle}</p>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onAddToCart && onAddToCart(product);
+                                  setAddedModalIds(prev => ({ ...prev, [product.id]: true }));
+                                  setTimeout(() => setAddedModalIds(prev => ({ ...prev, [product.id]: false })), 1800);
+                                }}
+                                className={`p-2 rounded-lg transition-all ${
+                                  isAdded ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-50 text-[#EC3460] hover:bg-[#FFF0F9]'
+                                }`}
+                              >
+                                {isAdded ? <Check size={14} strokeWidth={3} /> : <ShoppingBag size={14} />}
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-300 text-center">
+                        <p className="text-[10px] text-slate-500 font-medium leading-relaxed">
+                          Complete your skin profile above to unlock AI-curated Korean skincare recommendations tailored to your unique goals.
+                        </p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <label className="font-bold text-slate-900 uppercase block text-[11px] mb-1">Sensitivity Level</label>
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-slate-800 font-medium">
-                  Mild (Prefers Fragrance-Free Korean Formulations)
-                </div>
-              </div>
+              )}
             </div>
           )}
         </div>
