@@ -3,18 +3,56 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Remix LI FEI BEAUTY | Premium Korean Skincare V2</title>
-    <meta name="description" content="Curated premium Korean skincare and beauty essentials designed to elevate your everyday routine with glowing hydration and barrier renewal." />
-    <meta property="og:title" content="Remix LI FEI BEAUTY | Premium Korean Skincare V2" />
-    <meta property="og:description" content="Curated premium Korean skincare and beauty essentials designed to elevate your everyday routine with glowing hydration and barrier renewal." />
+    <title>LI FEI BEAUTY | Premium Korean Skincare & Barrier Repair</title>
+    <meta name="description" content="Discover premium Korean skincare and intensive barrier repair essentials. Authentic Seoul serums, PDRN ampoules, and ceramide creams for lasting glass skin." />
+    <meta name="keywords" content="Premium Korean Skincare, barrier repair, K-beauty, Korean skincare routine, ceramide barrier repair, PDRN serum, glass skin, Medicube, Biodance collagen, facial contour roller, hydrating ampoule" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="LI FEI BEAUTY | Premium Korean Skincare & Barrier Repair" />
+    <meta property="og:description" content="Discover premium Korean skincare and intensive barrier repair essentials. Authentic Seoul serums, PDRN ampoules, and ceramide creams for lasting glass skin." />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LI FEI BEAUTY" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="LI FEI BEAUTY | Premium Korean Skincare & Barrier Repair" />
+    <meta name="twitter:description" content="Discover premium Korean skincare and intensive barrier repair essentials. Authentic Seoul serums, PDRN ampoules, and ceramide creams for lasting glass skin." />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "OnlineStore",
+      "name": "LI FEI BEAUTY",
+      "description": "Curated premium Korean skincare and barrier repair treatments designed to restore dermal strength and glass skin luminosity.",
+      "keywords": "Premium Korean Skincare, barrier repair, K-Beauty, PDRN Serum, Ceramide Cream, Glass Skin",
+      "currenciesAccepted": "USD",
+      "paymentAccepted": "Credit Card, Shopify Pay"
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400;1,600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script>
+      // Suppress Vite HMR WebSocket connection errors per environment guidelines
+      window.addEventListener('unhandledrejection', function (e) {
+        if (
+          e.reason &&
+          (e.reason.message?.includes('WebSocket') ||
+            e.reason.stack?.includes('@vite/client') ||
+            e.reason?.toString()?.includes('WebSocket'))
+        ) {
+          e.preventDefault();
+        }
+      });
+      window.addEventListener('error', function (e) {
+        if (
+          e.message?.includes('WebSocket') ||
+          e.filename?.includes('@vite/client')
+        ) {
+          e.preventDefault();
+        }
+      });
+    </script>
   </head>
-  <body class="bg-[#FAF9F6] text-stone-900 font-sans antialiased selection:bg-rose-100 selection:text-rose-900">
+  <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+

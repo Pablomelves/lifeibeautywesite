@@ -34,7 +34,7 @@ import { STORE_PRODUCTS } from './data/storeData';
 import { getAdminProducts, getStoreContentSettings } from './services/adminService';
 import { Check, SlidersHorizontal, Scale } from 'lucide-react';
 
-export default function App() {
+export function App() {
   // Storefront products & admin sync
   const [adminProducts, setAdminProducts] = useState<Product[]>(() => {
     const adminList = getAdminProducts();
@@ -673,3 +673,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;

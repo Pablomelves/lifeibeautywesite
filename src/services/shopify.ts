@@ -2,10 +2,28 @@ import { Product, ShopifyVariant, CartItem, ShopifyConfig } from '../types';
 
 const DEFAULT_API_VERSION = '2024-01';
 
-// Read from Vite environment variables
-const ENV_DOMAIN = import.meta.env.VITE_SHOPIFY_STORE_DOMAIN || '';
-const ENV_TOKEN = import.meta.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN || '';
-const ENV_API_VERSION = import.meta.env.VITE_SHOPIFY_API_VERSION || DEFAULT_API_VERSION;
+// Safely read from environment variables (browser / Vite import.meta.env or Node process.env fallbacks)
+const getEnv = (key: string, fallback = ''): string => {
+  try {
+    if (typeof import.meta !== 'undefined' && (import.meta as any)?.env && (import.meta as any).env[key]) {
+      return String((import.meta as any).env[key]);
+    }
+  } catch {
+    // ignore
+  }
+  try {
+    if (typeof process !== 'undefined' && process?.env && process.env[key]) {
+      return String(process.env[key]);
+    }
+  } catch {
+    // ignore
+  }
+  return fallback;
+};
+
+const ENV_DOMAIN = getEnv('VITE_SHOPIFY_STORE_DOMAIN');
+const ENV_TOKEN = getEnv('VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN');
+const ENV_API_VERSION = getEnv('VITE_SHOPIFY_API_VERSION', DEFAULT_API_VERSION);
 
 // LocalStorage keys for optional in-app settings
 const STORAGE_KEY_DOMAIN = 'lifei_shopify_domain';

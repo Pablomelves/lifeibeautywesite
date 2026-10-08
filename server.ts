@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import http from 'http';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
 import path from 'path';
@@ -14,6 +15,7 @@ import {
 } from './src/data/initialAdminData.ts';
 
 const app = express();
+const httpServer = http.createServer(app);
 const PORT = 3000;
 const DB_FILE = path.resolve(process.cwd(), 'data/store_db.json');
 
@@ -468,7 +470,13 @@ async function startServer() {
 
   if (!isProd) {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: {
+        middlewareMode: true,
+        hmr: {
+          server: httpServer,
+          clientPort: 443,
+        },
+      },
       appType: 'spa',
     });
     app.use(vite.middlewares);
@@ -479,7 +487,7 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  httpServer.listen(PORT, '0.0.0.0', () => {
     console.log(`Li Fei Beauty Store & Admin API running on http://0.0.0.0:${PORT}`);
   });
 }

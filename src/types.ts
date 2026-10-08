@@ -20,8 +20,9 @@ export interface Product {
   price: string;
   numericPrice: number;
   originalPrice?: string;
+  compareAtPrice?: string;
   volume: string;
-  category: 'Serums' | 'Moisturizers' | 'Masks' | 'Cleansers' | 'Eye Care' | 'Sets & Bundles' | 'Tools & Rollers';
+  category: 'Serums' | 'Moisturizers' | 'Masks' | 'Cleansers' | 'Eye Care' | 'Sets & Bundles' | 'Tools & Rollers' | string;
   rating: number;
   reviewsCount: number;
   badge?: string;
@@ -33,16 +34,20 @@ export interface Product {
   ritualStep: string;
   skinType: string;
   fullDescription: string;
-  stockStatus: 'In Stock' | 'Low Stock' | 'Out of Stock';
+  description?: string;
+  stockStatus: 'In Stock' | 'Low Stock' | 'Out of Stock' | string;
   beforeAfterSummary?: string;
   faqs?: { q: string; a: string }[];
-  // Shopify Headless fields
+  // Shopify Headless & Inventory fields
   shopifyId?: string;
   handle?: string;
   variants?: ShopifyVariant[];
   selectedVariantId?: string;
   availableForSale?: boolean;
   images?: string[];
+  sku?: string;
+  stockQuantity?: number;
+  status?: 'active' | 'draft' | string;
 }
 
 export interface Review {
@@ -50,6 +55,7 @@ export interface Review {
   productId: number;
   productName: string;
   author: string;
+  email?: string;
   location: string;
   rating: number;
   date: string;
@@ -64,6 +70,8 @@ export interface Review {
   afterImg?: string;
   routineUsed?: string;
   likes?: number;
+  status?: 'approved' | 'pending' | 'rejected' | string;
+  featured?: boolean;
 }
 
 export interface CartItem {
@@ -112,6 +120,19 @@ export interface RoutineStep {
   description: string;
   tip: string;
   recommendedProductIds: number[];
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  count: number;
+  desc: string;
+}
+
+export interface FAQItem {
+  category: string;
+  q: string;
+  a: string;
 }
 
 export interface AdminProduct extends Product {

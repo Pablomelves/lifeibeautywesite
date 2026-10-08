@@ -1,7 +1,10 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
+import { fileURLToPath } from 'url';
 import path from 'path';
 import {defineConfig} from 'vite';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(() => {
   return {
@@ -12,12 +15,9 @@ export default defineConfig(() => {
       },
     },
     server: {
-      // HMR configuration for AI Studio preview environment
-      hmr: process.env.DISABLE_HMR === 'true' ? false : {
+      hmr: {
         clientPort: 443,
       },
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };
 });
