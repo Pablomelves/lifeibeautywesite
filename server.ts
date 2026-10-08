@@ -388,7 +388,7 @@ app.post('/api/upload', (req: Request, res: Response) => {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
 
-    const ext = dataUrl.includes('image/png') ? 'png' : 'jpg';
+    const ext = dataUrl.includes('image/webp') ? 'webp' : dataUrl.includes('image/png') ? 'png' : 'jpg';
     const cleanFilename = (filename || `upload_${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, '_') + `.${ext}`;
     const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, '');
     const buffer = Buffer.from(base64Data, 'base64');

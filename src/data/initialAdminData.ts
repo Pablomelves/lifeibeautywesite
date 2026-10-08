@@ -457,7 +457,7 @@ export const INITIAL_CONTENT_SETTINGS: StoreContentSettings = {
   promoBadge: '15% OFF AT CHECKOUT',
   heroHeadline: 'SEOUL CELLULAR RENEWAL',
   heroSubhead: 'Biomimetic Salmon PDRN · Pure NAD+ · Rose Quartz Contour',
-  heroTagline: 'Curated clinical Korean skincare designed to deliver luminous hydration, dermal density, and true glass glow.',
+  heroTagline: 'Life looks better with lifei · Curated clinical Korean skincare designed to deliver luminous hydration, dermal density, and true glass glow.',
   bannerPromoTitle: 'THE GLOW ARCHITECTURE',
   bannerPromoSubtitle: 'Clinical Korean botanical actives engineered for rapid cellular barrier rebound.',
   bannerPromoDiscount: 'USE CODE GLOW15 FOR 15% OFF FIRST RITUAL',

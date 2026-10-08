@@ -4,7 +4,7 @@ import { STORE_REVIEWS } from '../data/storeData';
 
 export const CustomerReviews: React.FC = () => {
   const [filterRating, setFilterRating] = useState<number | 'all' | 'rolling'>('all');
-  const [likesMap, setLikesMap] = useState<Record<string, boolean>>({});
+  const [likesMap, setLikesMap] = useState<Record<string | number, boolean>>({});
 
   const filteredReviews = filterRating === 'all' 
     ? STORE_REVIEWS 
@@ -12,7 +12,7 @@ export const CustomerReviews: React.FC = () => {
     ? STORE_REVIEWS.filter((r) => r.productId === 8 || r.beforeAfterTimeframe)
     : STORE_REVIEWS.filter((r) => r.rating === filterRating);
 
-  const toggleLike = (id: string) => {
+  const toggleLike = (id: string | number) => {
     setLikesMap((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 

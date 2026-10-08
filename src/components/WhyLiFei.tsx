@@ -40,7 +40,7 @@ export const WhyLiFei: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#EC3460] block mb-2">
-            THE LI FEI STANDARD
+            LIFE LOOKS BETTER WITH LIFEI · THE LI FEI STANDARD
           </span>
           <h2 className="font-anton text-3xl sm:text-5xl uppercase tracking-tight text-slate-900 leading-none">
             WHY TRUST LI FEI BEAUTY?

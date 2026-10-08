@@ -292,7 +292,7 @@ export function createOrderFromCheckout(params: {
 export function cancelAndRefundOrder(orderId: string): Order | null {
   return updateOrder(orderId, {
     paymentStatus: 'refunded',
-    fulfillmentStatus: 'unfulfilled',
+    fulfillmentStatus: 'cancelled',
     notes: 'Order was cancelled and fully refunded by store administrator.',
   });
 }

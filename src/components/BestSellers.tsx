@@ -69,7 +69,7 @@ const ProductCard: React.FC<{
 
     let index = 0;
     const count = product.images.length;
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {

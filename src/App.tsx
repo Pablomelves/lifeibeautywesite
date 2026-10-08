@@ -27,12 +27,13 @@ import { QuickAddWidget } from './components/QuickAddWidget';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { TrackOrderModal } from './components/TrackOrderModal';
 import { ComparisonModal } from './components/ComparisonModal';
+import { FastPictureProcessorModal } from './components/FastPictureProcessorModal';
 
 import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData } from './types';
 import { createShopifyCheckout, getShopifyConfig, getShopifyProducts } from './services/shopify';
 import { STORE_PRODUCTS } from './data/storeData';
 import { getAdminProducts, getStoreContentSettings } from './services/adminService';
-import { Check, SlidersHorizontal, Scale } from 'lucide-react';
+import { Check, SlidersHorizontal, Scale, Zap } from 'lucide-react';
 
 export function App() {
   // Storefront products & admin sync
@@ -123,6 +124,9 @@ export function App() {
   const [comparisonIds, setComparisonIds] = useState<number[]>([]);
   const [comparisonOpen, setComparisonOpen] = useState(false);
 
+  // Fast Picture Processor modal state
+  const [fastProcessorOpen, setFastProcessorOpen] = useState(false);
+
   const handleToggleComparison = (productId: number) => {
     setComparisonIds((prev) => {
       const exists = prev.includes(productId);
@@ -188,11 +192,11 @@ export function App() {
 
   // Added to Cart notification state popping up on bottom right Quick Add
   const [cartNotification, setCartNotification] = useState<CartNotificationData | null>(null);
-  const cartTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const cartTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Added to Wishlist notification state
   const [wishlistNotification, setWishlistNotification] = useState<WishlistNotificationData | null>(null);
-  const wishlistTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const wishlistTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const triggerCartNotification = (product: Product, quantity = 1, variantTitle?: string) => {
     if (cartTimerRef.current) {
@@ -581,13 +585,15 @@ export function App() {
 
       {/* Policy Modal (Shipping, Returns, Privacy, Terms) */}
       <PolicyModal
+        isOpen={Boolean(policyType)}
         type={policyType}
         onClose={() => setPolicyType(null)}
       />
 
       {/* About & Contact Modal */}
       <AboutContactModal
-        mode={aboutContactMode}
+        isOpen={Boolean(aboutContactMode)}
+        mode={aboutContactMode || 'about'}
         onClose={() => setAboutContactMode(null)}
       />
 
@@ -634,6 +640,17 @@ export function App() {
         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
       </button>
 
+      {/* Floating Fast Picture Processor Trigger */}
+      <button
+        onClick={() => setFastProcessorOpen(true)}
+        className="fixed bottom-6 left-36 z-[120] bg-white/95 text-slate-800 hover:text-[#EC3460] px-3.5 py-2.5 rounded-full border border-[#FFCDF2] shadow-2xl backdrop-blur-md flex items-center gap-2 text-xs font-bold transition-all hover:scale-105 cursor-pointer group hover:bg-[#FFF0F9]"
+        title="Open Fast Picture Processor & Studio Optimizer"
+        aria-label="Open Fast Picture Processor"
+      >
+        <Zap size={14} className="text-[#EC3460]" />
+        <span className="hidden sm:inline">Picture Fast Processor</span>
+      </button>
+
       {/* Floating Comparison Trigger */}
       {comparisonIds.length > 0 && (
         <button
@@ -657,6 +674,12 @@ export function App() {
           onRefreshStoreData={handleRefreshStoreData}
         />
       )}
+
+      {/* Standalone Fast Picture Processor Modal */}
+      <FastPictureProcessorModal
+        isOpen={fastProcessorOpen}
+        onClose={() => setFastProcessorOpen(false)}
+      />
 
       {/* General Notification (Wishlist, Promo, Sync in Light Theme) */}
       {toastMessage && !cartNotification && (

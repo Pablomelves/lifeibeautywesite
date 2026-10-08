@@ -1,250 +1,400 @@
 import React, { useState } from 'react';
-import { X, Trash2, ShoppingBag, ArrowRight, Sparkles, CheckCircle2 } from 'lucide-react';
-import { CartItem, Discount } from '../types';
+import { 
+  X, 
+  ShoppingBag, 
+  Plus, 
+  Minus, 
+  Trash2, 
+  ShieldCheck, 
+  Truck, 
+  Sparkles, 
+  Check, 
+  ArrowRight,
+  ExternalLink,
+  RefreshCw,
+  Loader2
+} from 'lucide-react';
+import { CartItem } from '../types';
+import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
+import { validateCoupon, createOrderFromCheckout } from '../services/adminService';
 
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   items: CartItem[];
-  discounts: Discount[];
-  onUpdateQuantity: (productId: number, delta: number) => void;
-  onRemoveItem: (productId: number) => void;
-  onCheckout: (appliedCode?: string, discountVal?: number) => void;
+  onUpdateQuantity: (id: number, delta: number, variantId?: string) => void;
+  onRemoveItem: (id: number, variantId?: string) => void;
+  onClearCart?: () => void;
+  onOpenShopifyConnect?: () => void;
+  onTrackOrder?: (orderNumber: string, email: string) => void;
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
   isOpen,
   onClose,
   items,
-  discounts,
   onUpdateQuantity,
   onRemoveItem,
-  onCheckout
+  onClearCart,
+  onOpenShopifyConnect,
+  onTrackOrder,
 }) => {
   const [promoCode, setPromoCode] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState<Discount | null>(null);
-  const [promoError, setPromoError] = useState('');
-  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
+  const [fixedDiscountAmount, setFixedDiscountAmount] = useState<number>(0);
+  const [activeDiscountCode, setActiveDiscountCode] = useState<string>('');
+  const [promoSuccessMsg, setPromoSuccessMsg] = useState<string | null>(null);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [orderSuccess, setOrderSuccess] = useState(false);
+  const [createdOrderNumber, setCreatedOrderNumber] = useState<string>('');
+  const [checkingOut, setCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
+  const shopifyConfig = getShopifyConfig();
+
+  const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const rawSubtotal = items.reduce((sum, item) => sum + item.product.numericPrice * item.quantity, 0);
+  const discountAmount = fixedDiscountAmount > 0 
+    ? fixedDiscountAmount 
+    : rawSubtotal * appliedDiscount;
+  const finalTotal = Math.max(0, rawSubtotal - discountAmount);
 
-  // Discount calculation
-  let discountAmount = 0;
-  if (appliedDiscount) {
-    if (appliedDiscount.type === 'percentage') {
-      discountAmount = (rawSubtotal * appliedDiscount.value) / 100;
-    } else {
-      discountAmount = appliedDiscount.value;
-    }
-  }
-
-  const freeShippingThreshold = 40;
-  const shippingCost = rawSubtotal >= freeShippingThreshold || (appliedDiscount?.code === 'FREESHIP') ? 0 : 5;
-  const finalTotal = Math.max(0, rawSubtotal - discountAmount + shippingCost);
+  const freeShippingThreshold = 50;
+  const amountNeeded = Math.max(0, freeShippingThreshold - rawSubtotal);
+  const progressPercent = Math.min(100, (rawSubtotal / freeShippingThreshold) * 100);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
-    setPromoError('');
-    const found = discounts.find(
-      (d) => d.code.toUpperCase() === promoCode.trim().toUpperCase() && d.active
-    );
-    if (found) {
-      if (found.minPurchase && rawSubtotal < found.minPurchase) {
-        setPromoError(`Requires minimum order of $${found.minPurchase}`);
-        return;
-      }
-      setAppliedDiscount(found);
-      setPromoCode('');
+    if (!promoCode.trim()) return;
+
+    const result = validateCoupon(promoCode, rawSubtotal);
+    if (result.valid) {
+      setFixedDiscountAmount(result.discountAmount);
+      setActiveDiscountCode(promoCode.trim().toUpperCase());
+      setPromoSuccessMsg(result.message);
+      setPromoError(null);
     } else {
-      setPromoError('Invalid or expired discount code');
+      setPromoError(result.message);
+      setPromoSuccessMsg(null);
     }
   };
 
-  const handleCompleteOrder = () => {
-    setIsCheckingOut(true);
-    setTimeout(() => {
-      setIsCheckingOut(false);
-      onCheckout(appliedDiscount?.code, discountAmount);
-      onClose();
-    }, 1500);
+  const handleCheckout = async () => {
+    setCheckingOut(true);
+    setCheckoutError(null);
+
+    // If Shopify is connected, initiate real Shopify Checkout
+    if (shopifyConfig.isConnected) {
+      try {
+        const checkoutUrl = await createShopifyCheckout(items);
+        if (checkoutUrl) {
+          window.location.href = checkoutUrl;
+          return;
+        } else {
+          setCheckoutError('Could not reach Shopify Checkout. Please verify your Storefront API credentials.');
+          setCheckingOut(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Shopify checkout error:', err);
+        setCheckoutError('Network error connecting to Shopify Checkout.');
+        setCheckingOut(false);
+        return;
+      }
+    }
+
+    // Save order directly into the store's backend database
+    let placedOrderNum = '';
+    try {
+      const order = createOrderFromCheckout({
+        customer: {
+          name: 'Verified Customer',
+          email: 'customer@lifeibeauty.com',
+          phone: '+1 (555) 789-0123',
+          address: '420 Orchard Street, Suite 5',
+          city: 'San Francisco',
+          state: 'CA',
+          country: 'United States',
+          zip: '94102',
+        },
+        items,
+        discountCode: activeDiscountCode || undefined,
+        discountAmount,
+        shippingCost: rawSubtotal >= freeShippingThreshold ? 0 : 4.99,
+      });
+      if (order) {
+        placedOrderNum = order.orderNumber;
+        setCreatedOrderNumber(order.orderNumber);
+      }
+    } catch (err) {
+      console.warn('Backend order recording error:', err);
+    }
+
+    // Default simulated flow for testing without live credentials
+    setCheckingOut(false);
+    setOrderSuccess(true);
+    onClearCart?.();
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-black/50 backdrop-blur-xs flex justify-end">
-      <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-300">
+    <div 
+      className="fixed inset-0 z-[130] bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200 font-inter"
+      onClick={onClose}
+    >
+      <div 
+        className="w-full max-w-md bg-white text-slate-900 h-full flex flex-col shadow-2xl relative"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
-        <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-stone-900" />
-            <h3 className="font-bold text-stone-900 text-lg">Your Bag</h3>
-            <span className="text-xs text-stone-500 font-medium">({items.length} items)</span>
+        <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+          <div>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 block">
+              LI FEI BEAUTY
+            </span>
+            <h3 className="font-anton text-2xl uppercase tracking-tight text-slate-900">
+              YOUR SHOPPING BAG ({totalCount})
+            </h3>
           </div>
-          <button
+          <button 
             onClick={onClose}
-            className="p-1.5 text-stone-400 hover:text-stone-700 rounded-full hover:bg-stone-100 transition-colors cursor-pointer"
+            className="p-1.5 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label="Close cart"
           >
-            <X className="w-5 h-5" />
+            <X size={20} />
           </button>
         </div>
 
-        {/* Free Shipping Progress */}
-        <div className="px-6 py-3 bg-stone-50 border-b border-stone-100">
-          {rawSubtotal >= freeShippingThreshold ? (
-            <p className="text-xs font-semibold text-emerald-700 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5" />
-              You unlocked Free Express Shipping direct from Seoul!
-            </p>
-          ) : (
-            <div>
-              <p className="text-xs text-stone-600 mb-1.5">
-                Add <span className="font-bold text-stone-900">${(freeShippingThreshold - rawSubtotal).toFixed(2)}</span> more for Free Shipping
-              </p>
-              <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-rose-500 rounded-full transition-all"
-                  style={{ width: `${Math.min(100, (rawSubtotal / freeShippingThreshold) * 100)}%` }}
-                />
-              </div>
-            </div>
-          )}
+        {/* Free Shipping Progress Meter */}
+        <div className="bg-[#FFF5FA] p-4 border-b border-[#FFCDF2]/60 text-xs">
+          <div className="flex items-center justify-between mb-1.5 font-medium">
+            <span className="flex items-center gap-1.5 text-slate-700">
+              <Truck size={14} className="text-[#EC3460]" />
+              {amountNeeded > 0 ? (
+                <>Add <strong className="text-[#EC3460] font-mono">${amountNeeded.toFixed(2)}</strong> for Free Express</>
+              ) : (
+                <span className="text-[#B31940] font-bold">🎉 You qualify for Free Seoul Express!</span>
+              )}
+            </span>
+            <span className="font-mono text-[11px] text-[#EC3460] font-bold">{Math.round(progressPercent)}%</span>
+          </div>
+          <div className="w-full h-2 bg-white border border-[#FFCDF2] rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-[#EC3460] rounded-full transition-all duration-300 shadow-xs"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
         </div>
 
-        {/* Item List */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 divide-y divide-stone-100">
-          {items.length > 0 ? (
-            items.map((item) => (
-              <div key={item.product.id} className="py-4 flex gap-4 items-center">
-                <div
-                  className="w-18 h-18 rounded-xl p-2 flex items-center justify-center shrink-0 border border-stone-200"
-                  style={{ backgroundColor: item.product.panel || '#FAF5F7' }}
-                >
-                  {item.product.src ? (
-                    <img
-                      src={item.product.src}
-                      alt={item.product.name}
-                      className="max-h-full w-auto object-contain"
-                    />
-                  ) : (
-                    <ShoppingBag className="w-6 h-6 text-stone-400" />
-                  )}
-                </div>
+        {/* Cart Item List */}
+        <div className="flex-1 overflow-y-auto p-5 divide-y divide-slate-100">
+          {items.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 gap-3">
+              <div className="w-16 h-16 rounded-full bg-[#FFF0F9] border border-[#FFCDF2] flex items-center justify-center text-[#EC3460]">
+                <ShoppingBag size={28} />
+              </div>
+              <h4 className="font-bold text-slate-900 uppercase">Your bag is empty</h4>
+              <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+                Explore our curated clinical Korean skincare serums, masks, and barrier repair creams.
+              </p>
+              <button
+                onClick={onClose}
+                className="mt-2 text-xs font-semibold uppercase tracking-wider bg-[#EC3460] text-white px-5 py-3 rounded-xl hover:bg-[#D8224F] shadow-raspberry transition-all cursor-pointer"
+              >
+                Start Shopping
+              </button>
+            </div>
+          ) : (
+            items.map((item, idx) => {
+              const itemVariantId = item.variantId || item.product.selectedVariantId;
+              const itemKey = `${item.product.id}-${itemVariantId || idx}`;
 
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-stone-900 text-sm truncate">{item.product.name}</h4>
-                  <p className="text-xs text-stone-400 mb-2">{item.product.volume}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-stone-900">
-                      ${(item.product.numericPrice * item.quantity).toFixed(2)}
-                    </span>
-                    <div className="flex items-center border border-stone-200 rounded-lg overflow-hidden bg-stone-50 text-xs">
+              return (
+                <div key={itemKey} className="py-4 first:pt-0 flex gap-4 items-center">
+                  <div 
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-200/50"
+                    style={{ backgroundColor: item.product.panel }}
+                  >
+                    <img 
+                      src={item.product.src} 
+                      alt={item.product.name}
+                      className="w-full h-full object-cover object-center"
+                    />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="text-xs font-bold uppercase tracking-wide text-slate-900 truncate">
+                          {item.product.name}
+                        </h4>
+                        <p className="text-[11px] text-slate-500 truncate">
+                          {item.selectedSize || item.product.volume}
+                        </p>
+                      </div>
+                      <span className="text-xs font-bold font-mono tabular-nums text-slate-900">
+                        ${(item.product.numericPrice * item.quantity).toFixed(2)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center border border-[#FFCDF2] rounded-lg bg-white">
+                        <button
+                          onClick={() => onUpdateQuantity(item.product.id, -1, itemVariantId)}
+                          className="p-1 text-slate-500 hover:text-[#EC3460] cursor-pointer"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus size={13} />
+                        </button>
+                        <span className="px-2 text-xs font-semibold tabular-nums font-mono">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => onUpdateQuantity(item.product.id, 1, itemVariantId)}
+                          className="p-1 text-slate-500 hover:text-[#EC3460] cursor-pointer"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus size={13} />
+                        </button>
+                      </div>
+
                       <button
-                        onClick={() => onUpdateQuantity(item.product.id, -1)}
-                        className="px-2 py-1 hover:bg-stone-200 cursor-pointer text-stone-600"
+                        onClick={() => onRemoveItem(item.product.id, itemVariantId)}
+                        className="text-slate-400 hover:text-[#EC3460] transition-colors p-1 cursor-pointer"
+                        aria-label="Remove item"
                       >
-                        -
-                      </button>
-                      <span className="px-2 py-1 font-bold text-stone-800">{item.quantity}</span>
-                      <button
-                        onClick={() => onUpdateQuantity(item.product.id, 1)}
-                        className="px-2 py-1 hover:bg-stone-200 cursor-pointer text-stone-600"
-                      >
-                        +
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </div>
                 </div>
-
-                <button
-                  onClick={() => onRemoveItem(item.product.id)}
-                  className="p-1.5 text-stone-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors cursor-pointer"
-                  title="Remove item"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center p-8 text-stone-400">
-              <ShoppingBag className="w-12 h-12 mb-3 text-stone-300 stroke-[1.5]" />
-              <p className="font-semibold text-stone-600 text-sm">Your shopping bag is empty</p>
-              <p className="text-xs text-stone-400 mt-1 max-w-xs">
-                Explore our curated cellular serums and discover authentic Seoul glass skin formulas.
-              </p>
-            </div>
+              );
+            })
           )}
         </div>
 
-        {/* Footer with discount and checkout */}
+        {/* Bottom Checkout & Promo Section */}
         {items.length > 0 && (
-          <div className="p-6 border-t border-stone-100 bg-stone-50/50 space-y-4">
+          <div className="p-5 border-t border-[#FFCDF2]/60 bg-[#FFF5FA] flex flex-col gap-3">
             {/* Promo Code Input */}
             <form onSubmit={handleApplyPromo} className="flex gap-2">
               <input
                 type="text"
-                placeholder="Discount code (e.g. GLOW15)"
+                placeholder="Discount Code (e.g. GLOW15)"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
-                className="flex-1 px-3 py-2 text-xs rounded-xl border border-stone-200 uppercase font-semibold bg-white focus:outline-none focus:border-stone-900"
+                className="flex-1 bg-white border border-[#FFCDF2] rounded-xl px-3 py-2 text-xs uppercase placeholder:normal-case focus:outline-none focus:border-[#EC3460] font-mono"
               />
               <button
                 type="submit"
-                className="px-4 py-2 bg-stone-900 hover:bg-black text-white text-xs font-bold uppercase rounded-xl transition-colors cursor-pointer"
+                className="bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors cursor-pointer shadow-xs"
               >
                 Apply
               </button>
             </form>
-            {promoError && <p className="text-[11px] text-rose-600 font-medium">{promoError}</p>}
-            {appliedDiscount && (
-              <div className="flex items-center justify-between text-xs text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
-                <span>Code {appliedDiscount.code} applied</span>
-                <button
-                  onClick={() => setAppliedDiscount(null)}
-                  className="text-stone-400 hover:text-stone-700 font-bold ml-2 cursor-pointer"
-                >
-                  ×
-                </button>
+            {promoError && (
+              <span className="text-[11px] text-[#EC3460] font-medium">{promoError}</span>
+            )}
+            {promoSuccessMsg && (
+              <span className="text-[11px] text-emerald-700 font-bold">{promoSuccessMsg}</span>
+            )}
+            {discountAmount > 0 && (
+              <div className="flex items-center justify-between text-xs text-[#B31940] bg-[#FFF0F9] border border-[#FFCDF2] px-3 py-1.5 rounded-lg font-medium">
+                <span>Code {activeDiscountCode || 'PROMO'} applied!</span>
+                <span className="font-mono font-bold">-${discountAmount.toFixed(2)}</span>
               </div>
             )}
 
             {/* Calculations */}
-            <div className="space-y-1.5 text-xs text-stone-600 pt-2 border-t border-stone-100">
-              <div className="flex justify-between">
+            <div className="space-y-1.5 text-xs pt-2">
+              <div className="flex items-center justify-between text-slate-500">
                 <span>Subtotal</span>
-                <span className="font-semibold text-stone-800">${rawSubtotal.toFixed(2)}</span>
+                <span className="font-mono tabular-nums text-slate-800">${rawSubtotal.toFixed(2)}</span>
               </div>
-              {discountAmount > 0 && (
-                <div className="flex justify-between text-emerald-600 font-medium">
-                  <span>Discount</span>
-                  <span>-${discountAmount.toFixed(2)}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span>Courier Dispatch</span>
-                <span>{shippingCost === 0 ? 'FREE' : `$${shippingCost.toFixed(2)}`}</span>
+              <div className="flex items-center justify-between text-slate-500">
+                <span>Seoul Direct Shipping</span>
+                <span className="font-semibold text-emerald-700">
+                  {rawSubtotal >= freeShippingThreshold ? 'Free' : '$4.99'}
+                </span>
               </div>
-              <div className="flex justify-between text-sm font-bold text-stone-900 pt-2 border-t border-stone-200">
-                <span>Total</span>
-                <span>${finalTotal.toFixed(2)}</span>
+              <div className="flex items-center justify-between text-sm font-bold text-slate-950 pt-2 border-t border-slate-200/80">
+                <span>Estimated Total</span>
+                <span className="font-mono text-base tabular-nums">${finalTotal.toFixed(2)}</span>
               </div>
             </div>
 
+            {checkoutError && (
+              <div className="bg-rose-50 border border-rose-200 text-[#B31940] text-xs p-3 rounded-xl font-medium">
+                {checkoutError}
+              </div>
+            )}
+
             {/* Checkout Button */}
-            <button
-              onClick={handleCompleteOrder}
-              disabled={isCheckingOut}
-              className="w-full py-3.5 bg-stone-900 hover:bg-black text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-            >
-              {isCheckingOut ? (
-                <span>Processing Order...</span>
-              ) : (
-                <>
-                  <span>Checkout Now · ${finalTotal.toFixed(2)}</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
+            {checkingOut ? (
+              <button
+                disabled
+                className="w-full bg-[#EC3460] text-white font-semibold text-xs uppercase tracking-wider py-4 rounded-2xl shadow-raspberry flex items-center justify-center gap-2 mt-1 opacity-90 cursor-wait"
+              >
+                <Loader2 size={18} className="animate-spin" />
+                <span>Redirecting to Shopify Checkout...</span>
+              </button>
+            ) : orderSuccess ? (
+              <div className="bg-[#FFF0F9] border border-[#FFCDF2] p-5 rounded-3xl text-center space-y-3 animate-in zoom-in-95 shadow-md">
+                <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto shadow-sm">
+                  <Check size={22} strokeWidth={3} />
+                </div>
+                <div>
+                  <h4 className="font-anton text-lg uppercase tracking-tight text-slate-900">
+                    Order Confirmed!
+                  </h4>
+                  <p className="text-xs text-slate-600 mt-0.5">
+                    Order <span className="font-mono font-bold text-slate-950">{createdOrderNumber || '#LF-NEW'}</span> placed successfully.
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Direct Seoul laboratory sourcing & temperature-controlled packing initiated.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-2 pt-1">
+                  {onTrackOrder && (
+                    <button
+                      onClick={() => {
+                        onClose();
+                        setOrderSuccess(false);
+                        onTrackOrder(createdOrderNumber, 'customer@lifeibeauty.com');
+                      }}
+                      className="w-full bg-[#EC3460] hover:bg-[#D8224F] text-white font-bold text-xs uppercase tracking-wider py-3 rounded-2xl shadow-raspberry transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      <Truck size={14} />
+                      <span>Track Order Status</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => {
+                      setOrderSuccess(false);
+                      onClose();
+                    }}
+                    className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold text-xs py-2.5 rounded-2xl transition-colors cursor-pointer"
+                  >
+                    Continue Shopping
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={handleCheckout}
+                className="w-full bg-[#EC3460] hover:bg-[#D8224F] text-white font-semibold text-xs uppercase tracking-wider py-4 rounded-2xl shadow-raspberry transition-all cursor-pointer flex items-center justify-center gap-2 mt-1"
+              >
+                <ShieldCheck size={18} />
+                <span>BUY NOW · ${finalTotal.toFixed(2)}</span>
+              </button>
+            )}
+
+            <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400">
+              <ShieldCheck size={12} className="text-[#EC3460]" />
+              <span>256-Bit SSL Encrypted Checkout · 30-Day Guarantee</span>
+            </div>
           </div>
         )}
       </div>

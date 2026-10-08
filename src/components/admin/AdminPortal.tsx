@@ -17,8 +17,10 @@ import {
   AlertCircle,
   ExternalLink,
   ChevronRight,
-  Store
+  Store,
+  Zap
 } from 'lucide-react';
+import { FastPictureProcessorModal } from '../FastPictureProcessorModal';
 import { 
   AdminProduct, 
   Order, 
@@ -89,6 +91,9 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   // Selected order for direct opening from dashboard
   const [selectedOrderForModal, setSelectedOrderForModal] = useState<Order | null>(null);
+
+  // Fast Picture Processor modal state
+  const [isPictureProcessorOpen, setIsPictureProcessorOpen] = useState(false);
 
   // Live state
   const [products, setProducts] = useState<AdminProduct[]>(() => getAdminProducts());
@@ -450,6 +455,26 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
                 </button>
               );
             })}
+
+            {/* Studio Tools */}
+            <div className="pt-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-1 block">
+                Studio Tools
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsPictureProcessorOpen(true)}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold bg-[#FFF0F9] border border-[#FFCDF2] text-[#EC3460] hover:bg-[#EC3460] hover:text-white transition-all shadow-2xs cursor-pointer group"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Zap size={16} className="text-[#EC3460] group-hover:text-white transition-colors" />
+                  <span>Fast Picture Processor</span>
+                </div>
+                <span className="text-[9px] bg-[#EC3460] text-white group-hover:bg-white group-hover:text-[#EC3460] font-mono px-1.5 py-0.5 rounded-md font-bold">
+                  FAST
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Bottom Store Status Pill */}
@@ -549,6 +574,12 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
           </div>
         </main>
       </div>
+
+      {/* Fast Picture Processor Studio Modal */}
+      <FastPictureProcessorModal
+        isOpen={isPictureProcessorOpen}
+        onClose={() => setIsPictureProcessorOpen(false)}
+      />
     </div>
   );
 };

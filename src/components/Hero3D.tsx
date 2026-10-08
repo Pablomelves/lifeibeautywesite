@@ -756,8 +756,8 @@ export const Hero3D: React.FC<Hero3DProps> = ({
           className="absolute left-6 bottom-6 sm:left-14 sm:bottom-12 max-w-[420px] pointer-events-auto flex flex-col gap-2.5 bg-black/25 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/15 shadow-xl"
         >
           <div className="flex items-center gap-2">
-            <span className="font-inter text-[11px] font-semibold uppercase tracking-[0.2em] text-white opacity-85">
-              LI FEI BEAUTY · 3D HERO
+            <span className="font-inter text-[11px] font-semibold uppercase tracking-[0.2em] text-[#FFCDF2] opacity-95">
+              Life looks better with lifei
             </span>
           </div>
 

@@ -1,8 +1,26 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Search, X, Sparkles, ArrowRight, Loader2, Scale } from 'lucide-react';
+import { Search, X, Sparkles, ArrowRight, Loader2, Scale, Clock } from 'lucide-react';
 import { STORE_PRODUCTS } from '../data/storeData';
 import { Product } from '../types';
 import { searchShopifyProducts, getShopifyConfig } from '../services/shopify';
+
+const RECENT_SEARCHES_KEY = 'lifei_recent_searches';
+const MAX_RECENT_SEARCHES = 8;
+
+const getSavedRecentSearches = (): string[] => {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(RECENT_SEARCHES_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((item): item is string => typeof item === 'string' && item.trim().length > 0)
+      : [];
+  } catch (err) {
+    console.warn('Error reading recent searches:', err);
+    return [];
+  }
+};
 
 interface SearchModalProps {
   isOpen: boolean;
@@ -24,11 +42,56 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const [query, setQuery] = useState('');
   const [isSearchingShopify, setIsSearchingShopify] = useState(false);
   const [shopifyResults, setShopifyResults] = useState<Product[] | null>(null);
+  const [recentSearches, setRecentSearches] = useState<string[]>(() => getSavedRecentSearches());
 
   const activeCatalog = products && products.length > 0 ? products : STORE_PRODUCTS;
   const config = getShopifyConfig();
 
   const trendingTags = ['PDRN Pink', 'EGF NAD', 'Kojic Acid', 'Bio-Collagen', 'Pore Pads', 'Ceramides'];
+
+  // Refresh recent searches when opening modal
+  useEffect(() => {
+    if (isOpen) {
+      setRecentSearches(getSavedRecentSearches());
+    }
+  }, [isOpen]);
+
+  const saveRecentSearch = (searchTerm: string) => {
+    const clean = searchTerm.trim();
+    if (!clean || clean.length < 2) return;
+
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((item) => item.toLowerCase() !== clean.toLowerCase());
+      const updated = [clean, ...filtered].slice(0, MAX_RECENT_SEARCHES);
+      try {
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to save recent search:', e);
+      }
+      return updated;
+    });
+  };
+
+  const handleRemoveRecent = (termToRemove: string) => {
+    setRecentSearches((prev) => {
+      const updated = prev.filter((item) => item !== termToRemove);
+      try {
+        localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to update recent searches:', e);
+      }
+      return updated;
+    });
+  };
+
+  const handleClearAllRecents = () => {
+    setRecentSearches([]);
+    try {
+      localStorage.removeItem(RECENT_SEARCHES_KEY);
+    } catch (e) {
+      console.warn('Failed to clear recent searches:', e);
+    }
+  };
 
   // Local filter over active catalog
   const localResults = useMemo(() => {
@@ -91,6 +154,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && query.trim()) {
+                saveRecentSearch(query);
+              }
+            }}
             placeholder="Search by ingredient (PDRN, NAD+), formula, or skin concern..."
             className="flex-1 text-sm sm:text-base outline-none placeholder:text-slate-400 text-slate-900 font-medium"
           />
@@ -113,9 +181,60 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
         {/* Search Content */}
         <div className="p-6 max-h-[65vh] overflow-y-auto">
-          {/* Trending Suggestions */}
+          {/* Recent Searches & Trending Suggestions when query is empty */}
           {!query && (
             <div>
+              {/* Recent Searches Section */}
+              {recentSearches.length > 0 && (
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                      <Clock size={12} className="text-[#EC3460]" />
+                      RECENT SEARCHES
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleClearAllRecents}
+                      className="text-[11px] text-slate-400 hover:text-[#EC3460] font-medium transition-colors cursor-pointer"
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {recentSearches.map((term) => (
+                      <div
+                        key={term}
+                        className="group inline-flex items-center gap-1.5 bg-slate-50 hover:bg-[#FFF0F9] border border-slate-200/80 hover:border-[#FFCDF2] px-3 py-1.5 rounded-xl text-xs font-medium text-slate-700 hover:text-[#B31940] transition-all"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setQuery(term);
+                            saveRecentSearch(term);
+                          }}
+                          className="cursor-pointer flex items-center gap-1.5"
+                        >
+                          <Clock size={11} className="text-slate-400 group-hover:text-[#EC3460] transition-colors" />
+                          <span>{term}</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRemoveRecent(term);
+                          }}
+                          className="text-slate-400 hover:text-[#EC3460] p-0.5 rounded-full hover:bg-slate-200/60 cursor-pointer ml-0.5 transition-colors"
+                          aria-label={`Remove recent search ${term}`}
+                          title="Remove from history"
+                        >
+                          <X size={11} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 block mb-3 flex items-center gap-1.5">
                 <Sparkles size={12} className="text-[#EC3460]" />
                 TRENDING K-BEAUTY SEARCHES
@@ -124,7 +243,10 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                 {trendingTags.map((tag) => (
                   <button
                     key={tag}
-                    onClick={() => setQuery(tag)}
+                    onClick={() => {
+                      setQuery(tag);
+                      saveRecentSearch(tag);
+                    }}
                     className="text-xs bg-[#FFF0F9] border border-[#FFCDF2] hover:bg-[#EC3460] hover:text-white text-[#B31940] px-3.5 py-1.5 rounded-xl font-medium transition-colors cursor-pointer"
                   >
                     {tag}
@@ -187,6 +309,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   <div
                     key={prod.id}
                     onClick={() => {
+                      if (query.trim()) saveRecentSearch(query);
                       onSelectProduct(prod);
                       onClose();
                     }}

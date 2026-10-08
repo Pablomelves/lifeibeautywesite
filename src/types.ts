@@ -175,7 +175,7 @@ export interface Order {
   shippingCost: number;
   total: number;
   paymentStatus: 'paid' | 'pending' | 'refunded';
-  fulfillmentStatus: 'unfulfilled' | 'fulfilled' | 'shipped' | 'delivered';
+  fulfillmentStatus: 'unfulfilled' | 'fulfilled' | 'shipped' | 'delivered' | 'cancelled';
   trackingNumber?: string;
   carrier?: string;
   notes?: string;
@@ -242,6 +242,8 @@ export interface StoreContentSettings {
   brandStoryTitle: string;
   brandStoryText: string;
 }
+
+export type StoreContent = StoreContentSettings;
 
 export interface AdminUser {
   id: string;
