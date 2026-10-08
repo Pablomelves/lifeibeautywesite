@@ -48,69 +48,71 @@ function setStorage<T>(key: string, value: T): void {
 }
 
 // ----------------------------------------------------------------------
-// Auth Service
+// Auth Service (Server-Verified Only)
 // ----------------------------------------------------------------------
 export function getAdminAuth(): AdminUser | null {
   return getStorage<AdminUser | null>(STORAGE_AUTH, null);
 }
 
+export async function verifyAdminSession(): Promise<{ authenticated: boolean; user?: AdminUser }> {
+  try {
+    const res = await fetch('/api/auth/verify', {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated && data.user) {
+        setStorage(STORAGE_AUTH, data.user);
+        return { authenticated: true, user: data.user };
+      }
+    }
+  } catch (err) {
+    // Network or server unreachable
+  }
+
+  // If server verification failed or returned 401/403, clear local storage
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(STORAGE_AUTH);
+  }
+  return { authenticated: false };
+}
+
 export async function loginAdmin(email: string, pass: string): Promise<{ success: boolean; user?: AdminUser; error?: string }> {
-  // Try server endpoint first
   try {
     const res = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, pass }),
+      body: JSON.stringify({ email: email.trim(), pass }),
     });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.user) {
-        setStorage(STORAGE_AUTH, data.user);
-        return { success: true, user: data.user };
-      }
+
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success && data.user) {
+      setStorage(STORAGE_AUTH, data.user);
+      return { success: true, user: data.user };
     }
-  } catch (e) {
-    // server fallback
-  }
 
-  // Client-side fallback authentication
-  const cleanEmail = email.trim().toLowerCase();
-  if (
-    cleanEmail === 'admin@lifeibeauty.com' ||
-    cleanEmail === 'pablo.kelvin17@gmail.com' ||
-    cleanEmail === 'admin' ||
-    cleanEmail.includes('admin')
-  ) {
-    const user: AdminUser = {
-      id: 'ADMIN-01',
-      email: cleanEmail.includes('@') ? cleanEmail : 'admin@lifeibeauty.com',
-      name: 'Pablo Kelvin (Store Owner)',
-      role: 'superadmin',
+    return { 
+      success: false, 
+      error: data.error || 'Authentication failed. Please check your admin credentials.' 
     };
-    setStorage(STORAGE_AUTH, user);
-    return { success: true, user };
-  }
-
-  // Allow custom owner login
-  if (pass.length >= 4) {
-    const user: AdminUser = {
-      id: 'ADMIN-USER',
-      email: cleanEmail,
-      name: cleanEmail.split('@')[0].toUpperCase(),
-      role: 'superadmin',
+  } catch (err: any) {
+    return { 
+      success: false, 
+      error: err.message || 'Unable to connect to authentication service.' 
     };
-    setStorage(STORAGE_AUTH, user);
-    return { success: true, user };
   }
-
-  return { success: false, error: 'Invalid credentials. Use admin@lifeibeauty.com / admin123' };
 }
 
-export function logoutAdmin(): void {
+export async function logoutAdmin(): Promise<void> {
   if (typeof window !== 'undefined') {
     localStorage.removeItem(STORAGE_AUTH);
   }
-  fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch {
+    // ignore
+  }
 }
 
 // ----------------------------------------------------------------------

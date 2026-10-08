@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import http from 'http';
 import { createServer as createViteServer } from 'vite';
 import fs from 'fs';
@@ -13,10 +13,24 @@ import {
   INITIAL_CONTENT_SETTINGS, 
   DEFAULT_ADMIN_USER 
 } from './src/data/initialAdminData.ts';
+import { 
+  createSessionToken, 
+  verifySessionToken, 
+  timingSafeEqual, 
+  parseCookies 
+} from './src/services/authSecurity.ts';
+
+// Load environment variables if available
+const envPath = path.resolve(process.cwd(), '.env');
+if (fs.existsSync(envPath)) {
+  if (typeof (process as any).loadEnvFile === 'function') {
+    (process as any).loadEnvFile(envPath);
+  }
+}
 
 const app = express();
 const httpServer = http.createServer(app);
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 const DB_FILE = path.resolve(process.cwd(), 'data/store_db.json');
 
 // Ensure data folder exists
@@ -59,7 +73,6 @@ function loadDB(): DBState {
     users: [
       {
         ...DEFAULT_ADMIN_USER,
-        pass: 'admin123',
       }
     ],
   };
@@ -78,6 +91,46 @@ function saveDB(state: DBState): void {
 
 let db = loadDB();
 
+// Environment helpers for secure admin authentication
+function getAdminCredentials() {
+  const secret = process.env.SESSION_SECRET || 'lifei_beauty_super_secure_session_secret_hmac_2026_salt';
+  const expectedEmail = (process.env.ADMIN_EMAIL || 'admin@lifeibeauty.com').trim().toLowerCase();
+  const expectedPass = process.env.ADMIN_PASSWORD || 'admin123';
+  return { secret, expectedEmail, expectedPass };
+}
+
+// Helper: extract token from cookie or Authorization header
+function extractToken(req: Request): string | null {
+  const cookies = parseCookies(req.headers.cookie);
+  const cookieToken = cookies['lifei_admin_session'];
+  if (cookieToken) return cookieToken;
+
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.substring(7);
+  }
+
+  return null;
+}
+
+// Admin-only middleware to protect API routes
+async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const { secret } = getAdminCredentials();
+  const token = extractToken(req);
+
+  const verification = await verifySessionToken(token, secret);
+  if (!verification.valid || !verification.payload) {
+    res.status(401).json({ 
+      error: 'Unauthorized: Store admin credentials required', 
+      authenticated: false 
+    });
+    return;
+  }
+
+  (req as any).adminUser = verification.payload;
+  next();
+}
+
 // Initialize Gemini API
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || '',
@@ -91,62 +144,140 @@ const ai = new GoogleGenAI({
 app.use(express.json({ limit: '15mb' }));
 
 // ----------------------------------------------------------------------
+// URL Route Guard for /admin pages (Server-side protection)
+// ----------------------------------------------------------------------
+app.use(async (req: Request, res: Response, next: NextFunction) => {
+  const reqPath = req.path.toLowerCase();
+
+  // Protect /admin and any subpaths, except /admin/login which is the login interface
+  if (
+    reqPath === '/admin' || 
+    reqPath === '/admin/' || 
+    (reqPath.startsWith('/admin/') && reqPath !== '/admin/login' && reqPath !== '/admin/login/')
+  ) {
+    const { secret } = getAdminCredentials();
+    const token = extractToken(req);
+    const verification = await verifySessionToken(token, secret);
+
+    if (!verification.valid || !verification.payload) {
+      // Forbidden: redirect to normal storefront with unauthorized query parameter
+      res.status(403).redirect('/?unauthorized=admin_access_denied');
+      return;
+    }
+  }
+
+  next();
+});
+
+// ----------------------------------------------------------------------
 // 1. Authentication
 // ----------------------------------------------------------------------
-app.post('/api/auth/login', (req: Request, res: Response) => {
+app.post('/api/auth/login', async (req: Request, res: Response) => {
   const { email, pass } = req.body;
+  const { secret, expectedEmail, expectedPass } = getAdminCredentials();
+
   const cleanEmail = (email || '').trim().toLowerCase();
+  const inputPass = String(pass || '');
 
-  const user = db.users.find((u: any) => u.email.toLowerCase() === cleanEmail) || 
-    (cleanEmail.includes('admin') || cleanEmail.includes('pablo') ? {
-      id: 'ADMIN-01',
-      email: cleanEmail,
-      name: 'Pablo Kelvin (Store Owner)',
-      role: 'superadmin',
-    } : null);
+  const isEmailValid = cleanEmail === expectedEmail;
+  const isPassValid = timingSafeEqual(inputPass, expectedPass);
 
-  if (user) {
-    const token = `lifei_auth_${Date.now()}_${Math.random().toString(36).substring(7)}`;
-    res.json({
-      success: true,
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      }
+  if (!isEmailValid || !isPassValid) {
+    res.status(401).json({ 
+      success: false, 
+      error: 'Invalid store owner credentials' 
     });
     return;
   }
 
-  res.status(401).json({ success: false, error: 'Invalid credentials. Use admin@lifeibeauty.com' });
+  const user = {
+    id: 'ADMIN-01',
+    email: expectedEmail,
+    name: 'Pablo Kelvin (Store Owner)',
+    role: 'superadmin' as const,
+  };
+
+  const token = await createSessionToken(user, secret);
+
+  // Set secure HTTP-only session cookie
+  res.cookie('lifei_admin_session', token, {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  });
+
+  res.json({
+    success: true,
+    token,
+    user,
+  });
 });
 
-app.get('/api/auth/me', (req: Request, res: Response) => {
+app.get('/api/auth/verify', async (req: Request, res: Response) => {
+  const { secret } = getAdminCredentials();
+  const token = extractToken(req);
+
+  const verification = await verifySessionToken(token, secret);
+  if (!verification.valid || !verification.payload) {
+    res.status(401).json({
+      authenticated: false,
+      error: 'Unauthorized: Store admin session invalid or expired'
+    });
+    return;
+  }
+
   res.json({
     authenticated: true,
-    user: db.users[0] || {
-      id: 'ADMIN-01',
-      email: 'admin@lifeibeauty.com',
-      name: 'Pablo Kelvin (Store Owner)',
-      role: 'superadmin',
+    user: {
+      id: verification.payload.id,
+      email: verification.payload.email,
+      name: verification.payload.name,
+      role: verification.payload.role,
+    }
+  });
+});
+
+app.get('/api/auth/me', async (req: Request, res: Response) => {
+  const { secret } = getAdminCredentials();
+  const token = extractToken(req);
+
+  const verification = await verifySessionToken(token, secret);
+  if (!verification.valid || !verification.payload) {
+    res.status(401).json({
+      authenticated: false,
+      error: 'Unauthorized: Store admin session invalid or expired'
+    });
+    return;
+  }
+
+  res.json({
+    authenticated: true,
+    user: {
+      id: verification.payload.id,
+      email: verification.payload.email,
+      name: verification.payload.name,
+      role: verification.payload.role,
     }
   });
 });
 
 app.post('/api/auth/logout', (_req: Request, res: Response) => {
-  res.json({ success: true });
+  res.clearCookie('lifei_admin_session', { path: '/' });
+  res.json({ success: true, message: 'Signed out of store admin' });
 });
 
 // ----------------------------------------------------------------------
 // 2. Products API
 // ----------------------------------------------------------------------
+// Public: Customers and storefront can view active products
 app.get('/api/products', (_req: Request, res: Response) => {
   res.json({ products: db.products });
 });
 
-app.post('/api/products', (req: Request, res: Response) => {
+// Protected: Only authorized admin can add products
+app.post('/api/products', requireAdmin, (req: Request, res: Response) => {
   const newProduct = req.body;
   const nextId = db.products.length > 0 ? Math.max(...db.products.map((p: any) => p.id)) + 1 : 1;
   const item = { ...newProduct, id: nextId };
@@ -155,7 +286,8 @@ app.post('/api/products', (req: Request, res: Response) => {
   res.json({ product: item });
 });
 
-app.put('/api/products/:id', (req: Request, res: Response) => {
+// Protected: Only authorized admin can update products
+app.put('/api/products/:id', requireAdmin, (req: Request, res: Response) => {
   const id = parseInt(req.params.id, 10);
   const updates = req.body;
   db.products = db.products.map((p: any) => p.id === id ? { ...p, ...updates } : p);
@@ -163,14 +295,16 @@ app.put('/api/products/:id', (req: Request, res: Response) => {
   res.json({ success: true, product: db.products.find((p: any) => p.id === id) });
 });
 
-app.delete('/api/products/:id', (req: Request, res: Response) => {
+// Protected: Only authorized admin can delete products
+app.delete('/api/products/:id', requireAdmin, (req: Request, res: Response) => {
   const id = parseInt(req.params.id, 10);
   db.products = db.products.filter((p: any) => p.id !== id);
   saveDB(db);
   res.json({ success: true });
 });
 
-app.post('/api/products/sync', (req: Request, res: Response) => {
+// Protected: Only authorized admin can batch sync products
+app.post('/api/products/sync', requireAdmin, (req: Request, res: Response) => {
   if (Array.isArray(req.body.products)) {
     db.products = req.body.products;
     saveDB(db);
@@ -181,11 +315,12 @@ app.post('/api/products/sync', (req: Request, res: Response) => {
 // ----------------------------------------------------------------------
 // 3. Orders API
 // ----------------------------------------------------------------------
-app.get('/api/orders', (_req: Request, res: Response) => {
+// Protected: Only authorized admin can view complete orders list
+app.get('/api/orders', requireAdmin, (_req: Request, res: Response) => {
   res.json({ orders: db.orders });
 });
 
-// Dedicated Track My Order endpoint
+// Dedicated Public Track My Order endpoint (Customers can look up their own order)
 app.get('/api/orders/track', (req: Request, res: Response) => {
   const queryParam = ((req.query.orderNumber || req.query.q) as string || '').trim().toUpperCase();
   const emailParam = (req.query.email as string || '').trim().toLowerCase();
@@ -240,6 +375,7 @@ app.post('/api/notifications/email', (req: Request, res: Response) => {
   });
 });
 
+// Public: Customer checkout order creation
 app.post('/api/orders', (req: Request, res: Response) => {
   const order = req.body;
   db.orders.unshift(order);
@@ -247,7 +383,8 @@ app.post('/api/orders', (req: Request, res: Response) => {
   res.json({ success: true, order });
 });
 
-app.put('/api/orders/:id', (req: Request, res: Response) => {
+// Protected: Only admin can update order fulfillment/status
+app.put('/api/orders/:id', requireAdmin, (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
   db.orders = db.orders.map((o: any) => o.id === id ? { ...o, ...updates } : o);
@@ -255,7 +392,8 @@ app.put('/api/orders/:id', (req: Request, res: Response) => {
   res.json({ success: true, order: db.orders.find((o: any) => o.id === id) });
 });
 
-app.post('/api/orders/sync', (req: Request, res: Response) => {
+// Protected: Only admin can sync orders
+app.post('/api/orders/sync', requireAdmin, (req: Request, res: Response) => {
   if (Array.isArray(req.body.orders)) {
     db.orders = req.body.orders;
     saveDB(db);
@@ -266,11 +404,12 @@ app.post('/api/orders/sync', (req: Request, res: Response) => {
 // ----------------------------------------------------------------------
 // 4. Customers API
 // ----------------------------------------------------------------------
-app.get('/api/customers', (_req: Request, res: Response) => {
+// Protected: Customers list is accessible to admin only
+app.get('/api/customers', requireAdmin, (_req: Request, res: Response) => {
   res.json({ customers: db.customers });
 });
 
-app.put('/api/customers/:id', (req: Request, res: Response) => {
+app.put('/api/customers/:id', requireAdmin, (req: Request, res: Response) => {
   const { id } = req.params;
   const updates = req.body;
   db.customers = db.customers.map((c: any) => c.id === id ? { ...c, ...updates } : c);
@@ -281,6 +420,7 @@ app.put('/api/customers/:id', (req: Request, res: Response) => {
 // ----------------------------------------------------------------------
 // 5. Discounts API
 // ----------------------------------------------------------------------
+// Public: Discount rules lookup / validation
 app.get('/api/discounts', (_req: Request, res: Response) => {
   res.json({ discounts: db.discounts });
 });
@@ -314,11 +454,13 @@ app.post('/api/discounts/validate', (req: Request, res: Response) => {
 // ----------------------------------------------------------------------
 // 6. Reviews API
 // ----------------------------------------------------------------------
+// Public: Reviews display
 app.get('/api/reviews', (_req: Request, res: Response) => {
   res.json({ reviews: db.reviews });
 });
 
-app.put('/api/reviews/:id', (req: Request, res: Response) => {
+// Protected: Review moderation
+app.put('/api/reviews/:id', requireAdmin, (req: Request, res: Response) => {
   const id = parseInt(req.params.id, 10);
   const updates = req.body;
   db.reviews = db.reviews.map((r: any) => r.id === id ? { ...r, ...updates } : r);
@@ -326,6 +468,7 @@ app.put('/api/reviews/:id', (req: Request, res: Response) => {
   res.json({ success: true });
 });
 
+// Public: Customer review submission (pending moderation)
 app.post('/api/reviews', (req: Request, res: Response) => {
   const newRev = req.body;
   const nextId = db.reviews.length > 0 ? Math.max(...db.reviews.map((r: any) => r.id)) + 1 : 1;
@@ -343,20 +486,22 @@ app.post('/api/reviews', (req: Request, res: Response) => {
 // ----------------------------------------------------------------------
 // 7. Store Content Settings
 // ----------------------------------------------------------------------
+// Public: Storefront content
 app.get('/api/content', (_req: Request, res: Response) => {
   res.json({ content: db.content });
 });
 
-app.post('/api/content/sync', (req: Request, res: Response) => {
+// Protected: Only admin can publish content updates
+app.post('/api/content/sync', requireAdmin, (req: Request, res: Response) => {
   db.content = req.body.settings || req.body;
   saveDB(db);
   res.json({ success: true });
 });
 
 // ----------------------------------------------------------------------
-// 8. Stats / Analytics
+// 8. Stats / Analytics (Admin only)
 // ----------------------------------------------------------------------
-app.get('/api/stats', (_req: Request, res: Response) => {
+app.get('/api/stats', requireAdmin, (_req: Request, res: Response) => {
   const orders = db.orders || [];
   const paidOrders = orders.filter((o: any) => o.paymentStatus === 'paid');
   const revenue = paidOrders.reduce((sum: number, o: any) => sum + (o.total || 0), 0);
@@ -373,9 +518,9 @@ app.get('/api/stats', (_req: Request, res: Response) => {
 });
 
 // ----------------------------------------------------------------------
-// 9. Image Upload (Accepts Base64 data URL and writes to /public/uploads)
+// 9. Image Upload (Protected - Admin only)
 // ----------------------------------------------------------------------
-app.post('/api/upload', (req: Request, res: Response) => {
+app.post('/api/upload', requireAdmin, (req: Request, res: Response) => {
   const { dataUrl, filename } = req.body;
   if (!dataUrl) {
     res.status(400).json({ error: 'Missing dataUrl' });
@@ -405,7 +550,7 @@ app.post('/api/upload', (req: Request, res: Response) => {
 });
 
 // ----------------------------------------------------------------------
-// 10. AI Recommendations API
+// 10. AI Recommendations API (Public for customer consultation)
 // ----------------------------------------------------------------------
 app.post('/api/gemini/recommendations', async (req: Request, res: Response) => {
   try {
