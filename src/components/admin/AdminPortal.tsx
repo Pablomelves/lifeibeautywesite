@@ -67,16 +67,20 @@ import { AdminContentTab } from './AdminContentTab';
 interface AdminPortalProps {
   onClose: () => void;
   onRefreshStoreData?: () => void;
+  onLogoutSuccess?: () => void;
+  onLoginSuccess?: (user: AdminUser) => void;
 }
 
 export const AdminPortal: React.FC<AdminPortalProps> = ({
   onClose,
   onRefreshStoreData,
+  onLogoutSuccess,
+  onLoginSuccess,
 }) => {
   // Auth state
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(() => getAdminAuth());
-  const [loginEmail, setLoginEmail] = useState('admin@lifeibeauty.com');
-  const [loginPass, setLoginPass] = useState('admin123');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPass, setLoginPass] = useState('');
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
@@ -121,15 +125,23 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (result.success && result.user) {
       setCurrentUser(result.user);
       showToast(`Welcome back, ${result.user.name}`);
+      if (onLoginSuccess) {
+        onLoginSuccess(result.user);
+      }
     } else {
       setLoginError(result.error || 'Authentication failed');
     }
   };
 
-  const handleLogout = () => {
-    logoutAdmin();
+  const handleLogout = async () => {
+    await logoutAdmin();
     setCurrentUser(null);
     showToast('Signed out of Admin Hub');
+    if (onLogoutSuccess) {
+      onLogoutSuccess();
+    } else {
+      onClose();
+    }
   };
 
   // Product handlers
@@ -292,24 +304,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
               {isLoggingIn ? 'Authenticating...' : 'Sign In to Operations'}
             </button>
           </form>
-
-          {/* Quick Demo Access Helper */}
-          <div className="mt-6 pt-5 border-t border-slate-100 text-center">
-            <span className="text-[11px] text-slate-400 block mb-2">Owner Quick-Access Credentials:</span>
-            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-[11px] font-mono text-slate-700">
-              <span>admin@lifeibeauty.com / admin123</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setLoginEmail('admin@lifeibeauty.com');
-                  setLoginPass('admin123');
-                }}
-                className="text-[#EC3460] font-bold text-[10px] hover:underline cursor-pointer"
-              >
-                Auto Fill
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     );

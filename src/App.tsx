@@ -25,14 +25,15 @@ import { AboutContactModal } from './components/AboutContactModal';
 import { ShopifyConnectModal } from './components/ShopifyConnectModal';
 import { QuickAddWidget } from './components/QuickAddWidget';
 import { AdminPortal } from './components/admin/AdminPortal';
+import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { TrackOrderModal } from './components/TrackOrderModal';
 import { ComparisonModal } from './components/ComparisonModal';
 import { FastPictureProcessorModal } from './components/FastPictureProcessorModal';
 
-import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData } from './types';
+import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData, AdminUser } from './types';
 import { createShopifyCheckout, getShopifyConfig, getShopifyProducts } from './services/shopify';
 import { STORE_PRODUCTS } from './data/storeData';
-import { getAdminProducts, getStoreContentSettings } from './services/adminService';
+import { getAdminProducts, getStoreContentSettings, verifyAdminSession } from './services/adminService';
 import { Check, SlidersHorizontal, Scale, Zap } from 'lucide-react';
 
 export function App() {
@@ -76,13 +77,72 @@ export function App() {
 
   const profileIncomplete = !profileInfo.firstName || !profileInfo.lastName || !profileInfo.email;
 
-  // Admin Hub Open state
-  const [adminOpen, setAdminOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.location.search.includes('admin=true');
+  // Admin Security & Access State (Completely hidden unless authenticated as admin)
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<AdminUser | null>(null);
+  const [adminLoginOpen, setAdminLoginOpen] = useState<boolean>(false);
+  const [adminOpen, setAdminOpen] = useState<boolean>(false);
+
+  // Check server-side admin authentication and handle URL navigation securely
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Check if redirected due to unauthorized admin access attempt
+    if (window.location.search.includes('unauthorized=admin_access_denied')) {
+      showToast('Access Denied: 403 Forbidden. Store admin authorization required.');
+      window.history.replaceState({}, '', window.location.pathname);
     }
-    return false;
-  });
+
+    // Check for admin login URL request (/admin/login or ?login=admin)
+    const isLoginUrl = 
+      window.location.pathname === '/admin/login' || 
+      window.location.pathname === '/admin/login/' ||
+      window.location.search.includes('login=admin');
+
+    if (isLoginUrl) {
+      setAdminLoginOpen(true);
+    }
+
+    // Server-side admin verification
+    verifyAdminSession().then((res) => {
+      if (res.authenticated && res.user) {
+        setIsAdminAuthenticated(true);
+        setCurrentUser(res.user);
+        // If authenticated owner visited /admin or requested ?admin=true, open portal
+        if (
+          window.location.pathname === '/admin' || 
+          window.location.pathname === '/admin/' || 
+          window.location.search.includes('admin=true')
+        ) {
+          setAdminOpen(true);
+        }
+      } else {
+        setIsAdminAuthenticated(false);
+        setCurrentUser(null);
+        // If unauthenticated visitor attempted to access /admin or ?admin=true, deny and redirect
+        if (
+          window.location.pathname === '/admin' || 
+          window.location.pathname === '/admin/' || 
+          window.location.search.includes('admin=true')
+        ) {
+          showToast('Access Denied: 403 Forbidden. Store admin authorization required.');
+          window.history.replaceState({}, '', '/');
+          setAdminOpen(false);
+        }
+      }
+    });
+
+    // Keyboard shortcut (Ctrl+Shift+A or Alt+A) for store owner quick login trigger
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) || (e.altKey && (e.key === 'A' || e.key === 'a'))) {
+        e.preventDefault();
+        setAdminLoginOpen((prev) => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleRefreshStoreData = () => {
     const freshAdminProducts = getAdminProducts();
@@ -402,7 +462,7 @@ export function App() {
         onOpenContact={() => setAboutContactMode('contact')}
         onOpenShopifyConnect={() => setShopifyConnectOpen(true)}
         isShopifyConnected={isShopifyConnected}
-        onOpenAdmin={() => setAdminOpen(true)}
+        onOpenAdmin={isAdminAuthenticated ? () => setAdminOpen(true) : undefined}
         onOpenTrackOrder={() => handleOpenTrackOrder()}
       />
 
@@ -628,17 +688,19 @@ export function App() {
         onToggleComparison={handleToggleComparison}
       />
 
-      {/* Floating Store Admin Trigger */}
-      <button
-        onClick={() => setAdminOpen(true)}
-        className="fixed bottom-6 left-6 z-[120] bg-slate-950/90 hover:bg-slate-900 text-white px-3.5 py-2.5 rounded-full border border-slate-700/80 shadow-2xl backdrop-blur-md flex items-center gap-2 text-xs font-bold transition-all hover:scale-105 cursor-pointer group"
-        title="Open Li Fei Beauty Admin Hub"
-        aria-label="Open Store Admin Hub"
-      >
-        <SlidersHorizontal size={14} className="text-[#EC3460] group-hover:rotate-45 transition-transform" />
-        <span className="hidden sm:inline">Admin Hub</span>
-        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-      </button>
+      {/* Floating Store Admin Trigger - Completely hidden unless authenticated as admin */}
+      {isAdminAuthenticated && (
+        <button
+          onClick={() => setAdminOpen(true)}
+          className="fixed bottom-6 left-6 z-[120] bg-slate-950/90 hover:bg-slate-900 text-white px-3.5 py-2.5 rounded-full border border-slate-700/80 shadow-2xl backdrop-blur-md flex items-center gap-2 text-xs font-bold transition-all hover:scale-105 cursor-pointer group"
+          title="Open Li Fei Beauty Admin Hub"
+          aria-label="Open Store Admin Hub"
+        >
+          <SlidersHorizontal size={14} className="text-[#EC3460] group-hover:rotate-45 transition-transform" />
+          <span className="hidden sm:inline">Admin Hub</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        </button>
+      )}
 
       {/* Floating Fast Picture Processor Trigger */}
       <button
@@ -667,13 +729,32 @@ export function App() {
         </button>
       )}
 
-      {/* Master Admin Portal Modal */}
-      {adminOpen && (
+      {/* Master Admin Portal Modal - Only rendered when authenticated as admin */}
+      {adminOpen && isAdminAuthenticated && (
         <AdminPortal
           onClose={() => setAdminOpen(false)}
           onRefreshStoreData={handleRefreshStoreData}
+          onLogoutSuccess={() => {
+            setIsAdminAuthenticated(false);
+            setCurrentUser(null);
+            setAdminOpen(false);
+            showToast('Signed out of Admin Hub');
+          }}
         />
       )}
+
+      {/* Store Owner Secure Authentication Modal */}
+      <AdminLoginModal
+        isOpen={adminLoginOpen}
+        onClose={() => setAdminLoginOpen(false)}
+        onSuccess={(user) => {
+          setIsAdminAuthenticated(true);
+          setCurrentUser(user);
+          setAdminLoginOpen(false);
+          setAdminOpen(true);
+          showToast(`Authenticated as ${user.name}`);
+        }}
+      />
 
       {/* Standalone Fast Picture Processor Modal */}
       <FastPictureProcessorModal
