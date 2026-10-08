@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Package, AlertTriangle, CheckCircle, Save, Search } from 'lucide-react';
-import { Product } from '../../types';
+import { AdminProduct } from '../../types';
 
 interface AdminInventoryTabProps {
-  products: Product[];
-  onSaveProducts: (products: Product[]) => void;
+  products: AdminProduct[];
+  onSaveProducts: (products: AdminProduct[]) => void;
 }
 
 export const AdminInventoryTab: React.FC<AdminInventoryTabProps> = ({
