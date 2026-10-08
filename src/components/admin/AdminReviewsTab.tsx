@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Star, CheckCircle, XCircle, Trash2, Edit2, Plus, Sparkles, Filter, Check, Eye } from 'lucide-react';
-import { Review, Product } from '../../types';
+import { ReviewModeration, Product } from '../../types';
 
 interface AdminReviewsTabProps {
-  reviews: Review[];
+  reviews: ReviewModeration[];
   products: Product[];
-  onSaveReviews: (reviews: Review[]) => void;
+  onSaveReviews: (reviews: ReviewModeration[]) => void;
 }
 
 export const AdminReviewsTab: React.FC<AdminReviewsTabProps> = ({
@@ -15,7 +15,7 @@ export const AdminReviewsTab: React.FC<AdminReviewsTabProps> = ({
 }) => {
   const [filterProduct, setFilterProduct] = useState<number | 'all'>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'approved' | 'pending' | 'rejected'>('all');
-  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [editingReview, setEditingReview] = useState<ReviewModeration | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const filtered = reviews.filter((r) => {
@@ -50,6 +50,7 @@ export const AdminReviewsTab: React.FC<AdminReviewsTabProps> = ({
       date: 'Just now',
       status: 'approved',
       verified: true,
+      featured: false,
       skinConcern: 'Dehydration',
       photos: []
     });
@@ -61,7 +62,7 @@ export const AdminReviewsTab: React.FC<AdminReviewsTabProps> = ({
     if (!editingReview) return;
 
     const matchedProd = products.find((p) => p.id === Number(editingReview.productId));
-    const toSave: Review = {
+    const toSave: ReviewModeration = {
       ...editingReview,
       productName: matchedProd ? matchedProd.name : editingReview.productName
     };

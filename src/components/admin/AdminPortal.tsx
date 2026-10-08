@@ -39,21 +39,17 @@ import {
   updateAdminProduct, 
   deleteAdminProduct, 
   toggleProductStatus, 
-  updateProductStock, 
+  saveAdminProducts,
   getAdminOrders, 
   updateOrder, 
   cancelAndRefundOrder, 
   fulfillOrder, 
   getAdminCustomers, 
-  updateCustomer, 
+  saveAdminCustomers,
   getAdminDiscounts, 
-  addDiscount, 
-  updateDiscount, 
-  deleteDiscount, 
+  saveAdminDiscounts,
   getAdminReviews, 
-  updateReviewStatus, 
-  toggleReviewFeatured, 
-  deleteReview, 
+  saveAdminReviews,
   getStoreContentSettings, 
   saveStoreContentSettings, 
   getDashboardMetrics 
@@ -167,8 +163,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     if (onRefreshStoreData) onRefreshStoreData();
   };
 
-  const handleUpdateStock = (productId: number, newStock: number) => {
-    updateProductStock(productId, newStock);
+  const handleSaveInventory = (updatedProducts: AdminProduct[]) => {
+    saveAdminProducts(updatedProducts);
     setProducts(getAdminProducts());
     showToast('Inventory level updated');
     if (onRefreshStoreData) onRefreshStoreData();
@@ -194,50 +190,24 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   };
 
   // Customer handlers
-  const handleUpdateCustomer = (customerId: string, updates: Partial<Customer>) => {
-    updateCustomer(customerId, updates);
+  const handleSaveCustomers = (updatedCustomers: Customer[]) => {
+    saveAdminCustomers(updatedCustomers);
     setCustomers(getAdminCustomers());
     showToast('Customer profile notes updated');
   };
 
   // Discount handlers
-  const handleAddDiscount = (newDisc: Omit<Discount, 'id' | 'usageCount'>) => {
-    const created = addDiscount(newDisc);
-    setDiscounts(getAdminDiscounts());
-    showToast(`Coupon ${created.code} published`);
-  };
-
-  const handleUpdateDiscount = (id: string, updates: Partial<Discount>) => {
-    updateDiscount(id, updates);
+  const handleSaveDiscounts = (updatedDiscounts: Discount[]) => {
+    saveAdminDiscounts(updatedDiscounts);
     setDiscounts(getAdminDiscounts());
     showToast('Discount rule updated');
   };
 
-  const handleDeleteDiscount = (id: string) => {
-    deleteDiscount(id);
-    setDiscounts(getAdminDiscounts());
-    showToast('Coupon code removed');
-  };
-
   // Review handlers
-  const handleUpdateReviewStatus = (reviewId: number, status: 'approved' | 'rejected') => {
-    updateReviewStatus(reviewId, status);
+  const handleSaveReviews = (updatedReviews: ReviewModeration[]) => {
+    saveAdminReviews(updatedReviews);
     setReviews(getAdminReviews());
-    showToast(`Review ${status}`);
-    if (onRefreshStoreData) onRefreshStoreData();
-  };
-
-  const handleToggleReviewFeatured = (reviewId: number) => {
-    toggleReviewFeatured(reviewId);
-    setReviews(getAdminReviews());
-    showToast('Featured status updated');
-    if (onRefreshStoreData) onRefreshStoreData();
-  };
-
-  const handleDeleteReview = (reviewId: number) => {
-    deleteReview(reviewId);
-    setReviews(getAdminReviews());
-    showToast('Review deleted');
+    showToast('Reviews updated');
     if (onRefreshStoreData) onRefreshStoreData();
   };
 
@@ -535,32 +505,29 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             {activeTab === 'customers' && (
               <AdminCustomersTab
                 customers={customers}
-                onUpdateCustomer={handleUpdateCustomer}
+                onSaveCustomers={handleSaveCustomers}
               />
             )}
 
             {activeTab === 'inventory' && (
               <AdminInventoryTab
                 products={products}
-                onUpdateStock={handleUpdateStock}
+                onSaveProducts={handleSaveInventory}
               />
             )}
 
             {activeTab === 'discounts' && (
               <AdminDiscountsTab
                 discounts={discounts}
-                onAddDiscount={handleAddDiscount}
-                onUpdateDiscount={handleUpdateDiscount}
-                onDeleteDiscount={handleDeleteDiscount}
+                onSaveDiscounts={handleSaveDiscounts}
               />
             )}
 
             {activeTab === 'reviews' && (
               <AdminReviewsTab
                 reviews={reviews}
-                onUpdateStatus={handleUpdateReviewStatus}
-                onToggleFeatured={handleToggleReviewFeatured}
-                onDeleteReview={handleDeleteReview}
+                products={products}
+                onSaveReviews={handleSaveReviews}
               />
             )}
 

@@ -72,6 +72,7 @@ export interface Review {
   likes?: number;
   status?: 'approved' | 'pending' | 'rejected' | string;
   featured?: boolean;
+  photos?: string[];
 }
 
 export interface CartItem {
@@ -214,7 +215,7 @@ export interface Discount {
   description?: string;
 }
 
-export interface ReviewModeration {
+export interface ReviewModeration extends Partial<Pick<Review, 'email' | 'location' | 'skinType' | 'photos'>> {
   id: number;
   productId: number;
   productName: string;
