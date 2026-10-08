@@ -1,0 +1,8 @@
+{
+  "name": "Remix LI FEI BEAUTY | Premium Korean Skincare V2",
+  "description": "Curated premium Korean skincare and beauty essentials designed to elevate your everyday routine with glowing hydration and barrier renewal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
