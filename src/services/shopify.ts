@@ -65,37 +65,22 @@ export function saveShopifyConfig(domain: string, token: string): ShopifyConfig 
 
 /**
  * Execute a GraphQL query against Shopify Storefront API
- * Attempts serverless proxy first, with direct public access if the function is not deployed.
+ * Uses the configured serverless proxy as the authoritative storefront.
  */
 async function shopifyFetch<T>(query: string, variables: Record<string, unknown> = {}): Promise<T | null> {
-  const config = getShopifyConfig();
-
   try {
-    let res = await fetch('/api/shopify/graphql', {
+    const res = await fetch('/api/shopify/graphql', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variables }),
       signal: AbortSignal.timeout(15000),
     });
 
-    if (res.status === 404 || (res.ok && res.headers.get('content-type')?.includes('text/html'))) {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json', Accept: 'application/json' };
-      if (config.storefrontAccessToken) {
-        if (/^(shpat_|shpca_|shpss_)/.test(config.storefrontAccessToken)) {
-          throw new Error('Only a public Shopify Storefront access token may be used in the browser.');
-        }
-        headers['X-Shopify-Storefront-Access-Token'] = config.storefrontAccessToken;
-      }
-      res = await fetch(`https://${config.domain}/api/${config.apiVersion}/graphql.json`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ query, variables }),
-        signal: AbortSignal.timeout(15000),
-      });
-    }
-
     if (!res.ok) {
       throw new Error(`Shopify product request failed (HTTP ${res.status}). Verify the store domain, public Storefront token and product access permissions.`);
+    }
+    if (!res.headers.get('content-type')?.includes('application/json')) {
+      throw new Error('The Shopify API route is unavailable. Please try again or contact Li Fei Beauty.');
     }
     const json = await res.json();
     if (json.errors?.length || !json.data) {
@@ -513,27 +498,17 @@ export async function getShopifyCollections(first = 10): Promise<Array<{ id: str
  * Create a real Shopify Checkout URL from current cart items
  */
 export async function createShopifyCheckout(cartItems: CartItem[]): Promise<string | null> {
-  const config = getShopifyConfig();
-  if (!config.isConnected) {
-    return null;
+  if (cartItems.length === 0) {
+    throw new Error('Add a Shopify product to your cart before checking out.');
   }
 
-  // Format cart lines for Shopify Cart API
-  const lines = cartItems
-    .filter((item) => item.product.shopifyId || item.variantId)
-    .map((item) => {
-      const merchandiseId = item.variantId || item.product.selectedVariantId || item.product.variants?.[0]?.id || item.product.shopifyId;
-      return {
-        merchandiseId,
-        quantity: item.quantity,
-      };
-    })
-    .filter((line): line is { merchandiseId: string; quantity: number } => Boolean(line.merchandiseId));
-
-  if (lines.length === 0) {
-    // If no Shopify IDs, create a draft link to the storefront
-    return `https://${config.domain}/cart`;
-  }
+  const lines = cartItems.map((item) => {
+    const merchandiseId = item.variantId || item.product.selectedVariantId || item.product.variants?.[0]?.id;
+    if (!merchandiseId || !/^gid:\/\/shopify\/ProductVariant\/\d+$/.test(merchandiseId) || !Number.isInteger(item.quantity) || item.quantity < 1) {
+      throw new Error('A cart item is no longer available for Shopify checkout. Please remove it and add it again from the live catalog.');
+    }
+    return { merchandiseId, quantity: item.quantity };
+  });
 
   interface CartCreateResponse {
     cartCreate: {
@@ -549,14 +524,24 @@ export async function createShopifyCheckout(cartItems: CartItem[]): Promise<stri
     input: { lines },
   });
 
-  if (data?.cartCreate?.cart?.checkoutUrl) {
-    if (typeof window !== 'undefined' && data.cartCreate.cart.id) {
-      localStorage.setItem(STORAGE_KEY_CART_ID, data.cartCreate.cart.id);
-    }
-    return data.cartCreate.cart.checkoutUrl;
+  if (!data?.cartCreate || data.cartCreate.userErrors?.length || !data.cartCreate.cart?.checkoutUrl) {
+    throw new Error('Shopify could not create checkout. Please review item availability and try again.');
   }
 
-  // Fallback to Shopify cart permalink if mutation errors
-  const lineQuery = lines.map((l) => `${l.merchandiseId.split('/').pop()}:${l.quantity}`).join(',');
-  return `https://${config.domain}/cart/${lineQuery}`;
+  const checkoutUrl = new URL(data.cartCreate.cart.checkoutUrl);
+  if (checkoutUrl.protocol !== 'https:' || checkoutUrl.username || checkoutUrl.password) {
+    throw new Error('Shopify returned an invalid checkout destination. Please contact Li Fei Beauty.');
+  }
+  if (['lifeibeauty.com', 'www.lifeibeauty.com'].includes(checkoutUrl.hostname) || (typeof window !== 'undefined' && checkoutUrl.origin === window.location.origin)) {
+    throw new Error('Checkout is temporarily unavailable because the Shopify checkout domain points to this storefront. Please contact Li Fei Beauty before ordering.');
+  }
+
+  if (typeof window !== 'undefined' && data.cartCreate.cart.id) {
+    try {
+      localStorage.setItem(STORAGE_KEY_CART_ID, data.cartCreate.cart.id);
+    } catch {
+    }
+  }
+
+  return data.cartCreate.cart.checkoutUrl;
 }

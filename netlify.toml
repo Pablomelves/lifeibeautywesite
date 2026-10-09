@@ -1,5 +1,6 @@
 [build]
-  command = "bun run build || npm run build"
+  command = "bun run build"
+  ignore = "node ./scripts/netlify-ignore.cjs"
   publish = "dist"
 
 [functions]
