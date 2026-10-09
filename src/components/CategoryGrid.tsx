@@ -95,7 +95,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
             onClick={() => handleClick('all')}
             className="text-xs font-bold uppercase tracking-wider text-slate-900 hover:text-[#EC3460] transition-colors flex items-center gap-1 cursor-pointer"
           >
-            <span>Explore All 7 Formulas</span>
+            <span>Explore All {products.length > 0 ? `${products.length} Formulas` : 'Formulas'}</span>
             <ArrowRight size={14} />
           </button>
         </div>

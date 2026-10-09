@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ROUTINE_STEPS, STORE_PRODUCTS } from '../data/storeData';
+import { ROUTINE_STEPS } from '../data/storeData';
 import { Product } from '../types';
 import { Check, ArrowRight, Sparkles, Droplets } from 'lucide-react';
 
@@ -16,7 +16,7 @@ export const SkincareRoutine: React.FC<SkincareRoutineProps> = ({
 }) => {
   const [selectedStep, setSelectedStep] = useState<number>(3); // Default to Step 3 (Treat)
 
-  const catalog = products && products.length > 0 ? products : STORE_PRODUCTS;
+  const catalog = products || [];
   const activeStepData = ROUTINE_STEPS.find((s) => s.step === selectedStep) || ROUTINE_STEPS[2];
   let stepProducts = catalog.filter((p) => activeStepData.recommendedProductIds.includes(p.id));
   if (stepProducts.length === 0) {

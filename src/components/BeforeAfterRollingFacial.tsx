@@ -23,7 +23,7 @@ import {
   ZoomIn
 } from 'lucide-react';
 import { Product, Review } from '../types';
-import { STORE_PRODUCTS, ROLLING_FACIAL_REVIEWS } from '../data/storeData';
+import { ROLLING_FACIAL_REVIEWS } from '../data/storeData';
 
 interface BeforeAfterRollingFacialProps {
   onQuickView?: (product: Product) => void;
@@ -64,11 +64,10 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // The featured roller product (id: 8 or live product match or fallback)
-  const catalog = products && products.length > 0 ? products : STORE_PRODUCTS;
+  // The featured roller product (live product match or first catalog item)
+  const catalog = products || [];
   const rollerProduct =
     catalog.find((p) => p.category === 'Tools & Rollers' || p.name.toLowerCase().includes('roller')) ||
-    STORE_PRODUCTS.find((p) => p.id === 8) ||
     catalog[0];
 
   const protocols = [
