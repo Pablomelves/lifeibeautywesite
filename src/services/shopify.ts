@@ -1,8 +1,7 @@
 import { Product, ShopifyVariant, CartItem, ShopifyConfig } from '../types';
 
-const DEFAULT_DOMAIN = 'lifeibeauty.myshopify.com';
-const DEFAULT_STOREFRONT_TOKEN = '28514afc85b8fa8d004788302c17417e';
-const DEFAULT_API_VERSION = '2024-01';
+const DEFAULT_DOMAIN = 'maison-co-store1.myshopify.com';
+const DEFAULT_API_VERSION = '2026-10';
 
 const getEnv = (key: string, fallback = ''): string => {
   const value = import.meta.env[key];
@@ -10,7 +9,7 @@ const getEnv = (key: string, fallback = ''): string => {
 };
 
 const ENV_DOMAIN = getEnv('VITE_SHOPIFY_STORE_DOMAIN', DEFAULT_DOMAIN);
-const ENV_TOKEN = getEnv('VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN', DEFAULT_STOREFRONT_TOKEN);
+const ENV_TOKEN = getEnv('VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN');
 const ENV_API_VERSION = getEnv('VITE_SHOPIFY_API_VERSION', DEFAULT_API_VERSION);
 
 // LocalStorage keys for optional in-app settings
@@ -24,10 +23,10 @@ export function getShopifyConfig(): ShopifyConfig {
 
   if (typeof window !== 'undefined') {
     domain = localStorage.getItem(STORAGE_KEY_DOMAIN) || ENV_DOMAIN || DEFAULT_DOMAIN;
-    storefrontAccessToken = localStorage.getItem(STORAGE_KEY_TOKEN) || ENV_TOKEN || DEFAULT_STOREFRONT_TOKEN;
+    storefrontAccessToken = localStorage.getItem(STORAGE_KEY_TOKEN) || ENV_TOKEN;
   } else {
     domain = ENV_DOMAIN || DEFAULT_DOMAIN;
-    storefrontAccessToken = ENV_TOKEN || DEFAULT_STOREFRONT_TOKEN;
+    storefrontAccessToken = ENV_TOKEN;
   }
 
   // Clean domain if it has http, trailing slashes, or missing myshopify.com
@@ -36,7 +35,7 @@ export function getShopifyConfig(): ShopifyConfig {
     domain = `${domain}.myshopify.com`;
   }
 
-  const isConnected = Boolean(domain && storefrontAccessToken && !storefrontAccessToken.includes('your_public'));
+  const isConnected = Boolean(domain);
 
   return {
     domain,
@@ -66,64 +65,48 @@ export function saveShopifyConfig(domain: string, token: string): ShopifyConfig 
 
 /**
  * Execute a GraphQL query against Shopify Storefront API
- * Attempts serverless proxy first (/api/shopify/graphql), falling back to direct Storefront API
+ * Attempts serverless proxy first, with direct public access if the function is not deployed.
  */
 async function shopifyFetch<T>(query: string, variables: Record<string, unknown> = {}): Promise<T | null> {
   const config = getShopifyConfig();
 
-  if (!config.isConnected) {
-    return null;
-  }
-
-  // Try Netlify server-side function endpoint first
   try {
-    const proxyRes = await fetch('/api/shopify/graphql', {
+    let res = await fetch('/api/shopify/graphql', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variables }),
+      signal: AbortSignal.timeout(15000),
     });
 
-    if (proxyRes.ok) {
-      const json = await proxyRes.json();
-      if (json && !json.errors && json.data) {
-        return json.data as T;
+    if (res.status === 404 || (res.ok && res.headers.get('content-type')?.includes('text/html'))) {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json', Accept: 'application/json' };
+      if (config.storefrontAccessToken) {
+        if (/^(shpat_|shpca_|shpss_)/.test(config.storefrontAccessToken)) {
+          throw new Error('Only a public Shopify Storefront access token may be used in the browser.');
+        }
+        headers['X-Shopify-Storefront-Access-Token'] = config.storefrontAccessToken;
       }
+      res = await fetch(`https://${config.domain}/api/${config.apiVersion}/graphql.json`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ query, variables }),
+        signal: AbortSignal.timeout(15000),
+      });
     }
-  } catch {
-    // Continue to direct endpoint fallback
-  }
-
-  // Fallback to direct Shopify Storefront API endpoint
-  const endpoint = `https://${config.domain}/api/${config.apiVersion}/graphql.json`;
-
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': config.storefrontAccessToken,
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({ query, variables }),
-    });
 
     if (!res.ok) {
-      console.warn(`[Shopify Storefront API] Request failed with HTTP ${res.status}`);
-      return null;
+      throw new Error(`Shopify product request failed (HTTP ${res.status}). Verify the store domain, public Storefront token and product access permissions.`);
     }
-
     const json = await res.json();
-    if (json.errors) {
-      console.warn('[Shopify Storefront API] GraphQL Errors:', json.errors);
-      return null;
+    if (json.errors?.length || !json.data) {
+      throw new Error('Shopify rejected the request. Verify Storefront API permissions and product publication for this sales channel.');
     }
-
     return json.data as T;
-  } catch (err) {
-    console.warn('[Shopify Storefront API] Network error:', err);
-    return null;
+  } catch (error) {
+    if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
+      throw new Error('Shopify took too long to respond. Please try again.');
+    }
+    throw error;
   }
 }
 
@@ -407,7 +390,7 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
 
   // Stable numeric ID derived from Shopify GraphQL ID (gid://shopify/Product/123456789)
   const numericIdMatch = node.id.match(/\d+$/);
-  const stableId = numericIdMatch ? parseInt(numericIdMatch[0].slice(-6), 10) : 1000 + index;
+  const stableId = numericIdMatch ? parseInt(numericIdMatch[0], 10) : 1000 + index;
 
   return {
     id: stableId,
@@ -459,7 +442,7 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
 /**
  * Fetch real products from Shopify Storefront API
  */
-export async function getShopifyProducts(first = 24): Promise<Product[] | null> {
+export async function getShopifyProducts(first = 24): Promise<Product[]> {
   interface ProductsResponse {
     products: {
       edges: Array<{
@@ -469,8 +452,8 @@ export async function getShopifyProducts(first = 24): Promise<Product[] | null> 
   }
 
   const data = await shopifyFetch<ProductsResponse>(PRODUCTS_QUERY, { first });
-  if (!data?.products?.edges || data.products.edges.length === 0) {
-    return null;
+  if (!data?.products?.edges) {
+    throw new Error('Shopify returned an invalid product response. Please verify Storefront product permissions.');
   }
 
   return data.products.edges.map((edge, idx) => transformShopifyProduct(edge.node, idx));

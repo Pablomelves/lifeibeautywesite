@@ -32,20 +32,14 @@ import { FastPictureProcessorModal } from './components/FastPictureProcessorModa
 
 import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData, AdminUser } from './types';
 import { createShopifyCheckout, getShopifyConfig, getShopifyProducts } from './services/shopify';
-import { getAdminProducts, getStoreContentSettings, verifyAdminSession } from './services/adminService';
+import { getStoreContentSettings, verifyAdminSession } from './services/adminService';
 import { Check, SlidersHorizontal, Scale, Zap } from 'lucide-react';
 
 export function App() {
-  // Storefront products & admin sync
-  const [adminProducts, setAdminProducts] = useState<Product[]>(() => {
-    const adminList = getAdminProducts();
-    const active = adminList.filter(p => p.status === 'active');
-    return active;
-  });
   const [products, setProducts] = useState<Product[]>([]);
   const [isProductsLoading, setIsProductsLoading] = useState<boolean>(true);
   const [productError, setProductError] = useState<string | null>(null);
-  const [isShopifyConnected, setIsShopifyConnected] = useState<boolean>(() => getShopifyConfig().isConnected);
+  const [isShopifyConnected, setIsShopifyConnected] = useState<boolean>(false);
   const [shopifyConnectOpen, setShopifyConnectOpen] = useState(false);
 
   // Storefront dynamic content
@@ -146,12 +140,6 @@ export function App() {
   }, []);
 
   const handleRefreshStoreData = () => {
-    const freshAdminProducts = getAdminProducts();
-    const active = freshAdminProducts.filter(p => p.status === 'active');
-    setAdminProducts(active.length > 0 ? active : freshAdminProducts);
-    if (!isShopifyConnected) {
-      setProducts(active.length > 0 ? active : freshAdminProducts);
-    }
     setContentSettings(getStoreContentSettings());
   };
 
@@ -321,49 +309,23 @@ export function App() {
   };
 
   const loadProducts = async (showNotice = false) => {
-    const config = getShopifyConfig();
-    setIsShopifyConnected(config.isConnected);
     setIsProductsLoading(true);
     setProductError(null);
-
-    if (config.isConnected) {
-      try {
-        const liveProducts = await getShopifyProducts(24);
-        if (liveProducts && liveProducts.length > 0) {
-          setProducts(liveProducts);
-          if (showNotice) {
-            showToast(`Connected to Shopify! Loaded ${liveProducts.length} live products.`);
-          }
-        } else {
-          // If no products returned or empty catalog
-          if (adminProducts.length > 0) {
-            setProducts(adminProducts);
-          } else {
-            setProducts([]);
-            setProductError('No products found on Shopify store or Storefront API permissions pending.');
-          }
-        }
-      } catch (err) {
-        console.warn('Error loading Shopify products:', err);
-        setProductError('Unable to load products from Shopify Storefront API. Please verify store status.');
-        if (adminProducts.length > 0) {
-          setProducts(adminProducts);
-        } else {
-          setProducts([]);
-        }
-      } finally {
-        setIsProductsLoading(false);
+    setIsShopifyConnected(false);
+    try {
+      const liveProducts = await getShopifyProducts(24);
+      setProducts(liveProducts);
+      setIsShopifyConnected(true);
+      if (liveProducts.length === 0) {
+        setProductError('No products are available through this Shopify storefront. Check that products are Active and published to the sales channel associated with Storefront access.');
+      } else if (showNotice) {
+        showToast(`Connected to Shopify! Loaded ${liveProducts.length} live products.`);
       }
-    } else {
-      if (adminProducts.length > 0) {
-        setProducts(adminProducts);
-      } else {
-        setProducts([]);
-      }
+    } catch (error) {
+      setProducts([]);
+      setProductError(error instanceof Error ? error.message : 'Unable to load products from Shopify. Please try again.');
+    } finally {
       setIsProductsLoading(false);
-      if (showNotice) {
-        showToast('Restored catalog.');
-      }
     }
   };
 

@@ -1,27 +1,20 @@
 import type { Config, Context } from '@netlify/functions';
 
-const DEFAULT_DOMAIN = 'lifeibeauty.myshopify.com';
-const DEFAULT_TOKEN = '28514afc85b8fa8d004788302c17417e';
-const DEFAULT_API_VERSION = '2024-01';
-
 export default async (req: Request, _context: Context) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, X-Shopify-Storefront-Access-Token',
-      },
-    });
+  if (req.method !== 'POST') {
+    return Response.json({ error: 'Method not allowed' }, { status: 405, headers: { Allow: 'POST' } });
   }
 
-  const domain = (process.env.SHOPIFY_STORE_DOMAIN || process.env.VITE_SHOPIFY_STORE_DOMAIN || DEFAULT_DOMAIN)
+  const domain = (process.env.SHOPIFY_STORE_DOMAIN || process.env.VITE_SHOPIFY_STORE_DOMAIN || 'maison-co-store1.myshopify.com')
     .replace(/^https?:\/\//, '')
     .split('/')[0]
     .trim();
-  const token = (process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || process.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN || DEFAULT_TOKEN).trim();
-  const apiVersion = (process.env.SHOPIFY_API_VERSION || process.env.VITE_SHOPIFY_API_VERSION || DEFAULT_API_VERSION).trim();
+  const token = (process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || '').trim();
+  const apiVersion = (process.env.SHOPIFY_API_VERSION || process.env.VITE_SHOPIFY_API_VERSION || '2026-10').trim();
+
+  if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/i.test(domain) || !/^\d{4}-(01|04|07|10)$/.test(apiVersion) || /^(shpat_|shpca_|shpss_)/.test(token)) {
+    return Response.json({ error: 'Invalid Shopify Storefront configuration. Use the canonical store domain, a supported API version and only a public Storefront token.' }, { status: 503 });
+  }
 
   let body: { query?: string; variables?: Record<string, unknown> } = {};
   if (req.method === 'POST') {
@@ -35,36 +28,33 @@ export default async (req: Request, _context: Context) => {
   const query = body.query;
   const variables = body.variables || {};
 
-  if (!query) {
+  if (typeof query !== 'string' || !query.trim()) {
     return Response.json({ error: 'GraphQL query is required' }, { status: 400 });
   }
 
   const shopifyEndpoint = `https://${domain}/api/${apiVersion}/graphql.json`;
 
   try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', Accept: 'application/json' };
+    if (token) headers['X-Shopify-Storefront-Access-Token'] = token;
     const shopifyRes = await fetch(shopifyEndpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Shopify-Storefront-Access-Token': token,
-        'Accept': 'application/json',
-      },
+      headers,
       body: JSON.stringify({ query, variables }),
+      signal: AbortSignal.timeout(12000),
     });
 
     const data = await shopifyRes.json();
     return Response.json(data, {
       status: shopifyRes.status,
       headers: {
-        'Access-Control-Allow-Origin': '*',
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=60, s-maxage=300',
+        'Cache-Control': 'no-store',
       },
     });
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Shopify proxy error';
+  } catch {
     return Response.json(
-      { error: 'Failed to connect to Shopify Storefront API', details: msg },
+      { error: 'Failed to connect to Shopify Storefront API' },
       { status: 502 }
     );
   }

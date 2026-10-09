@@ -543,7 +543,7 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
             </div>
 
             {/* Paired Product Card: The Rose Quartz Contour Roller */}
-            <div className="bg-white rounded-3xl p-6 border border-[#FFCDF2] shadow-md flex gap-4 items-center group">
+            {rollerProduct && <div className="bg-white rounded-3xl p-6 border border-[#FFCDF2] shadow-md flex gap-4 items-center group">
               <div 
                 className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#FFF0F9] border border-[#FFCDF2] flex items-center justify-center p-2 shrink-0 cursor-pointer overflow-hidden"
                 onClick={() => onQuickView?.(rollerProduct)}
@@ -621,7 +621,7 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
                   </div>
                 </div>
               </div>
-            </div>
+            </div>}
 
           </div>
 
