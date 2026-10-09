@@ -74,7 +74,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       setIsAutoPlaying(true);
     }
     if (product?.variants && product.variants.length > 0) {
-      setSelectedVariant(product.variants[0]);
+      setSelectedVariant(previous => product.variants.find(variant => variant.id === previous?.id) || product.variants.find(variant => variant.id === product.selectedVariantId) || product.variants.find(variant => variant.availableForSale) || product.variants[0]);
     } else {
       setSelectedVariant(null);
     }
@@ -112,6 +112,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
   const currentNumericPrice = selectedVariant ? selectedVariant.numericPrice : product.numericPrice;
+  const currentOriginalPrice = selectedVariant ? selectedVariant.compareAtPrice : product.originalPrice;
+  const currentAvailable = selectedVariant ? selectedVariant.availableForSale : product.availableForSale;
 
   const productReviews = STORE_REVIEWS.filter((r) => r.productId === product.id);
   const recommended = (allProducts || [])
@@ -177,7 +179,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             "@type": "Product",
             "name": product.name,
             "image": product.src,
-            "description": product.subtitle || product.benefits.join(', '),
+            "description": product.description || product.fullDescription,
             "brand": {
               "@type": "Brand",
               "name": "LI FEI BEAUTY"
@@ -185,33 +187,33 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             "offers": {
               "@type": "Offer",
               "url": window.location.href,
-              "priceCurrency": "USD",
-              "price": product.numericPrice,
-              "availability": "https://schema.org/InStock",
+              "priceCurrency": product.currencyCode || 'USD',
+              "price": currentNumericPrice,
+              "availability": currentAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
               "itemCondition": "https://schema.org/NewCondition"
             },
-            "aggregateRating": {
+            ...(product.reviewsCount > 0 ? { "aggregateRating": {
               "@type": "AggregateRating",
               "ratingValue": product.rating,
               "reviewCount": product.reviewsCount
-            }
+            } } : {})
           })
         }]}
       >
         <title>{`${product.name} | LI FEI BEAUTY`}</title>
-        <meta name="description" content={product.subtitle || product.benefits.join('. ')} />
+        <meta name="description" content={product.description || product.fullDescription} />
         
         {/* OpenGraph / Facebook */}
         <meta property="og:type" content="product" />
         <meta property="og:title" content={`${product.name} | LI FEI BEAUTY`} />
-        <meta property="og:description" content={product.subtitle || product.benefits.join('. ')} />
+        <meta property="og:description" content={product.description || product.fullDescription} />
         <meta property="og:image" content={product.src} />
         <meta property="og:url" content={window.location.href} />
         
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={`${product.name} | LI FEI BEAUTY`} />
-        <meta name="twitter:description" content={product.subtitle || product.benefits.join('. ')} />
+        <meta name="twitter:description" content={product.description || product.fullDescription} />
         <meta name="twitter:image" content={product.src} />
       </Helmet>
 
@@ -406,7 +408,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <span className="text-xs font-bold text-slate-900">{product.rating}</span>
                   <span className="text-xs text-slate-400">({product.reviewsCount} reviews)</span>
                   <span className="text-slate-300">·</span>
-                  <span className="text-xs text-emerald-700 font-semibold">{product.stockStatus}</span>
+                  <span className="text-xs text-emerald-700 font-semibold">{currentAvailable ? 'In Stock' : 'Out of Stock'}</span>
                 </div>
 
                 {/* 3. Price */}
@@ -414,9 +416,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <span className="font-mono text-2xl font-bold text-slate-950 tabular-nums">
                     {currentPrice}
                   </span>
-                  {product.originalPrice && (
+                  {currentOriginalPrice && (
                     <span className="text-sm text-slate-400 line-through tabular-nums font-mono">
-                      {product.originalPrice}
+                      {currentOriginalPrice}
                     </span>
                   )}
                   <span className="text-[11px] font-semibold text-[#B31940] bg-[#FFF0F9] border border-[#FFCDF2] px-2 py-0.5 rounded">
@@ -459,6 +461,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     Key Clinical Benefits:
                   </span>
                   <ul className="space-y-2">
+                    {product.fullDescription && (
+                      <li className="text-xs text-slate-700 leading-relaxed whitespace-pre-line">{product.fullDescription}</li>
+                    )}
                     {product.benefits.map((b, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-xs text-slate-700 leading-relaxed">
                         <CheckCircle2 size={14} className="text-[#EC3460] shrink-0 mt-0.5" />
@@ -496,6 +501,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {/* Add to Cart */}
                   <button
                     onClick={handleAdd}
+                    disabled={!currentAvailable}
                     className={`flex-1 font-semibold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-raspberry flex items-center justify-center gap-2 ${
                       added
                         ? 'bg-emerald-600 text-white'
@@ -540,7 +546,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {/* Buy Now (Direct Checkout Flow) */}
                 <button
                   onClick={handleBuyNow}
-                  disabled={isBuyingNow}
+                  disabled={isBuyingNow || !currentAvailable}
                   className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white font-semibold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
                 >
                   {isBuyingNow ? (

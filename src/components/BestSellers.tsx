@@ -251,6 +251,7 @@ const ProductCard: React.FC<{
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2">
             <button
               onClick={(e) => handleAdd(e, product)}
+              disabled={product.availableForSale === false}
               className={`flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center justify-center gap-1 ${
                 isAdded
                   ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 animate-pop'
@@ -282,6 +283,7 @@ const ProductCard: React.FC<{
               }}
               className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center justify-center gap-1 bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry border border-transparent"
               title="Buy now and checkout"
+              disabled={product.availableForSale === false}
             >
               <Sparkles size={isMobile ? 12 : 14} />
               <span className="xs:inline">Buy</span>

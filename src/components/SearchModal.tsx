@@ -108,31 +108,32 @@ export const SearchModal: React.FC<SearchModalProps> = ({
 
   // Live Shopify Storefront API search when connected
   useEffect(() => {
-    if (!config.isConnected || !query.trim() || query.length < 2) {
-      setShopifyResults(null);
+    setShopifyResults(null);
+    setIsSearchingShopify(false);
+    if (!isOpen || !config.isConnected || !query.trim() || query.length < 2) {
       return;
     }
 
+    let cancelled = false;
     const timer = setTimeout(async () => {
       setIsSearchingShopify(true);
       try {
         const res = await searchShopifyProducts(query.trim(), 8);
-        if (res && res.length > 0) {
-          setShopifyResults(res);
-        } else {
-          setShopifyResults(null);
-        }
+        if (!cancelled) setShopifyResults(res || []);
       } catch (err) {
         console.warn('Shopify live search error:', err);
       } finally {
-        setIsSearchingShopify(false);
+        if (!cancelled) setIsSearchingShopify(false);
       }
     }, 300);
 
-    return () => clearTimeout(timer);
-  }, [query, config.isConnected]);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query, config.isConnected, isOpen]);
 
-  const results = shopifyResults && shopifyResults.length > 0 ? shopifyResults : localResults;
+  const results = shopifyResults ?? localResults;
 
   if (!isOpen) return null;
 

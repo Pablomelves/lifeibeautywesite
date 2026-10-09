@@ -20,6 +20,7 @@ export interface Product {
   price: string;
   numericPrice: number;
   originalPrice?: string;
+  currencyCode?: string;
   compareAtPrice?: string;
   volume: string;
   category: 'Serums' | 'Moisturizers' | 'Masks' | 'Cleansers' | 'Eye Care' | 'Sets & Bundles' | 'Tools & Rollers' | string;
