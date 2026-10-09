@@ -45,6 +45,7 @@ export default async (req: Request, _context: Context) => {
     });
 
     const data = await shopifyRes.json();
+    rewriteCheckoutUrls(data, domain);
     return Response.json(data, {
       status: shopifyRes.status,
       headers: {
@@ -59,6 +60,28 @@ export default async (req: Request, _context: Context) => {
     );
   }
 };
+
+// The Shopify store's primary domain (lifeibeauty.com) is served by this Netlify site,
+// so Shopify's `https://<primary>/cart/c/<token>` checkout links would load the storefront
+// instead of checkout. Point them at Shopify's hosted checkout on the myshopify.com domain.
+function rewriteCheckoutUrls(node: unknown, domain: string): void {
+  if (!node || typeof node !== 'object') return;
+  for (const [key, value] of Object.entries(node as Record<string, unknown>)) {
+    if (key === 'checkoutUrl' && typeof value === 'string') {
+      try {
+        const url = new URL(value);
+        const match = url.pathname.match(/^\/cart\/c\/([^/]+)/);
+        if (match) {
+          (node as Record<string, unknown>)[key] = `https://${domain}/checkouts/cn/${match[1]}${url.search}`;
+        }
+      } catch {
+        // Leave unparseable URLs untouched
+      }
+    } else {
+      rewriteCheckoutUrls(value, domain);
+    }
+  }
+}
 
 export const config: Config = {
   path: ['/api/shopify/graphql', '/api/shopify'],
