@@ -32,20 +32,20 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
     }
     const cleanToken = token.trim();
 
-    if (!cleanDomain || !cleanToken) {
-      setTestResult({ success: false, message: 'Please provide both your Shopify store domain and Public Storefront access token.' });
+    if (!cleanDomain || /^(shpat_|shpca_|shpss_)/.test(cleanToken)) {
+      setTestResult({ success: false, message: 'Provide a Shopify store domain and, if needed, only a public Storefront access token. Never use an Admin API token.' });
       setTesting(false);
       return;
     }
 
     try {
       // Test query
-      const endpoint = `https://${cleanDomain}/api/2024-01/graphql.json`;
+      const endpoint = `https://${cleanDomain}/api/${currentConfig.apiVersion}/graphql.json`;
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Shopify-Storefront-Access-Token': cleanToken,
+          ...(cleanToken ? { 'X-Shopify-Storefront-Access-Token': cleanToken } : {}),
         },
         body: JSON.stringify({
           query: '{ shop { name primaryDomain { host } } }',
@@ -69,18 +69,18 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Shopify-Storefront-Access-Token': cleanToken,
+            ...(cleanToken ? { 'X-Shopify-Storefront-Access-Token': cleanToken } : {}),
           },
           body: JSON.stringify({
             query: '{ products(first: 1) { edges { node { id title } } } }',
           }),
         });
         const pJson = await testProducts.json();
-        if (pJson.data?.products) {
+        if (testProducts.ok && !pJson.errors?.length && pJson.data?.products?.edges?.length > 0) {
           saveShopifyConfig(cleanDomain, cleanToken);
           setTestResult({
             success: true,
-            message: `Successfully connected to ${cleanDomain}! Real products loaded.`,
+            message: `Storefront product access verified for ${cleanDomain}.`,
           });
           setTimeout(() => {
             onConnected();
@@ -107,7 +107,7 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
     saveShopifyConfig('', '');
     setDomain('');
     setToken('');
-    setTestResult({ success: true, message: 'Disconnected. Restored curated catalog.' });
+    setTestResult({ success: true, message: 'Browser overrides cleared. Using the configured Shopify storefront.' });
     onConnected();
   };
 
@@ -154,7 +154,7 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
             <span className={`w-2.5 h-2.5 rounded-full animate-pulse ${currentConfig.isConnected ? 'bg-emerald-500' : 'bg-[#EC3460]'}`} />
             <div>
               <span className="text-xs font-bold uppercase block">
-                {currentConfig.isConnected ? 'Connected to Shopify' : 'Demo Catalog Active'}
+                {currentConfig.isConnected ? 'Shopify Storefront Configured' : 'Shopify Not Configured'}
               </span>
               <span className="text-[11px] opacity-80 block font-mono">
                 {currentConfig.isConnected ? currentConfig.domain : 'Ready for your Shopify credentials'}
@@ -206,10 +206,9 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
             </label>
             <input
               type="password"
-              required
               value={token}
               onChange={(e) => setToken(e.target.value)}
-              placeholder="e.g. shpat_... or storefront access token"
+              placeholder="Optional public Storefront access token"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-900 outline-none focus:border-[#EC3460] font-mono"
             />
           </div>
