@@ -450,7 +450,11 @@ export function App() {
 
   const totalCartCount = cartItems.reduce((acc, curr) => acc + curr.quantity, 0);
 
-  const quickAddProducts = products.slice(0, 3);
+  const kojicAcidProduct = products.find(product => product.shopifyId === 'gid://shopify/Product/10705876779148');
+  const quickAddProducts = products
+    .filter(product => product.shopifyId !== 'gid://shopify/Product/10691183050892' && product.id !== kojicAcidProduct?.id)
+    .slice(0, kojicAcidProduct ? 2 : 3);
+  if (kojicAcidProduct) quickAddProducts.push(kojicAcidProduct);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-inter selection:bg-[#FFCDF2] selection:text-[#4A0818]">
