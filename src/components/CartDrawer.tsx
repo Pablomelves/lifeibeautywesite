@@ -8,15 +8,14 @@ import {
   ShieldCheck, 
   Truck, 
   Sparkles, 
-  Check, 
   ArrowRight,
   ExternalLink,
   RefreshCw,
   Loader2
 } from 'lucide-react';
 import { CartItem } from '../types';
-import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
-import { validateCoupon, createOrderFromCheckout } from '../services/adminService';
+import { createShopifyCheckout } from '../services/shopify';
+import { validateCoupon } from '../services/adminService';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -35,9 +34,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   items,
   onUpdateQuantity,
   onRemoveItem,
-  onClearCart,
   onOpenShopifyConnect,
-  onTrackOrder,
 }) => {
   const [promoCode, setPromoCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
@@ -45,14 +42,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const [activeDiscountCode, setActiveDiscountCode] = useState<string>('');
   const [promoSuccessMsg, setPromoSuccessMsg] = useState<string | null>(null);
   const [promoError, setPromoError] = useState<string | null>(null);
-  const [orderSuccess, setOrderSuccess] = useState(false);
-  const [createdOrderNumber, setCreatedOrderNumber] = useState<string>('');
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   if (!isOpen) return null;
-
-  const shopifyConfig = getShopifyConfig();
 
   const totalCount = items.reduce((sum, item) => sum + item.quantity, 0);
   const rawSubtotal = items.reduce((sum, item) => sum + item.product.numericPrice * item.quantity, 0);
@@ -85,57 +78,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     setCheckingOut(true);
     setCheckoutError(null);
 
-    // If Shopify is connected, initiate real Shopify Checkout
-    if (shopifyConfig.isConnected) {
-      try {
-        const checkoutUrl = await createShopifyCheckout(items);
-        if (checkoutUrl) {
-          window.location.href = checkoutUrl;
-          return;
-        } else {
-          setCheckoutError('Could not reach Shopify Checkout. Please verify your Storefront API credentials.');
-          setCheckingOut(false);
-          return;
-        }
-      } catch (err) {
-        console.warn('Shopify checkout error:', err);
-        setCheckoutError('Network error connecting to Shopify Checkout.');
-        setCheckingOut(false);
-        return;
-      }
-    }
-
-    // Save order directly into the store's backend database
-    let placedOrderNum = '';
     try {
-      const order = createOrderFromCheckout({
-        customer: {
-          name: 'Verified Customer',
-          email: 'customer@lifeibeauty.com',
-          phone: '+1 (555) 789-0123',
-          address: '420 Orchard Street, Suite 5',
-          city: 'San Francisco',
-          state: 'CA',
-          country: 'United States',
-          zip: '94102',
-        },
-        items,
-        discountCode: activeDiscountCode || undefined,
-        discountAmount,
-        shippingCost: rawSubtotal >= freeShippingThreshold ? 0 : 4.99,
-      });
-      if (order) {
-        placedOrderNum = order.orderNumber;
-        setCreatedOrderNumber(order.orderNumber);
+      const checkoutUrl = await createShopifyCheckout(items);
+      if (!checkoutUrl) {
+        throw new Error('Shopify did not return a checkout URL. Please try again.');
       }
-    } catch (err) {
-      console.warn('Backend order recording error:', err);
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      setCheckoutError(error instanceof Error ? error.message : 'Unable to connect to Shopify Checkout. Please try again.');
+    } finally {
+      setCheckingOut(false);
     }
-
-    // Default simulated flow for testing without live credentials
-    setCheckingOut(false);
-    setOrderSuccess(true);
-    onClearCart?.();
   };
 
   return (
@@ -339,48 +292,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <Loader2 size={18} className="animate-spin" />
                 <span>Redirecting to Shopify Checkout...</span>
               </button>
-            ) : orderSuccess ? (
-              <div className="bg-[#FFF0F9] border border-[#FFCDF2] p-5 rounded-3xl text-center space-y-3 animate-in zoom-in-95 shadow-md">
-                <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto shadow-sm">
-                  <Check size={22} strokeWidth={3} />
-                </div>
-                <div>
-                  <h4 className="font-anton text-lg uppercase tracking-tight text-slate-900">
-                    Order Confirmed!
-                  </h4>
-                  <p className="text-xs text-slate-600 mt-0.5">
-                    Order <span className="font-mono font-bold text-slate-950">{createdOrderNumber || '#LF-NEW'}</span> placed successfully.
-                  </p>
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Direct Seoul laboratory sourcing & temperature-controlled packing initiated.
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2 pt-1">
-                  {onTrackOrder && (
-                    <button
-                      onClick={() => {
-                        onClose();
-                        setOrderSuccess(false);
-                        onTrackOrder(createdOrderNumber, 'customer@lifeibeauty.com');
-                      }}
-                      className="w-full bg-[#EC3460] hover:bg-[#D8224F] text-white font-bold text-xs uppercase tracking-wider py-3 rounded-2xl shadow-raspberry transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <Truck size={14} />
-                      <span>Track Order Status</span>
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setOrderSuccess(false);
-                      onClose();
-                    }}
-                    className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold text-xs py-2.5 rounded-2xl transition-colors cursor-pointer"
-                  >
-                    Continue Shopping
-                  </button>
-                </div>
-              </div>
             ) : (
               <button
                 onClick={handleCheckout}
