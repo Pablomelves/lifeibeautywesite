@@ -202,6 +202,10 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
     setTimeout(() => setAdded(false), 2000);
   };
 
+  if (!rollerProduct) {
+    return null;
+  }
+
   return (
     <section id="rolling-facial" className="py-20 sm:py-28 bg-[#FFF5FA] font-inter border-b border-[#FFCDF2]/60 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
