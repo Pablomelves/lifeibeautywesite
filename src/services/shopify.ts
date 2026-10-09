@@ -531,8 +531,7 @@ export async function createShopifyCheckout(cartItems: CartItem[]): Promise<stri
     .filter((line): line is { merchandiseId: string; quantity: number } => Boolean(line.merchandiseId));
 
   if (lines.length === 0) {
-    // If no Shopify IDs, create a draft link to the storefront
-    return `https://${config.domain}/cart`;
+    return null;
   }
 
   interface CartCreateResponse {
@@ -556,7 +555,7 @@ export async function createShopifyCheckout(cartItems: CartItem[]): Promise<stri
     return data.cartCreate.cart.checkoutUrl;
   }
 
-  // Fallback to Shopify cart permalink if mutation errors
-  const lineQuery = lines.map((l) => `${l.merchandiseId.split('/').pop()}:${l.quantity}`).join(',');
-  return `https://${config.domain}/cart/${lineQuery}`;
+  // Cart permalinks would redirect to the primary domain (this site), so surface the error instead
+  const userError = data?.cartCreate?.userErrors?.[0]?.message;
+  throw new Error(userError || 'Shopify could not create a checkout for this cart.');
 }
