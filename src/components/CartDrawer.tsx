@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { CartItem } from '../types';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
-import { validateCoupon, createOrderFromCheckout } from '../services/adminService';
+import { validateCoupon } from '../services/adminService';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -88,7 +88,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     // If Shopify is connected, initiate real Shopify Checkout
     if (shopifyConfig.isConnected) {
       try {
-        const checkoutUrl = await createShopifyCheckout(items);
+        const checkoutUrl = await createShopifyCheckout(items, activeDiscountCode || undefined);
         if (checkoutUrl) {
           window.location.href = checkoutUrl;
           return;
@@ -99,43 +99,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         }
       } catch (err) {
         console.warn('Shopify checkout error:', err);
-        setCheckoutError('Network error connecting to Shopify Checkout.');
+        setCheckoutError(err instanceof Error ? err.message : 'Network error connecting to Shopify Checkout.');
         setCheckingOut(false);
         return;
       }
     }
 
-    // Save order directly into the store's backend database
-    let placedOrderNum = '';
-    try {
-      const order = createOrderFromCheckout({
-        customer: {
-          name: 'Verified Customer',
-          email: 'customer@lifeibeauty.com',
-          phone: '+1 (555) 789-0123',
-          address: '420 Orchard Street, Suite 5',
-          city: 'San Francisco',
-          state: 'CA',
-          country: 'United States',
-          zip: '94102',
-        },
-        items,
-        discountCode: activeDiscountCode || undefined,
-        discountAmount,
-        shippingCost: rawSubtotal >= freeShippingThreshold ? 0 : 4.99,
-      });
-      if (order) {
-        placedOrderNum = order.orderNumber;
-        setCreatedOrderNumber(order.orderNumber);
-      }
-    } catch (err) {
-      console.warn('Backend order recording error:', err);
-    }
-
-    // Default simulated flow for testing without live credentials
     setCheckingOut(false);
-    setOrderSuccess(true);
-    onClearCart?.();
+    setCheckoutError('Shopify checkout is unavailable. Your shopping bag has not been cleared.');
   };
 
   return (

@@ -1,103 +1,39 @@
-import { Product, ShopifyVariant, CartItem, ShopifyConfig } from '../types';
+import type { Product, ShopifyVariant, CartItem, ShopifyConfig } from '../types';
 
 const DEFAULT_DOMAIN = 'maison-co-store1.myshopify.com';
 const DEFAULT_API_VERSION = '2026-10';
 
-const getEnv = (key: string, fallback = ''): string => {
-  const value = import.meta.env[key];
-  return value ? String(value) : fallback;
-};
-
-const ENV_DOMAIN = getEnv('VITE_SHOPIFY_STORE_DOMAIN', DEFAULT_DOMAIN);
-const ENV_TOKEN = getEnv('VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN');
-const ENV_API_VERSION = getEnv('VITE_SHOPIFY_API_VERSION', DEFAULT_API_VERSION);
-
-// LocalStorage keys for optional in-app settings
-const STORAGE_KEY_DOMAIN = 'lifei_shopify_domain';
-const STORAGE_KEY_TOKEN = 'lifei_shopify_token';
-const STORAGE_KEY_CART_ID = 'lifei_shopify_cart_id';
-
 export function getShopifyConfig(): ShopifyConfig {
-  let domain = '';
-  let storefrontAccessToken = '';
-
-  if (typeof window !== 'undefined') {
-    domain = localStorage.getItem(STORAGE_KEY_DOMAIN) || ENV_DOMAIN || DEFAULT_DOMAIN;
-    storefrontAccessToken = localStorage.getItem(STORAGE_KEY_TOKEN) || ENV_TOKEN;
-  } else {
-    domain = ENV_DOMAIN || DEFAULT_DOMAIN;
-    storefrontAccessToken = ENV_TOKEN;
-  }
-
-  // Clean domain if it has http, trailing slashes, or missing myshopify.com
-  domain = domain.replace(/^https?:\/\//, '').split('/')[0].trim();
-  if (domain && !domain.includes('.')) {
-    domain = `${domain}.myshopify.com`;
-  }
-
-  const isConnected = Boolean(domain);
-
   return {
-    domain,
-    storefrontAccessToken: storefrontAccessToken.trim(),
-    apiVersion: ENV_API_VERSION,
-    isConnected,
+    domain: DEFAULT_DOMAIN,
+    storefrontAccessToken: '',
+    apiVersion: DEFAULT_API_VERSION,
+    isConnected: true,
   };
-}
-
-export function saveShopifyConfig(domain: string, token: string): ShopifyConfig {
-  let cleanDomain = domain.replace(/^https?:\/\//, '').split('/')[0].trim();
-  if (cleanDomain && !cleanDomain.includes('.')) {
-    cleanDomain = `${cleanDomain}.myshopify.com`;
-  }
-  const cleanToken = token.trim();
-
-  if (typeof window !== 'undefined') {
-    if (cleanDomain) localStorage.setItem(STORAGE_KEY_DOMAIN, cleanDomain);
-    else localStorage.removeItem(STORAGE_KEY_DOMAIN);
-
-    if (cleanToken) localStorage.setItem(STORAGE_KEY_TOKEN, cleanToken);
-    else localStorage.removeItem(STORAGE_KEY_TOKEN);
-  }
-
-  return getShopifyConfig();
 }
 
 /**
  * Execute a GraphQL query against Shopify Storefront API
- * Attempts serverless proxy first, with direct public access if the function is not deployed.
+ * Uses the server-managed connection exclusively.
  */
 async function shopifyFetch<T>(query: string, variables: Record<string, unknown> = {}): Promise<T | null> {
-  const config = getShopifyConfig();
-
   try {
-    let res = await fetch('/api/shopify/graphql', {
+    const res = await fetch('/api/shopify/graphql', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variables }),
+      cache: 'no-store',
       signal: AbortSignal.timeout(15000),
     });
 
-    if (res.status === 404 || (res.ok && res.headers.get('content-type')?.includes('text/html'))) {
-      const headers: Record<string, string> = { 'Content-Type': 'application/json', Accept: 'application/json' };
-      if (config.storefrontAccessToken) {
-        if (/^(shpat_|shpca_|shpss_)/.test(config.storefrontAccessToken)) {
-          throw new Error('Only a public Shopify Storefront access token may be used in the browser.');
-        }
-        headers['X-Shopify-Storefront-Access-Token'] = config.storefrontAccessToken;
-      }
-      res = await fetch(`https://${config.domain}/api/${config.apiVersion}/graphql.json`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ query, variables }),
-        signal: AbortSignal.timeout(15000),
-      });
+    if (res.status === 404 || res.headers.get('content-type')?.includes('text/html')) {
+      throw new Error('The Shopify connection endpoint is unavailable. The Netlify Shopify function must be deployed with this website.');
     }
 
-    if (!res.ok) {
-      throw new Error(`Shopify product request failed (HTTP ${res.status}). Verify the store domain, public Storefront token and product access permissions.`);
-    }
     const json = await res.json();
+    if (!res.ok) {
+      throw new Error(json.error || `Shopify request failed (HTTP ${res.status}). Verify the Netlify connection settings and Shopify product publication.`);
+    }
     if (json.errors?.length || !json.data) {
       throw new Error('Shopify rejected the request. Verify Storefront API permissions and product publication for this sales channel.');
     }
@@ -115,8 +51,9 @@ async function shopifyFetch<T>(query: string, variables: Record<string, unknown>
 ===================================================================== */
 
 const PRODUCTS_QUERY = `
-  query GetProducts($first: Int!) {
-    products(first: $first) {
+  query GetProducts($first: Int!, $after: String) {
+    products(first: $first, after: $after) {
+      pageInfo { hasNextPage endCursor }
       edges {
         node {
           id
@@ -139,7 +76,7 @@ const PRODUCTS_QUERY = `
               currencyCode
             }
           }
-          images(first: 6) {
+          images(first: 250) {
             edges {
               node {
                 url
@@ -147,7 +84,8 @@ const PRODUCTS_QUERY = `
               }
             }
           }
-          variants(first: 20) {
+          variants(first: 250) {
+            pageInfo { hasNextPage endCursor }
             edges {
               node {
                 id
@@ -199,7 +137,7 @@ const SEARCH_QUERY = `
               currencyCode
             }
           }
-          images(first: 6) {
+          images(first: 250) {
             edges {
               node {
                 url
@@ -207,7 +145,8 @@ const SEARCH_QUERY = `
               }
             }
           }
-          variants(first: 10) {
+          variants(first: 250) {
+            pageInfo { hasNextPage endCursor }
             edges {
               node {
                 id
@@ -312,6 +251,7 @@ export interface ShopifyProductNode {
     }>;
   };
   variants: {
+    pageInfo?: { hasNextPage: boolean; endCursor: string };
     edges: Array<{
       node: {
         id: string;
@@ -359,6 +299,7 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     availableForSale: v.node.availableForSale,
     selectedOptions: v.node.selectedOptions,
   }));
+  const defaultVariant = variants.find(variant => variant.availableForSale) || variants[0];
 
   // Map category based on productType or tags
   let category: Product['category'] = 'Serums';
@@ -395,7 +336,7 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
   return {
     id: stableId,
     name: node.title,
-    subtitle: node.productType || 'Seoul Certified Skincare',
+    subtitle: node.productType || '',
     src: primaryImage,
     bg: aesthetic.bg,
     panel: aesthetic.panel,
@@ -403,33 +344,27 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     darkTone: aesthetic.darkTone,
     price,
     numericPrice,
+    currencyCode: node.priceRange.minVariantPrice.currencyCode,
     originalPrice,
-    volume: variants[0]?.title && variants[0]?.title !== 'Default Title' ? variants[0]?.title : 'Full Size',
+    volume: defaultVariant?.title && defaultVariant.title !== 'Default Title' ? defaultVariant.title : '',
     category,
-    rating: 4.9,
-    reviewsCount: 120 + (index * 25),
-    badge: (node.tags || []).includes('bestseller') ? 'Bestseller' : (node.tags || []).includes('new') ? 'New Arrival' : 'Shopify Verified',
-    clinicalClaim: '+100% Bio-Active Delivery & Barrier Radiance',
-    benefits: [
-      'Clinically formulated Korean skincare actives for direct cellular repair',
-      'Provides a lasting, dewy glass-skin finish with zero pore-clogging heaviness',
-      'Certified authentic manufacturing with direct Seoul headquarters verification',
-    ],
-    keyIngredients: (node.tags || []).slice(0, 4).length > 0 ? (node.tags || []).slice(0, 4) : ['Seoul Active Botanical Complex', 'Hyaluronic Acid', 'Peptides'],
-    allIngredients: node.description || 'Water, Glycerin, Butylene Glycol, Centella Asiatica, Sodium Hyaluronate, Niacinamide, Adenosine, Ethylhexylglycerin.',
-    howToUse: [
-      'Apply to freshly cleansed and toned skin.',
-      'Gently smooth in upward lifting motions along the facial contour.',
-      'Follow with your favorite barrier cream and daytime sunscreen.'
-    ],
-    ritualStep: 'Targeted Clinical Treatment & Glow Restoration',
-    skinType: 'All Skin Types · Dermatologically Tested',
-    fullDescription: node.descriptionHtml ? node.descriptionHtml.replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim() : node.description || 'Clinical Korean formulation curated by Li Fei Beauty.',
+    rating: 0,
+    reviewsCount: 0,
+    badge: (node.tags || []).includes('bestseller') ? 'Bestseller' : (node.tags || []).includes('new') ? 'New Arrival' : undefined,
+    clinicalClaim: '',
+    benefits: [],
+    keyIngredients: [],
+    allIngredients: '',
+    howToUse: [],
+    ritualStep: '',
+    skinType: '',
+    fullDescription: node.description || '',
+    description: node.description || '',
     stockStatus: node.availableForSale ? 'In Stock' : 'Out of Stock',
     shopifyId: node.id,
     handle: node.handle,
     variants,
-    selectedVariantId: variants[0]?.id,
+    selectedVariantId: defaultVariant?.id,
     availableForSale: node.availableForSale,
     images: allImages.length > 0 ? allImages : [primaryImage],
   };
@@ -445,18 +380,48 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
 export async function getShopifyProducts(first = 24): Promise<Product[]> {
   interface ProductsResponse {
     products: {
+      pageInfo: { hasNextPage: boolean; endCursor: string };
       edges: Array<{
         node: ShopifyProductNode;
       }>;
     };
   }
 
-  const data = await shopifyFetch<ProductsResponse>(PRODUCTS_QUERY, { first });
-  if (!data?.products?.edges) {
-    throw new Error('Shopify returned an invalid product response. Please verify Storefront product permissions.');
-  }
+  const nodes: ShopifyProductNode[] = [];
+  let after: string | null = null;
+  do {
+    const data = await shopifyFetch<ProductsResponse>(PRODUCTS_QUERY, { first: Math.min(250, Math.max(1, first)), after });
+    if (!data?.products?.edges || !data.products.pageInfo) {
+      throw new Error('Shopify returned an invalid product response. Please verify Storefront product permissions.');
+    }
+    nodes.push(...data.products.edges.map(edge => edge.node));
+    after = data.products.pageInfo.hasNextPage ? data.products.pageInfo.endCursor : null;
+  } while (after);
+  await Promise.all(nodes.map(loadRemainingVariants));
+  return nodes.map(transformShopifyProduct);
+}
 
-  return data.products.edges.map((edge, idx) => transformShopifyProduct(edge.node, idx));
+async function loadRemainingVariants(node: ShopifyProductNode): Promise<void> {
+  while (node.variants.pageInfo?.hasNextPage) {
+    const data = await shopifyFetch<{ product: { variants: ShopifyProductNode['variants'] } }>(`
+      query ProductVariants($id: ID!, $after: String!) {
+        product(id: $id) {
+          variants(first: 250, after: $after) {
+            pageInfo { hasNextPage endCursor }
+            edges { node {
+              id title availableForSale
+              price { amount currencyCode }
+              compareAtPrice { amount currencyCode }
+              selectedOptions { name value }
+            } }
+          }
+        }
+      }
+    `, { id: node.id, after: node.variants.pageInfo.endCursor });
+    if (!data?.product?.variants) throw new Error('Unable to load all Shopify product variants.');
+    node.variants.edges.push(...data.product.variants.edges);
+    node.variants.pageInfo = data.product.variants.pageInfo;
+  }
 }
 
 /**
@@ -476,6 +441,7 @@ export async function searchShopifyProducts(searchQuery: string, first = 10): Pr
     return null;
   }
 
+  await Promise.all(data.products.edges.map(edge => loadRemainingVariants(edge.node)));
   return data.products.edges.map((edge, idx) => transformShopifyProduct(edge.node, idx));
 }
 
@@ -512,28 +478,23 @@ export async function getShopifyCollections(first = 10): Promise<Array<{ id: str
 /**
  * Create a real Shopify Checkout URL from current cart items
  */
-export async function createShopifyCheckout(cartItems: CartItem[]): Promise<string | null> {
-  const config = getShopifyConfig();
-  if (!config.isConnected) {
-    return null;
-  }
-
-  // Format cart lines for Shopify Cart API
+export async function createShopifyCheckout(cartItems: CartItem[], discountCode?: string): Promise<string> {
+  if (!cartItems.length) throw new Error('Your shopping bag is empty.');
   const lines = cartItems
-    .filter((item) => item.product.shopifyId || item.variantId)
     .map((item) => {
-      const merchandiseId = item.variantId || item.product.selectedVariantId || item.product.variants?.[0]?.id || item.product.shopifyId;
+      const merchandiseId = item.variantId || item.product.selectedVariantId || item.product.variants?.find(variant => variant.availableForSale)?.id;
+      const variant = item.product.variants?.find(variant => variant.id === merchandiseId);
+      if (item.product.availableForSale === false || variant?.availableForSale === false) {
+        throw new Error(`${item.product.name} is currently unavailable. Remove it from your bag or select an available variant.`);
+      }
+      if (!merchandiseId || !/^gid:\/\/shopify\/ProductVariant\/\d+$/.test(merchandiseId) || !Number.isInteger(item.quantity) || item.quantity < 1) {
+        throw new Error('Select an available Shopify product variant and a valid quantity before checkout.');
+      }
       return {
         merchandiseId,
         quantity: item.quantity,
       };
-    })
-    .filter((line): line is { merchandiseId: string; quantity: number } => Boolean(line.merchandiseId));
-
-  if (lines.length === 0) {
-    // If no Shopify IDs, create a draft link to the storefront
-    return `https://${config.domain}/cart`;
-  }
+    });
 
   interface CartCreateResponse {
     cartCreate: {
@@ -546,17 +507,15 @@ export async function createShopifyCheckout(cartItems: CartItem[]): Promise<stri
   }
 
   const data = await shopifyFetch<CartCreateResponse>(CART_CREATE_MUTATION, {
-    input: { lines },
+    input: { lines, ...(discountCode ? { discountCodes: [discountCode] } : {}) },
   });
 
+  if (data?.cartCreate?.userErrors?.length) {
+    throw new Error(data.cartCreate.userErrors.map(error => error.message).join(' '));
+  }
   if (data?.cartCreate?.cart?.checkoutUrl) {
-    if (typeof window !== 'undefined' && data.cartCreate.cart.id) {
-      localStorage.setItem(STORAGE_KEY_CART_ID, data.cartCreate.cart.id);
-    }
     return data.cartCreate.cart.checkoutUrl;
   }
 
-  // Fallback to Shopify cart permalink if mutation errors
-  const lineQuery = lines.map((l) => `${l.merchandiseId.split('/').pop()}:${l.quantity}`).join(',');
-  return `https://${config.domain}/cart/${lineQuery}`;
+  throw new Error('Shopify did not return a checkout URL. Please try again.');
 }

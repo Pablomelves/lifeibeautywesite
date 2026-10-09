@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Check, AlertCircle, ShoppingBag, Globe, Key, ShieldCheck, RefreshCw, ExternalLink } from 'lucide-react';
-import { getShopifyConfig, saveShopifyConfig } from '../services/shopify';
+import { getShopifyConfig, getShopifyProducts } from '../services/shopify';
 
 interface ShopifyConnectModalProps {
   isOpen: boolean;
@@ -14,8 +14,6 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
   onConnected,
 }) => {
   const currentConfig = getShopifyConfig();
-  const [domain, setDomain] = useState(currentConfig.domain || '');
-  const [token, setToken] = useState(currentConfig.storefrontAccessToken || '');
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -26,89 +24,19 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
     setTesting(true);
     setTestResult(null);
 
-    let cleanDomain = domain.replace(/^https?:\/\//, '').split('/')[0].trim();
-    if (cleanDomain && !cleanDomain.includes('.')) {
-      cleanDomain = `${cleanDomain}.myshopify.com`;
-    }
-    const cleanToken = token.trim();
-
-    if (!cleanDomain || /^(shpat_|shpca_|shpss_)/.test(cleanToken)) {
-      setTestResult({ success: false, message: 'Provide a Shopify store domain and, if needed, only a public Storefront access token. Never use an Admin API token.' });
-      setTesting(false);
-      return;
-    }
-
     try {
-      // Test query
-      const endpoint = `https://${cleanDomain}/api/${currentConfig.apiVersion}/graphql.json`;
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(cleanToken ? { 'X-Shopify-Storefront-Access-Token': cleanToken } : {}),
-        },
-        body: JSON.stringify({
-          query: '{ shop { name primaryDomain { host } } }',
-        }),
-      });
-
-      const json = await res.json();
-      if (json.data?.shop?.name) {
-        saveShopifyConfig(cleanDomain, cleanToken);
-        setTestResult({
-          success: true,
-          message: `Successfully connected to "${json.data.shop.name}" (${cleanDomain})!`,
-        });
-        setTimeout(() => {
-          onConnected();
-          onClose();
-        }, 1200);
-      } else {
-        // Even if shop query has restrictions, try products query
-        const testProducts = await fetch(endpoint, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(cleanToken ? { 'X-Shopify-Storefront-Access-Token': cleanToken } : {}),
-          },
-          body: JSON.stringify({
-            query: '{ products(first: 1) { edges { node { id title } } } }',
-          }),
-        });
-        const pJson = await testProducts.json();
-        if (testProducts.ok && !pJson.errors?.length && pJson.data?.products?.edges?.length > 0) {
-          saveShopifyConfig(cleanDomain, cleanToken);
-          setTestResult({
-            success: true,
-            message: `Storefront product access verified for ${cleanDomain}.`,
-          });
-          setTimeout(() => {
-            onConnected();
-            onClose();
-          }, 1200);
-        } else {
-          setTestResult({
-            success: false,
-            message: json.errors?.[0]?.message || 'Invalid domain or Storefront API token. Verify permissions in Shopify Admin.',
-          });
-        }
-      }
+      const products = await getShopifyProducts(24);
+      if (!products.length) throw new Error('Shopify is reachable but has no published products.');
+      setTestResult({ success: true, message: `Verified ${products.length} live products through the permanent Netlify connection.` });
+      onConnected();
     } catch (err) {
       setTestResult({
         success: false,
-        message: 'Could not connect. Check the store domain and ensure CORS allows storefront requests.',
+        message: err instanceof Error ? err.message : 'Unable to verify the server-managed Shopify connection.',
       });
     } finally {
       setTesting(false);
     }
-  };
-
-  const handleDisconnect = () => {
-    saveShopifyConfig('', '');
-    setDomain('');
-    setToken('');
-    setTestResult({ success: true, message: 'Browser overrides cleared. Using the configured Shopify storefront.' });
-    onConnected();
   };
 
   return (
@@ -162,14 +90,6 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
             </div>
           </div>
 
-          {currentConfig.isConnected && (
-            <button
-              onClick={handleDisconnect}
-              className="text-[11px] font-semibold text-rose-600 hover:text-rose-700 underline cursor-pointer"
-            >
-              Disconnect
-            </button>
-          )}
         </div>
 
         {/* Form */}
@@ -186,9 +106,8 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
             </label>
             <input
               type="text"
-              required
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
+              readOnly
+              value={currentConfig.domain}
               placeholder="your-store.myshopify.com"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-900 outline-none focus:border-[#EC3460] font-mono"
             />
@@ -198,17 +117,18 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
             <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 block mb-1 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Key size={13} className="text-slate-400" />
-                Public Storefront API Access Token
+                Server-managed Storefront Authentication
               </span>
               <span className="text-[10px] text-emerald-700 font-semibold">
-                Public Token Only
+                Netlify Only
               </span>
             </label>
             <input
               type="password"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              placeholder="Optional public Storefront access token"
+              value=""
+              readOnly
+              disabled
+              placeholder="Configured securely on Netlify; no browser token needed"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-900 outline-none focus:border-[#EC3460] font-mono"
             />
           </div>
@@ -217,7 +137,7 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
           <div className="bg-[#FFF0F9] border border-[#FFCDF2] p-3 rounded-xl flex items-start gap-2.5 text-[11px] text-[#B31940]">
             <ShieldCheck size={16} className="text-[#EC3460] shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              <strong>Security Guarantee:</strong> Only your <em>Public Storefront Access Token</em> is accepted. Never share or paste private admin access tokens.
+              <strong>Permanent connection:</strong> Shopify is configured on Netlify for every visitor and deployment. This window verifies access; it cannot replace or disconnect your store. Credentials never enter the browser.
             </p>
           </div>
 
@@ -248,7 +168,7 @@ export const ShopifyConnectModal: React.FC<ShopifyConnectModalProps> = ({
               ) : (
                 <>
                   <Check size={15} />
-                  <span>Connect & Load Real Products</span>
+                  <span>Verify & Refresh Real Products</span>
                 </>
               )}
             </button>

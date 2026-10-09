@@ -147,6 +147,19 @@ export function App() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
 
+  useEffect(() => {
+    setCartItems(items => items.map(item => {
+      const latestProduct = products.find(product => product.id === item.product.id);
+      if (!latestProduct) return { ...item, product: { ...item.product, availableForSale: false, stockStatus: 'Out of Stock' } };
+      const variant = latestProduct.variants?.find(variant => variant.id === item.variantId);
+      return {
+        ...item,
+        selectedSize: variant && variant.title !== 'Default Title' ? variant.title : latestProduct.volume,
+        product: { ...latestProduct, selectedVariantId: item.variantId, price: variant?.price || latestProduct.price, numericPrice: variant?.numericPrice ?? latestProduct.numericPrice, availableForSale: variant?.availableForSale ?? false },
+      };
+    }));
+  }, [products]);
+
   // Modals state
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -198,7 +211,7 @@ export function App() {
         // ignore
       }
     }
-    return [1, 8]; // Medicube PDRN Pink & Rose Quartz Roller as default favorites
+    return [];
   });
 
   // Sync mechanism for wishlistIds backup
@@ -308,33 +321,57 @@ export function App() {
     }, 3200);
   };
 
-  const loadProducts = async (showNotice = false) => {
-    setIsProductsLoading(true);
-    setProductError(null);
-    setIsShopifyConnected(false);
+  const productRequestRef = useRef(false);
+
+  const loadProducts = async (showNotice = false, background = false) => {
+    if (productRequestRef.current) return;
+    productRequestRef.current = true;
+    if (!background) setIsProductsLoading(true);
     try {
       const liveProducts = await getShopifyProducts(24);
       setProducts(liveProducts);
       setIsShopifyConnected(true);
+      setProductError(null);
       if (liveProducts.length === 0) {
         setProductError('No products are available through this Shopify storefront. Check that products are Active and published to the sales channel associated with Storefront access.');
       } else if (showNotice) {
         showToast(`Connected to Shopify! Loaded ${liveProducts.length} live products.`);
       }
     } catch (error) {
-      setProducts([]);
+      if (!background) setProducts([]);
+      setIsShopifyConnected(false);
       setProductError(error instanceof Error ? error.message : 'Unable to load products from Shopify. Please try again.');
     } finally {
       setIsProductsLoading(false);
+      productRequestRef.current = false;
     }
   };
 
   useEffect(() => {
     loadProducts(false);
+    const refreshProducts = () => {
+      if (document.visibilityState === 'visible') loadProducts(false, true);
+    };
+    const refreshInterval = window.setInterval(refreshProducts, 60000);
+    window.addEventListener('focus', refreshProducts);
+    window.addEventListener('online', refreshProducts);
+    document.addEventListener('visibilitychange', refreshProducts);
+    return () => {
+      window.clearInterval(refreshInterval);
+      window.removeEventListener('focus', refreshProducts);
+      window.removeEventListener('online', refreshProducts);
+      document.removeEventListener('visibilitychange', refreshProducts);
+    };
   }, []);
 
   const handleAddToCart = (product: Product, quantity = 1) => {
-    const variantId = product.selectedVariantId || product.variants?.[0]?.id;
+    const variantId = product.selectedVariantId || product.variants?.find(variant => variant.availableForSale)?.id;
+    const variant = product.variants?.find(variant => variant.id === variantId);
+    if (!variant?.availableForSale || !Number.isInteger(quantity) || quantity < 1) {
+      showToast('This variant is unavailable. Please select an available option.');
+      return;
+    }
+    product = { ...product, selectedVariantId: variant.id, price: variant.price, numericPrice: variant.numericPrice, volume: variant.title === 'Default Title' ? product.volume : variant.title };
     setCartItems((prev) => {
       const existingIndex = prev.findIndex((item) => {
         const itemVariant = item.variantId || item.product.selectedVariantId || item.product.variants?.[0]?.id;
@@ -365,6 +402,7 @@ export function App() {
         }
       } catch (err) {
         console.warn('Instant buy error:', err);
+        showToast(err instanceof Error ? err.message : 'Shopify checkout is temporarily unavailable.');
       }
     }
     // Fallback: Add to cart and open it
@@ -412,7 +450,11 @@ export function App() {
 
   const totalCartCount = cartItems.reduce((acc, curr) => acc + curr.quantity, 0);
 
-  const quickAddProducts = products.slice(0, 3);
+  const kojicAcidProduct = products.find(product => product.shopifyId === 'gid://shopify/Product/10705876779148');
+  const quickAddProducts = products
+    .filter(product => product.shopifyId !== 'gid://shopify/Product/10691183050892' && product.id !== kojicAcidProduct?.id)
+    .slice(0, kojicAcidProduct ? 2 : 3);
+  if (kojicAcidProduct) quickAddProducts.push(kojicAcidProduct);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-inter selection:bg-[#FFCDF2] selection:text-[#4A0818]">
@@ -564,7 +606,7 @@ export function App() {
       {/* Modals & Drawers */}
       {/* Product Detail Modal (PDP with full structure: Product → Rating → Price → Benefits → Add → Buy → Ingredients → How to Use → Results → Reviews → Recommended) */}
       <ProductDetailModal
-        product={quickViewProduct}
+        product={quickViewProduct ? products.find(product => product.id === quickViewProduct.id) || null : null}
         allProducts={products}
         onClose={() => setQuickViewProduct(null)}
         onAddToCart={(product, qty) => {
