@@ -462,7 +462,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
             color: activeProduct.darkTone ? 'rgba(255, 255, 255, 0.42)' : 'rgba(255, 255, 255, 0.7)',
           }}
         >
-          GLOW
+          lifei
         </span>
       </div>
 
@@ -783,7 +783,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
           className="absolute left-6 bottom-6 sm:left-14 sm:bottom-12 max-w-[420px] pointer-events-auto flex flex-col gap-2.5 bg-black/25 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/15 shadow-xl"
         >
           <div className="flex items-center gap-2">
-            <span className="font-inter text-[11px] font-semibold uppercase tracking-[0.2em] text-[#FFCDF2] opacity-95">
+            <span className="font-inter text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A64D63] opacity-95">
               Life looks better with lifei
             </span>
           </div>

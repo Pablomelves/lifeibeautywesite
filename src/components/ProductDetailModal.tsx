@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { 
   X, 
-  Star, 
   ShoppingBag, 
   ShieldCheck, 
   Check, 
@@ -19,7 +18,8 @@ import {
   Scale
 } from 'lucide-react';
 import { Product } from '../types';
-import { STORE_REVIEWS } from '../data/storeData';
+import { getProductReviews, getReviewRating } from '../data/productReviews';
+import { StarRating } from './StarRating';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
 
 interface ProductDetailModalProps {
@@ -66,6 +66,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const [activeImage, setActiveImage] = useState<string>(product?.src || '');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const reviewsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (product) {
@@ -115,7 +116,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const currentOriginalPrice = selectedVariant ? selectedVariant.compareAtPrice : product.originalPrice;
   const currentAvailable = selectedVariant ? selectedVariant.availableForSale : product.availableForSale;
 
-  const productReviews = STORE_REVIEWS.filter((r) => r.productId === product.id);
+  const productReviews = getProductReviews(product);
+  const reviewRating = getReviewRating(productReviews);
   const recommended = (allProducts || [])
     .filter((p) => p.id !== product.id)
     .slice(0, 3);
@@ -192,7 +194,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               "availability": currentAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
               "itemCondition": "https://schema.org/NewCondition"
             },
-            ...(product.reviewsCount > 0 ? { "aggregateRating": {
+            ...(!product.reviewsAreIllustrative && product.reviewsCount > 0 ? { "aggregateRating": {
               "@type": "AggregateRating",
               "ratingValue": product.rating,
               "reviewCount": product.reviewsCount
@@ -353,12 +355,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               </div>
 
               {/* Gallery Thumbnails */}
-              {galleryImages.length > 1 && (
+              {galleryImages.length > 0 && (
                 <div className="flex items-center gap-2 mt-4 w-full overflow-x-auto pb-2 no-scrollbar px-1">
                   {galleryImages.map((imgItem, idx) => (
                     <button
                       key={idx}
                       type="button"
+                      aria-label={`View ${product.name} photo ${idx + 1}`}
+                      aria-pressed={activeImageIndex === idx}
                       onClick={() => {
                         setActiveImageIndex(idx);
                         setIsAutoPlaying(false);
@@ -371,7 +375,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     >
                       <img
                         src={imgItem.url}
-                        alt={imgItem.label}
+                        alt={`${product.name} — ${imgItem.label}`}
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover"
                       />
@@ -400,13 +404,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                 {/* 2. Rating */}
                 <div className="flex items-center gap-2 mt-3">
-                  <div className="flex items-center text-amber-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={15} fill="currentColor" />
-                    ))}
-                  </div>
-                  <span className="text-xs font-bold text-slate-900">{product.rating}</span>
-                  <span className="text-xs text-slate-400">({product.reviewsCount} reviews)</span>
+                  <button
+                    type="button"
+                    onClick={() => reviewsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                    className="flex flex-wrap items-center gap-2 cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-[#A64D63]"
+                    aria-label={`Read ${productReviews.length} reviews, rated ${reviewRating} out of 5`}
+                  >
+                    <StarRating rating={reviewRating} />
+                    <span className="text-xs font-bold text-slate-900">{reviewRating.toFixed(1)}</span>
+                    <span className="text-xs text-slate-500 underline underline-offset-2">({productReviews.length} reviews)</span>
+                  </button>
                   <span className="text-slate-300">·</span>
                   <span className="text-xs text-emerald-700 font-semibold">{currentAvailable ? 'In Stock' : 'Out of Stock'}</span>
                 </div>
@@ -720,32 +727,50 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           </div>
 
           {/* Section: Verified Customer Reviews */}
-          <div className="py-10">
+          <div ref={reviewsRef} className="py-10 scroll-mt-6">
             <h3 className="font-anton text-2xl uppercase tracking-tight text-slate-900 mb-4">
-              CUSTOMER REVIEWS ({productReviews.length || '380+'})
+              CUSTOMER REVIEWS ({productReviews.length})
             </h3>
+            <div className="flex flex-wrap items-center gap-3 mb-6 p-4 rounded-2xl border border-[#A64D63]/20 bg-[#A64D63]/5">
+              <span className="font-anton text-4xl text-[#A64D63]">{reviewRating.toFixed(1)}</span>
+              <div>
+                <StarRating rating={reviewRating} size={18} />
+                <p className="text-xs text-slate-500 mt-1">Based on {productReviews.length} reviews</p>
+              </div>
+            </div>
             <div className="space-y-4">
               {productReviews.length > 0 ? (
                 productReviews.map((rev) => (
                   <div key={rev.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/70">
                     <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-1 text-amber-400">
-                        {[...Array(rev.rating)].map((_, i) => (
-                          <Star key={i} size={13} fill="currentColor" />
-                        ))}
-                      </div>
-                      <span className="text-[11px] text-slate-400">{rev.date}</span>
+                      <StarRating rating={rev.rating} size={13} />
+                      {rev.date && <span className="text-[11px] text-slate-400">{rev.date}</span>}
                     </div>
                     <h4 className="text-xs font-bold text-slate-900 mb-1">"{rev.title}"</h4>
                     <p className="text-xs text-slate-600 leading-relaxed">{rev.comment}</p>
+                    {rev.photos && rev.photos.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {rev.photos.map((photo, index) => (
+                          <figure key={`${photo}-${index}`}>
+                            <img
+                              src={photo}
+                              alt={`${product.name} product photo ${index + 1}`}
+                              loading="lazy"
+                              className="h-24 w-24 sm:h-32 sm:w-32 rounded-xl border border-slate-200 bg-white object-contain"
+                            />
+                            <figcaption className="text-[10px] text-slate-400 mt-1">Product photo</figcaption>
+                          </figure>
+                        ))}
+                      </div>
+                    )}
                     <span className="text-[10px] text-slate-400 block mt-2">
-                      — {rev.author} ({rev.location}) · Verified Purchase
+                      — {rev.author}{rev.location ? ` (${rev.location})` : ''}{rev.verified ? ' · Verified Purchase' : ''}
                     </span>
                   </div>
                 ))
               ) : (
                 <div className="p-4 bg-slate-50 rounded-2xl text-xs text-slate-600">
-                  Rated 4.9/5 by 380+ verified Korean beauty enthusiasts worldwide.
+                  No reviews yet.
                 </div>
               )}
             </div>

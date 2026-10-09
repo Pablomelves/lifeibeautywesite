@@ -1,4 +1,5 @@
 import type { Product, ShopifyVariant, CartItem, ShopifyConfig } from '../types';
+import { getProductReviews, getReviewRating } from '../data/productReviews';
 
 const DEFAULT_DOMAIN = 'maison-co-store1.myshopify.com';
 const DEFAULT_API_VERSION = '2026-10';
@@ -332,6 +333,7 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
   // Stable numeric ID derived from Shopify GraphQL ID (gid://shopify/Product/123456789)
   const numericIdMatch = node.id.match(/\d+$/);
   const stableId = numericIdMatch ? parseInt(numericIdMatch[0], 10) : 1000 + index;
+  const reviews = getProductReviews({ id: stableId, name: node.title, src: primaryImage, images: allImages });
 
   return {
     id: stableId,
@@ -348,8 +350,9 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     originalPrice,
     volume: defaultVariant?.title && defaultVariant.title !== 'Default Title' ? defaultVariant.title : '',
     category,
-    rating: 0,
-    reviewsCount: 0,
+    rating: getReviewRating(reviews),
+    reviewsCount: reviews.length,
+    reviewsAreIllustrative: true,
     badge: (node.tags || []).includes('bestseller') ? 'Bestseller' : (node.tags || []).includes('new') ? 'New Arrival' : undefined,
     clinicalClaim: '',
     benefits: [],

@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
               alt="LI FEI BEAUTY" 
               className="block h-9 sm:h-12 w-auto object-contain transition-opacity group-hover:opacity-80"
             />
-            <span className="font-inter text-[8px] sm:text-[9px] uppercase tracking-[0.28em] text-slate-500 font-medium block mt-0.5">
+            <span className="font-inter text-[8px] sm:text-[9px] uppercase tracking-[0.28em] text-[#A64D63] font-medium block mt-0.5">
               Life looks better with lifei
             </span>
           </button>
@@ -232,19 +232,15 @@ export const Header: React.FC<HeaderProps> = ({
             )}
 
             {/* Shopify Storefront indicator / button - Hidden on small mobile */}
-            {onOpenShopifyConnect && (
+            {onOpenShopifyConnect && !isShopifyConnected && (
               <button
                 onClick={onOpenShopifyConnect}
                 aria-label="Shopify Storefront Settings"
-                title={isShopifyConnected ? "Shopify Headless Storefront Connected" : "Connect Shopify Storefront API"}
-                className={`hidden md:flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer ${
-                  isShopifyConnected
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-                    : 'bg-[#FFF0F9] text-[#B31940] border-[#FFCDF2] hover:bg-[#FFE6F6]'
-                }`}
+                title="Connect Shopify Storefront API"
+                className="hidden md:flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer bg-[#FFF0F9] text-[#B31940] border-[#FFCDF2] hover:bg-[#FFE6F6]"
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${isShopifyConnected ? 'bg-emerald-500 animate-pulse' : 'bg-[#EC3460]'}`} />
-                <span>{isShopifyConnected ? 'Shopify Live' : 'Shopify'}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#EC3460]" />
+                <span>Shopify</span>
               </button>
             )}
 
