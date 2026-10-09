@@ -7,15 +7,8 @@ import {
   StoreContentSettings, 
   AdminUser 
 } from '../types';
-import { STORE_PRODUCTS } from './storeData';
 
-export const INITIAL_ADMIN_PRODUCTS: AdminProduct[] = STORE_PRODUCTS.map((p, idx) => ({
-  ...p,
-  sku: `LF-${p.category.substring(0, 3).toUpperCase()}-${String(100 + p.id)}`,
-  stockQuantity: idx === 0 ? 42 : idx === 1 ? 28 : idx === 2 ? 6 : idx === 3 ? 0 : 35,
-  status: 'active',
-  compareAtPrice: p.originalPrice || `$${(p.numericPrice * 1.25).toFixed(2)}`,
-}));
+export const INITIAL_ADMIN_PRODUCTS: AdminProduct[] = [];
 
 export const INITIAL_ORDERS: Order[] = [
   {

@@ -1,5 +1,7 @@
 import { Product, ShopifyVariant, CartItem, ShopifyConfig } from '../types';
 
+const DEFAULT_DOMAIN = 'lifeibeauty.myshopify.com';
+const DEFAULT_STOREFRONT_TOKEN = '28514afc85b8fa8d004788302c17417e';
 const DEFAULT_API_VERSION = '2024-01';
 
 const getEnv = (key: string, fallback = ''): string => {
@@ -7,8 +9,8 @@ const getEnv = (key: string, fallback = ''): string => {
   return value ? String(value) : fallback;
 };
 
-const ENV_DOMAIN = getEnv('VITE_SHOPIFY_STORE_DOMAIN');
-const ENV_TOKEN = getEnv('VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN');
+const ENV_DOMAIN = getEnv('VITE_SHOPIFY_STORE_DOMAIN', DEFAULT_DOMAIN);
+const ENV_TOKEN = getEnv('VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN', DEFAULT_STOREFRONT_TOKEN);
 const ENV_API_VERSION = getEnv('VITE_SHOPIFY_API_VERSION', DEFAULT_API_VERSION);
 
 // LocalStorage keys for optional in-app settings
@@ -21,11 +23,11 @@ export function getShopifyConfig(): ShopifyConfig {
   let storefrontAccessToken = '';
 
   if (typeof window !== 'undefined') {
-    domain = localStorage.getItem(STORAGE_KEY_DOMAIN) || ENV_DOMAIN;
-    storefrontAccessToken = localStorage.getItem(STORAGE_KEY_TOKEN) || ENV_TOKEN;
+    domain = localStorage.getItem(STORAGE_KEY_DOMAIN) || ENV_DOMAIN || DEFAULT_DOMAIN;
+    storefrontAccessToken = localStorage.getItem(STORAGE_KEY_TOKEN) || ENV_TOKEN || DEFAULT_STOREFRONT_TOKEN;
   } else {
-    domain = ENV_DOMAIN;
-    storefrontAccessToken = ENV_TOKEN;
+    domain = ENV_DOMAIN || DEFAULT_DOMAIN;
+    storefrontAccessToken = ENV_TOKEN || DEFAULT_STOREFRONT_TOKEN;
   }
 
   // Clean domain if it has http, trailing slashes, or missing myshopify.com
@@ -64,6 +66,7 @@ export function saveShopifyConfig(domain: string, token: string): ShopifyConfig 
 
 /**
  * Execute a GraphQL query against Shopify Storefront API
+ * Attempts serverless proxy first (/api/shopify/graphql), falling back to direct Storefront API
  */
 async function shopifyFetch<T>(query: string, variables: Record<string, unknown> = {}): Promise<T | null> {
   const config = getShopifyConfig();
@@ -72,6 +75,27 @@ async function shopifyFetch<T>(query: string, variables: Record<string, unknown>
     return null;
   }
 
+  // Try Netlify server-side function endpoint first
+  try {
+    const proxyRes = await fetch('/api/shopify/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query, variables }),
+    });
+
+    if (proxyRes.ok) {
+      const json = await proxyRes.json();
+      if (json && !json.errors && json.data) {
+        return json.data as T;
+      }
+    }
+  } catch {
+    // Continue to direct endpoint fallback
+  }
+
+  // Fallback to direct Shopify Storefront API endpoint
   const endpoint = `https://${config.domain}/api/${config.apiVersion}/graphql.json`;
 
   try {
@@ -132,7 +156,7 @@ const PRODUCTS_QUERY = `
               currencyCode
             }
           }
-          images(first: 4) {
+          images(first: 6) {
             edges {
               node {
                 url
@@ -192,7 +216,7 @@ const SEARCH_QUERY = `
               currencyCode
             }
           }
-          images(first: 4) {
+          images(first: 6) {
             edges {
               node {
                 url
@@ -275,7 +299,7 @@ const CART_CREATE_MUTATION = `
    Transformer: Shopify Node -> Li Fei Beauty Product
 ===================================================================== */
 
-interface ShopifyProductNode {
+export interface ShopifyProductNode {
   id: string;
   title: string;
   handle: string;
@@ -340,7 +364,7 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     }
   }
 
-  const primaryImage = node.images?.edges?.[0]?.node?.url || '/products/medicube-pink.jpg';
+  const primaryImage = node.images?.edges?.[0]?.node?.url || '';
   const allImages = (node.images?.edges || []).map(edge => edge.node.url);
 
   const variants: ShopifyVariant[] = (node.variants?.edges || []).map((v) => ({
@@ -373,18 +397,20 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
   }
 
   // Soft Korean brand background aesthetics
-  const paletteIndex = index % 4;
   const palettes = [
     { bg: '#EFA6B7', panel: '#FDF0F3', themeColor: '#EC3460', darkTone: false },
     { bg: '#5E101D', panel: '#3F0811', themeColor: '#EC3460', darkTone: true },
     { bg: '#E4980E', panel: '#FCF2DC', themeColor: '#D97706', darkTone: false },
     { bg: '#CBD5E1', panel: '#F1F5F9', themeColor: '#475569', darkTone: false },
   ];
+  const aesthetic = palettes[index % palettes.length];
 
-  const aesthetic = palettes[paletteIndex];
+  // Stable numeric ID derived from Shopify GraphQL ID (gid://shopify/Product/123456789)
+  const numericIdMatch = node.id.match(/\d+$/);
+  const stableId = numericIdMatch ? parseInt(numericIdMatch[0].slice(-6), 10) : 1000 + index;
 
   return {
-    id: 1000 + index,
+    id: stableId,
     name: node.title,
     subtitle: node.productType || 'Seoul Certified Skincare',
     src: primaryImage,
@@ -422,18 +448,18 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     variants,
     selectedVariantId: variants[0]?.id,
     availableForSale: node.availableForSale,
-    images: allImages,
+    images: allImages.length > 0 ? allImages : [primaryImage],
   };
 }
 
 /* =====================================================================
    Public API Methods
-===================================================================== */
+==================================================================== */
 
 /**
  * Fetch real products from Shopify Storefront API
  */
-export async function getShopifyProducts(first = 20): Promise<Product[] | null> {
+export async function getShopifyProducts(first = 24): Promise<Product[] | null> {
   interface ProductsResponse {
     products: {
       edges: Array<{

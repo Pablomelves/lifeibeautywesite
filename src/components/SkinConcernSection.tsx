@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Sun, Shield, Sparkles, Droplets, CheckCircle2, ArrowRight, ShoppingBag, Heart, Scale } from 'lucide-react';
-import { SKIN_CONCERNS, STORE_PRODUCTS } from '../data/storeData';
+import { SKIN_CONCERNS } from '../data/storeData';
 import { Product } from '../types';
 
 interface SkinConcernSectionProps {
@@ -26,11 +26,11 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
   const [isAdded, setIsAdded] = useState(false);
   const [justWishlisted, setJustWishlisted] = useState(false);
 
-  const catalog = products && products.length > 0 ? products : STORE_PRODUCTS;
+  const catalog = products || [];
   const activeConcern = SKIN_CONCERNS.find((c) => c.id === activeConcernId) || SKIN_CONCERNS[0];
   const recommendedProduct = catalog.find((p) => p.id === activeConcern.recommendedProductId) || catalog[0];
 
-  const isWishlisted = wishlistIds.includes(recommendedProduct.id);
+  const isWishlisted = recommendedProduct ? wishlistIds.includes(recommendedProduct.id) : false;
 
   // Trigger pop animation when this product is wishlisted
   useEffect(() => {
@@ -56,6 +56,10 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
       default: return <Sparkles size={20} className="text-rose-500" />;
     }
   };
+
+  if (!recommendedProduct) {
+    return null;
+  }
 
   return (
     <section id="concerns" className="py-20 sm:py-28 bg-white font-inter border-b border-slate-100">

@@ -32,7 +32,6 @@ import { FastPictureProcessorModal } from './components/FastPictureProcessorModa
 
 import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData, AdminUser } from './types';
 import { createShopifyCheckout, getShopifyConfig, getShopifyProducts } from './services/shopify';
-import { STORE_PRODUCTS } from './data/storeData';
 import { getAdminProducts, getStoreContentSettings, verifyAdminSession } from './services/adminService';
 import { Check, SlidersHorizontal, Scale, Zap } from 'lucide-react';
 
@@ -41,9 +40,11 @@ export function App() {
   const [adminProducts, setAdminProducts] = useState<Product[]>(() => {
     const adminList = getAdminProducts();
     const active = adminList.filter(p => p.status === 'active');
-    return active.length > 0 ? active : STORE_PRODUCTS;
+    return active;
   });
-  const [products, setProducts] = useState<Product[]>(adminProducts);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isProductsLoading, setIsProductsLoading] = useState<boolean>(true);
+  const [productError, setProductError] = useState<string | null>(null);
   const [isShopifyConnected, setIsShopifyConnected] = useState<boolean>(() => getShopifyConfig().isConnected);
   const [shopifyConnectOpen, setShopifyConnectOpen] = useState(false);
 
@@ -155,9 +156,7 @@ export function App() {
   };
 
   // Cart state
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    { product: STORE_PRODUCTS[0], quantity: 1 } // Medicube PDRN Pink
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
 
   // Modals state
@@ -238,7 +237,7 @@ export function App() {
       } catch (e) {
         // ignore
       }
-      const prod = products.find((p) => p.id === productId) || STORE_PRODUCTS.find((p) => p.id === productId);
+      const prod = products.find((p) => p.id === productId);
       if (prod) {
         showToast(exists ? `Removed ${prod.name} from wishlist` : `Saved ${prod.name} to wishlist ❤️`);
         triggerWishlistNotification(prod, exists);
@@ -324,6 +323,9 @@ export function App() {
   const loadProducts = async (showNotice = false) => {
     const config = getShopifyConfig();
     setIsShopifyConnected(config.isConnected);
+    setIsProductsLoading(true);
+    setProductError(null);
+
     if (config.isConnected) {
       try {
         const liveProducts = await getShopifyProducts(24);
@@ -332,14 +334,35 @@ export function App() {
           if (showNotice) {
             showToast(`Connected to Shopify! Loaded ${liveProducts.length} live products.`);
           }
+        } else {
+          // If no products returned or empty catalog
+          if (adminProducts.length > 0) {
+            setProducts(adminProducts);
+          } else {
+            setProducts([]);
+            setProductError('No products found on Shopify store or Storefront API permissions pending.');
+          }
         }
       } catch (err) {
         console.warn('Error loading Shopify products:', err);
+        setProductError('Unable to load products from Shopify Storefront API. Please verify store status.');
+        if (adminProducts.length > 0) {
+          setProducts(adminProducts);
+        } else {
+          setProducts([]);
+        }
+      } finally {
+        setIsProductsLoading(false);
       }
     } else {
-      setProducts(adminProducts);
+      if (adminProducts.length > 0) {
+        setProducts(adminProducts);
+      } else {
+        setProducts([]);
+      }
+      setIsProductsLoading(false);
       if (showNotice) {
-        showToast('Restored curated Li Fei Beauty catalog.');
+        showToast('Restored catalog.');
       }
     }
   };
@@ -427,11 +450,7 @@ export function App() {
 
   const totalCartCount = cartItems.reduce((acc, curr) => acc + curr.quantity, 0);
 
-  const quickAddProducts = products.filter(p => 
-    p.name.toLowerCase().includes('kojic acid') || 
-    p.name.toLowerCase().includes('egf nad') || 
-    p.name.toLowerCase().includes('pdrn pink')
-  );
+  const quickAddProducts = products.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-inter selection:bg-[#FFCDF2] selection:text-[#4A0818]">
@@ -492,6 +511,8 @@ export function App() {
       {/* 5. Featured / Best Sellers (4-6 products with tabs, ratings, add to cart) */}
       <BestSellers
         products={products}
+        isLoading={isProductsLoading}
+        errorMessage={productError}
         isShopifyConnected={isShopifyConnected}
         onOpenShopifyConnect={() => setShopifyConnectOpen(true)}
         selectedCategory={selectedCategory}
@@ -558,7 +579,7 @@ export function App() {
       {/* 12. UGC / Social Proof Gallery */}
       <UgcGallery
         onExploreProduct={(id) => {
-          const match = products.find((p) => p.id === id) || STORE_PRODUCTS.find((p) => p.id === id);
+          const match = products.find((p) => p.id === id);
           if (match) setQuickViewProduct(match);
         }}
       />

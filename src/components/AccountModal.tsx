@@ -21,7 +21,6 @@ import {
   Copy,
   Check
 } from 'lucide-react';
-import { STORE_PRODUCTS } from '../data/storeData';
 import { Product } from '../types';
 
 export interface OrderItem {
@@ -155,7 +154,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   const [recommendedIds, setRecommendedIds] = useState<number[]>([]);
   const [isRecLoading, setIsRecLoading] = useState(false);
 
-  const catalog = products && products.length > 0 ? products : STORE_PRODUCTS;
+  const catalog = products || [];
 
   // AI Recommendations Fetcher
   const fetchRecommendations = async () => {
@@ -326,7 +325,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
             volume: catalog[0]?.volume || 'Full Size',
             price: catalog[0]?.numericPrice || 36,
             quantity: 1,
-            image: catalog[0]?.src || '/products/medicube-pink.jpg',
+            image: catalog[0]?.src || '',
           }
         ]
       };

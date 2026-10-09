@@ -13,7 +13,6 @@ import {
   Scale
 } from 'lucide-react';
 import { Product } from '../types';
-import { STORE_PRODUCTS } from '../data/storeData';
 
 interface Hero3DProps {
   onAddToCart: (product: Product) => void;
@@ -73,10 +72,10 @@ export const Hero3D: React.FC<Hero3DProps> = ({
   const animFrameRef = useRef<number | null>(null);
 
   // Take all available products for the 3D Hero Carousel
-  const heroProducts = products && products.length > 0 ? products : STORE_PRODUCTS;
+  const heroProducts = products || [];
   const activeProduct = heroProducts[activeIndex] || heroProducts[0];
 
-  const isWishlisted = wishlistIds.includes(activeProduct.id);
+  const isWishlisted = activeProduct ? wishlistIds.includes(activeProduct.id) : false;
 
   // Trigger pop animation when this product is wishlisted
   useEffect(() => {
@@ -365,6 +364,34 @@ export const Hero3D: React.FC<Hero3DProps> = ({
       willChange,
     };
   };
+
+  if (!heroProducts || heroProducts.length === 0 || !activeProduct) {
+    return (
+      <section 
+        id="hero"
+        className="relative w-full overflow-hidden flex flex-col justify-center items-center font-inter bg-slate-900 text-white min-h-[500px] py-20 px-4"
+      >
+        <div className="max-w-md text-center">
+          <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#EC3460] block mb-3">
+            LI FEI BEAUTY · SEOUL DIRECT
+          </span>
+          <h1 className="font-anton text-4xl sm:text-5xl uppercase tracking-tight text-white mb-4">
+            PREMIUM K-BEAUTY
+          </h1>
+          <p className="text-sm text-slate-300 leading-relaxed mb-6">
+            Loading authentic Seoul skincare formulations and barrier repair treatments directly from our Shopify store...
+          </p>
+          <button
+            type="button"
+            onClick={onExploreCatalog}
+            className="px-6 py-3 bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-raspberry cursor-pointer"
+          >
+            Explore Catalog
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section 

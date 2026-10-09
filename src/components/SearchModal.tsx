@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, X, Sparkles, ArrowRight, Loader2, Scale, Clock } from 'lucide-react';
-import { STORE_PRODUCTS } from '../data/storeData';
 import { Product } from '../types';
 import { searchShopifyProducts, getShopifyConfig } from '../services/shopify';
 
@@ -44,7 +43,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   const [shopifyResults, setShopifyResults] = useState<Product[] | null>(null);
   const [recentSearches, setRecentSearches] = useState<string[]>(() => getSavedRecentSearches());
 
-  const activeCatalog = products && products.length > 0 ? products : STORE_PRODUCTS;
+  const activeCatalog = products || [];
   const config = getShopifyConfig();
 
   const trendingTags = ['PDRN Pink', 'EGF NAD', 'Kojic Acid', 'Bio-Collagen', 'Pore Pads', 'Ceramides'];

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Star, ShoppingBag, Eye, Sparkles, Check, Heart, Scale } from 'lucide-react';
 import { Product } from '../types';
-import { STORE_PRODUCTS } from '../data/storeData';
 
 interface BestSellersProps {
   onQuickView: (product: Product) => void;
@@ -10,6 +9,8 @@ interface BestSellersProps {
   selectedCategory: string;
   onSelectCategory: (catId: string) => void;
   products?: Product[];
+  isLoading?: boolean;
+  errorMessage?: string | null;
   isShopifyConnected?: boolean;
   onOpenShopifyConnect?: () => void;
   wishlistIds?: number[];
@@ -298,8 +299,10 @@ export const BestSellers: React.FC<BestSellersProps> = ({
   onBuyNow,
   selectedCategory,
   onSelectCategory,
-  products,
-  isShopifyConnected,
+  products = [],
+  isLoading = false,
+  errorMessage = null,
+  isShopifyConnected = false,
   onOpenShopifyConnect,
   wishlistIds = [],
   onToggleWishlist,
@@ -309,7 +312,7 @@ export const BestSellers: React.FC<BestSellersProps> = ({
   const [activeTab, setActiveTab] = useState<'all' | 'serums' | 'masks' | 'moisturizers'>('all');
   const [addedId, setAddedId] = useState<number | null>(null);
 
-  const currentProducts = products && products.length > 0 ? products : STORE_PRODUCTS;
+  const currentProducts = products || [];
 
   const filteredProducts = currentProducts.filter((product) => {
     // If selectedCategory from menu/category grid is active and not 'all'
@@ -438,38 +441,60 @@ export const BestSellers: React.FC<BestSellersProps> = ({
         )}
 
         {/* Product Cards Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8">
-          {filteredProducts.length === 0 ? (
-            <div className="col-span-full py-16 text-center bg-white rounded-3xl border border-[#FFCDF2]/60 p-8 shadow-xs">
-              <p className="text-slate-600 text-sm font-medium">No formulas currently found matching this filter.</p>
+        {isLoading ? (
+          <div className="py-20 text-center bg-white rounded-3xl border border-[#FFCDF2]/60 p-8 shadow-xs">
+            <div className="inline-block w-8 h-8 border-4 border-[#EC3460] border-t-transparent rounded-full animate-spin mb-4" />
+            <p className="text-slate-800 text-sm font-semibold">Loading live products from Shopify...</p>
+            <p className="text-slate-400 text-xs mt-1">Connecting to store catalog and retrieving inventory.</p>
+          </div>
+        ) : errorMessage && filteredProducts.length === 0 ? (
+          <div className="py-16 text-center bg-white rounded-3xl border border-[#FFCDF2]/60 p-8 shadow-xs">
+            <p className="text-slate-800 text-base font-semibold mb-2">Unable to Load Shopify Products</p>
+            <p className="text-slate-500 text-xs max-w-md mx-auto leading-relaxed mb-6">{errorMessage}</p>
+            {onOpenShopifyConnect && (
               <button
-                onClick={() => {
-                  setActiveTab('all');
-                  onSelectCategory('all');
-                }}
-                className="mt-4 px-5 py-2.5 bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-raspberry"
+                type="button"
+                onClick={onOpenShopifyConnect}
+                className="px-6 py-3 bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-raspberry"
               >
-                View All Formulas
+                Configure Shopify Connection
               </button>
-            </div>
-          ) : (
-            filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                isAdded={addedId === product.id}
-                wishlistIds={wishlistIds}
-                onToggleWishlist={onToggleWishlist}
-                onQuickView={onQuickView}
-                handleAdd={handleAdd}
-                onAddToCart={onAddToCart}
-                onBuyNow={onBuyNow}
-                isComparing={comparisonIds.includes(product.id)}
-                onToggleComparison={onToggleComparison}
-              />
-            ))
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8">
+            {filteredProducts.length === 0 ? (
+              <div className="col-span-full py-16 text-center bg-white rounded-3xl border border-[#FFCDF2]/60 p-8 shadow-xs">
+                <p className="text-slate-600 text-sm font-medium">No formulas currently found matching this filter.</p>
+                <button
+                  onClick={() => {
+                    setActiveTab('all');
+                    onSelectCategory('all');
+                  }}
+                  className="mt-4 px-5 py-2.5 bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-raspberry"
+                >
+                  View All Formulas
+                </button>
+              </div>
+            ) : (
+              filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  isAdded={addedId === product.id}
+                  wishlistIds={wishlistIds}
+                  onToggleWishlist={onToggleWishlist}
+                  onQuickView={onQuickView}
+                  handleAdd={handleAdd}
+                  onAddToCart={onAddToCart}
+                  onBuyNow={onBuyNow}
+                  isComparing={comparisonIds.includes(product.id)}
+                  onToggleComparison={onToggleComparison}
+                />
+              ))
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

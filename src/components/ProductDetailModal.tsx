@@ -19,7 +19,7 @@ import {
   Scale
 } from 'lucide-react';
 import { Product } from '../types';
-import { STORE_PRODUCTS, STORE_REVIEWS } from '../data/storeData';
+import { STORE_REVIEWS } from '../data/storeData';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
 
 interface ProductDetailModalProps {
@@ -114,7 +114,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const currentNumericPrice = selectedVariant ? selectedVariant.numericPrice : product.numericPrice;
 
   const productReviews = STORE_REVIEWS.filter((r) => r.productId === product.id);
-  const recommended = (allProducts && allProducts.length > 0 ? allProducts : STORE_PRODUCTS)
+  const recommended = (allProducts || [])
     .filter((p) => p.id !== product.id)
     .slice(0, 3);
 
