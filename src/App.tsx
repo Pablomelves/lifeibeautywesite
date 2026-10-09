@@ -27,13 +27,12 @@ import { QuickAddWidget } from './components/QuickAddWidget';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { TrackOrderModal } from './components/TrackOrderModal';
-import { ComparisonModal } from './components/ComparisonModal';
 import { FastPictureProcessorModal } from './components/FastPictureProcessorModal';
 
 import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData, AdminUser } from './types';
 import { createShopifyCheckout, getShopifyConfig, getShopifyProducts } from './services/shopify';
 import { getStoreContentSettings, verifyAdminSession } from './services/adminService';
-import { Check, SlidersHorizontal, Scale, Zap } from 'lucide-react';
+import { Check, SlidersHorizontal, Zap } from 'lucide-react';
 
 export function App() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -180,26 +179,8 @@ export function App() {
   // Category filter state for BestSellers
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Comparison state
-  const [comparisonIds, setComparisonIds] = useState<number[]>([]);
-  const [comparisonOpen, setComparisonOpen] = useState(false);
-
   // Fast Picture Processor modal state
   const [fastProcessorOpen, setFastProcessorOpen] = useState(false);
-
-  const handleToggleComparison = (productId: number) => {
-    setComparisonIds((prev) => {
-      const exists = prev.includes(productId);
-      if (exists) return prev.filter((id) => id !== productId);
-      if (prev.length >= 3) {
-        showToast('Limit reached: Compare up to 3 products.');
-        return prev;
-      }
-      return [...prev, productId];
-    });
-  };
-
-  const comparisonProducts = products.filter((p) => comparisonIds.includes(p.id));
 
   // Wishlist state
   const [wishlistIds, setWishlistIds] = useState<number[]>(() => {
@@ -502,8 +483,6 @@ export function App() {
         onExploreCatalog={() => scrollToSection('bestsellers')}
         wishlistIds={wishlistIds}
         onToggleWishlist={handleToggleWishlist}
-        comparisonIds={comparisonIds}
-        onToggleComparison={handleToggleComparison}
       />
 
       {/* 4. Authenticity & Trust Bar */}
@@ -526,8 +505,6 @@ export function App() {
         onBuyNow={handleBuyNow}
         wishlistIds={wishlistIds}
         onToggleWishlist={handleToggleWishlist}
-        comparisonIds={comparisonIds}
-        onToggleComparison={handleToggleComparison}
       />
 
       {/* 5b. Dedicated My Favorites Section */}
@@ -538,8 +515,6 @@ export function App() {
         onAddToCart={(p) => handleAddToCart(p)}
         onQuickView={(p) => setQuickViewProduct(p)}
         onNavigateSection={scrollToSection}
-        comparisonIds={comparisonIds}
-        onToggleComparison={handleToggleComparison}
       />
 
       {/* 6. Shop by Category Grid */}
@@ -563,8 +538,6 @@ export function App() {
         onAddToCart={(p) => handleAddToCart(p)}
         wishlistIds={wishlistIds}
         onToggleWishlist={handleToggleWishlist}
-        comparisonIds={comparisonIds}
-        onToggleComparison={handleToggleComparison}
       />
 
       {/* 9. Why Li Fei Beauty (Core Value Pillars) */}
@@ -616,8 +589,6 @@ export function App() {
         onSelectRecommended={(p) => setQuickViewProduct(p)}
         isWishlisted={quickViewProduct ? wishlistIds.includes(quickViewProduct.id) : false}
         onToggleWishlist={handleToggleWishlist}
-        comparisonIds={comparisonIds}
-        onToggleComparison={handleToggleComparison}
       />
 
       {/* Cart Slide-Over Drawer */}
@@ -637,8 +608,6 @@ export function App() {
         products={products}
         onClose={() => setSearchOpen(false)}
         onSelectProduct={(p) => setQuickViewProduct(p)}
-        comparisonIds={comparisonIds}
-        onToggleComparison={handleToggleComparison}
       />
 
       {/* Customer Account & Glow Rewards Modal */}
@@ -682,15 +651,6 @@ export function App() {
         onClose={() => setAboutContactMode(null)}
       />
 
-      {/* Product Comparison Modal */}
-      <ComparisonModal
-        isOpen={comparisonOpen}
-        onClose={() => setComparisonOpen(false)}
-        products={comparisonProducts}
-        onAddToCart={handleAddToCart}
-        onRemove={handleToggleComparison}
-      />
-
       {/* Shopify Headless Storefront Connect Modal */}
       <ShopifyConnectModal
         isOpen={shopifyConnectOpen}
@@ -709,8 +669,6 @@ export function App() {
         wishlistNotification={wishlistNotification}
         onDismissNotification={handleDismissCartNotification}
         onDismissWishlistNotification={handleDismissWishlistNotification}
-        comparisonIds={comparisonIds}
-        onToggleComparison={handleToggleComparison}
       />
 
       {/* Floating Store Admin Trigger - Completely hidden unless authenticated as admin */}
@@ -737,22 +695,6 @@ export function App() {
         <Zap size={14} className="text-[#EC3460]" />
         <span className="hidden sm:inline">Picture Fast Processor</span>
       </button>
-
-      {/* Floating Comparison Trigger */}
-      {comparisonIds.length > 0 && (
-        <button
-          onClick={() => setComparisonOpen(true)}
-          className="fixed bottom-22 left-6 z-[120] bg-white/95 text-slate-900 px-4.5 py-3 rounded-full border border-[#FFCDF2] shadow-2xl backdrop-blur-md flex items-center gap-3 animate-in slide-in-from-bottom duration-300 hover:scale-105 cursor-pointer group"
-        >
-          <div className="w-6 h-6 rounded-lg bg-[#EC3460] flex items-center justify-center text-white shadow-raspberry">
-            <Scale size={14} />
-          </div>
-          <span className="text-[11px] font-bold uppercase tracking-wider">Compare ({comparisonIds.length}/3)</span>
-          {comparisonIds.length >= 2 && (
-            <span className="w-1.5 h-1.5 rounded-full bg-[#EC3460] animate-pulse" />
-          )}
-        </button>
-      )}
 
       {/* Master Admin Portal Modal - Only rendered when authenticated as admin */}
       {adminOpen && isAdminAuthenticated && (

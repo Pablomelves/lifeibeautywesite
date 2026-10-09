@@ -26,6 +26,7 @@ export interface Product {
   category: 'Serums' | 'Moisturizers' | 'Masks' | 'Cleansers' | 'Eye Care' | 'Sets & Bundles' | 'Tools & Rollers' | string;
   rating: number;
   reviewsCount: number;
+  reviewsAreIllustrative?: boolean;
   badge?: string;
   clinicalClaim: string;
   benefits: string[];

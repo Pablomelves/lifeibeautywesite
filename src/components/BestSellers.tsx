@@ -358,12 +358,7 @@ export const BestSellers: React.FC<BestSellersProps> = ({
                 SEOUL CURATED RITUALS
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#EC3460]" />
-              {isShopifyConnected ? (
-                <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Shopify Live Products ({currentProducts.length})
-                </span>
-              ) : onOpenShopifyConnect ? (
+              {!isShopifyConnected && onOpenShopifyConnect ? (
                 <button
                   onClick={onOpenShopifyConnect}
                   className="text-[10px] bg-[#FFF0F9] text-[#B31940] border border-[#FFCDF2] px-2 py-0.5 rounded-full font-bold hover:bg-[#FFE6F6] cursor-pointer"
