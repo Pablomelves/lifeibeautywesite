@@ -18,7 +18,6 @@ interface Hero3DProps {
   onAddToCart: (product: Product) => void;
   onQuickView: (product: Product) => void;
   onExploreCatalog: () => void;
-  onBuyNow?: (product: Product) => void;
   products?: Product[];
   autoSlide?: boolean;
   wishlistIds?: number[];
@@ -31,7 +30,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({
   onAddToCart,
   onQuickView,
   onExploreCatalog,
-  onBuyNow,
   products,
   autoSlide = true,
   wishlistIds = [],
@@ -42,7 +40,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isAnimating, setIsAnimating] = useState<boolean>(false);
   const [justWishlisted, setJustWishlisted] = useState(false);
-  const [isAdded, setIsAdded] = useState(false);
   const [dragX, setDragX] = useState(0);
   const [deviceType, setDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>(() => {
     if (typeof window !== 'undefined') {
@@ -462,7 +459,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
             color: activeProduct.darkTone ? 'rgba(255, 255, 255, 0.42)' : 'rgba(255, 255, 255, 0.7)',
           }}
         >
-          GLOW
+          Li Fei
         </span>
       </div>
 
@@ -529,7 +526,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({
                 }
               }}
             >
-              {/* Add to Cart (Left) and Buy Now (Right) Buttons for Center Product */}
               {isCenter && !isAnimating && (
                 <>
                   {/* Wishlist Button for Hero */}
@@ -569,45 +565,6 @@ export const Hero3D: React.FC<Hero3DProps> = ({
                     </button>
                   )}
 
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onAddToCart(product);
-                      setIsAdded(true);
-                      setTimeout(() => setIsAdded(false), 2000);
-                    }}
-                    className={`absolute left-[-12%] sm:left-[-18%] top-1/2 -translate-y-1/2 z-[50] flex flex-col items-center gap-2 group ${isAdded ? 'animate-pop' : ''}`}
-                    style={{ backgroundColor: `${product.themeColor}aa` }}
-                  >
-                    <div 
-                      className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-white border-2 border-white/40 backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:border-white group-active:scale-95 shadow-xl"
-                    >
-                      <ShoppingBag size={isMobile ? 20 : 28} />
-                    </div>
-                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white drop-shadow-lg">Add To Cart</span>
-                  </button>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (onBuyNow) {
-                        onBuyNow(product);
-                      } else {
-                        onAddToCart(product);
-                      }
-                      setIsAdded(true);
-                      setTimeout(() => setIsAdded(false), 2000);
-                    }}
-                    className={`absolute right-[-12%] sm:right-[-18%] top-1/2 -translate-y-1/2 z-[50] flex flex-col items-center gap-2 group ${isAdded ? 'animate-pop' : ''}`}
-                    style={{ backgroundColor: `${product.themeColor}` }}
-                  >
-                    <div 
-                      className="w-14 h-14 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-white border-2 border-white/40 backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:border-white group-active:scale-95 shadow-xl"
-                    >
-                      <Sparkles size={isMobile ? 20 : 28} />
-                    </div>
-                    <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white drop-shadow-lg">Buy Now</span>
-                  </button>
                 </>
               )}
               {/* 3D Floating container */}
@@ -783,7 +740,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
           className="absolute left-6 bottom-6 sm:left-14 sm:bottom-12 max-w-[420px] pointer-events-auto flex flex-col gap-2.5 bg-black/25 backdrop-blur-md p-4 sm:p-5 rounded-2xl border border-white/15 shadow-xl"
         >
           <div className="flex items-center gap-2">
-            <span className="font-inter text-[11px] font-semibold uppercase tracking-[0.2em] text-[#FFCDF2] opacity-95">
+            <span className="font-inter text-[11px] font-semibold uppercase tracking-[0.2em] text-[#A64D63]">
               Life looks better with lifei
             </span>
           </div>

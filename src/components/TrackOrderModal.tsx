@@ -91,7 +91,7 @@ export const TrackOrderModal: React.FC<TrackOrderModalProps> = ({
       setErrorMessage(
         lookupEmail?.trim()
           ? `No order found matching "${lookupNumber}" with email "${lookupEmail}". Please verify your details.`
-          : `No order found matching "${lookupNumber}". You can test one of the sample orders below.`
+          : `No order found matching "${lookupNumber}". Please verify your order number.`
       );
     }
   };
@@ -99,13 +99,6 @@ export const TrackOrderModal: React.FC<TrackOrderModalProps> = ({
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     triggerLookup(orderNumber, email);
-  };
-
-  const handleFillDemo = (demoOrderNum: string, demoEmail: string) => {
-    setOrderNumber(demoOrderNum);
-    setEmail(demoEmail);
-    setErrorMessage(null);
-    triggerLookup(demoOrderNum, demoEmail);
   };
 
   const handleCopyTracking = (code: string) => {
@@ -231,33 +224,7 @@ export const TrackOrderModal: React.FC<TrackOrderModalProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-              {/* Quick Demo Fill Pills */}
-              <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] text-slate-400 font-medium">Quick Demo Test:</span>
-                <button
-                  type="button"
-                  onClick={() => handleFillDemo('#LF-1047', 'chloe.t@example.com')}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-[10px] font-bold border border-blue-200 transition-colors cursor-pointer"
-                >
-                  #LF-1047 (Shipped)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleFillDemo('#LF-1048', 'evelyn.vance@example.com')}
-                  className="px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-[10px] font-bold border border-amber-200 transition-colors cursor-pointer"
-                >
-                  #LF-1048 (Processing)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleFillDemo('#LF-1046', 'marcus.s@luxuryglow.co')}
-                  className="px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[10px] font-bold border border-emerald-200 transition-colors cursor-pointer"
-                >
-                  #LF-1046 (Delivered)
-                </button>
-              </div>
-
+            <div className="flex justify-end pt-1">
               <button
                 type="submit"
                 disabled={loading}
@@ -285,7 +252,7 @@ export const TrackOrderModal: React.FC<TrackOrderModalProps> = ({
               <div>
                 <p className="font-semibold">{errorMessage}</p>
                 <p className="text-[11px] text-rose-600 mt-0.5">
-                  Tip: Click one of the test pills above (e.g. <strong>#LF-1047</strong>) to preview how the tracking interface works.
+                  Check the order number in your confirmation email and try again.
                 </p>
               </div>
             </div>

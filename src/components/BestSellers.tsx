@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Star, ShoppingBag, Eye, Sparkles, Check, Heart, Scale } from 'lucide-react';
 import { Product } from '../types';
+import { getDemoProductReviews } from '../data/demoProductReviews';
 
 interface BestSellersProps {
   onQuickView: (product: Product) => void;
@@ -42,6 +43,7 @@ const ProductCard: React.FC<{
   isComparing,
   onToggleComparison
 }) => {
+  const demoReviews = getDemoProductReviews(product);
   const galleryRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [justWishlisted, setJustWishlisted] = useState(false);
@@ -203,10 +205,7 @@ const ProductCard: React.FC<{
               <Star size={isMobile ? 10 : 13} fill="currentColor" />
             </div>
             <span className="text-[10px] sm:text-xs font-bold text-slate-800">
-              {product.rating}
-            </span>
-            <span className="text-[10px] sm:text-xs text-slate-400 hidden xs:inline">
-              ({product.reviewsCount})
+              {demoReviews.rating.toFixed(1)}
             </span>
             <span className="text-slate-300 mx-1 hidden xs:inline">·</span>
             <span className="text-[9px] sm:text-[11px] text-slate-500 font-medium">
@@ -358,12 +357,7 @@ export const BestSellers: React.FC<BestSellersProps> = ({
                 SEOUL CURATED RITUALS
               </span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#EC3460]" />
-              {isShopifyConnected ? (
-                <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-300 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  Shopify Live Products ({currentProducts.length})
-                </span>
-              ) : onOpenShopifyConnect ? (
+              {!isShopifyConnected && onOpenShopifyConnect ? (
                 <button
                   onClick={onOpenShopifyConnect}
                   className="text-[10px] bg-[#FFF0F9] text-[#B31940] border border-[#FFCDF2] px-2 py-0.5 rounded-full font-bold hover:bg-[#FFE6F6] cursor-pointer"

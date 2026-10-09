@@ -84,7 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
               alt="LI FEI BEAUTY" 
               className="block h-9 sm:h-12 w-auto object-contain transition-opacity group-hover:opacity-80"
             />
-            <span className="font-inter text-[8px] sm:text-[9px] uppercase tracking-[0.28em] text-slate-500 font-medium block mt-0.5">
+            <span className="font-inter text-[8px] sm:text-[9px] uppercase tracking-[0.28em] text-[#A64D63] font-medium block mt-0.5">
               Life looks better with lifei
             </span>
           </button>
