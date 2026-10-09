@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { 
   X, 
-  Star, 
   ShoppingBag, 
   ShieldCheck, 
   Check, 
@@ -19,7 +18,8 @@ import {
   Scale
 } from 'lucide-react';
 import { Product } from '../types';
-import { STORE_REVIEWS } from '../data/storeData';
+import { getDemoProductReviews } from '../data/demoProductReviews';
+import { ProductReviews, ReviewStars } from './ProductReviews';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
 
 interface ProductDetailModalProps {
@@ -115,7 +115,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const currentOriginalPrice = selectedVariant ? selectedVariant.compareAtPrice : product.originalPrice;
   const currentAvailable = selectedVariant ? selectedVariant.availableForSale : product.availableForSale;
 
-  const productReviews = STORE_REVIEWS.filter((r) => r.productId === product.id);
+  const demoReviews = getDemoProductReviews(product);
   const recommended = (allProducts || [])
     .filter((p) => p.id !== product.id)
     .slice(0, 3);
@@ -229,7 +229,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-white z-10 shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              SEOUL VERIFIED FORMULA · {product.category}
+              SEOUL VERIFIED FORMULA
             </span>
             <span className="text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded">
               100% Authentic
@@ -399,14 +399,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </p>
 
                 {/* 2. Rating */}
-                <div className="flex items-center gap-2 mt-3">
-                  <div className="flex items-center text-amber-400">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={15} fill="currentColor" />
-                    ))}
-                  </div>
-                  <span className="text-xs font-bold text-slate-900">{product.rating}</span>
-                  <span className="text-xs text-slate-400">({product.reviewsCount} reviews)</span>
+                <div className="flex items-center gap-2 mt-3 flex-wrap">
+                  <ReviewStars rating={demoReviews.rating} />
+                  <span className="text-xs font-bold text-slate-900">{demoReviews.rating.toFixed(1)}</span>
                   <span className="text-slate-300">·</span>
                   <span className="text-xs text-emerald-700 font-semibold">{currentAvailable ? 'In Stock' : 'Out of Stock'}</span>
                 </div>
@@ -719,37 +714,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             )}
           </div>
 
-          {/* Section: Verified Customer Reviews */}
-          <div className="py-10">
-            <h3 className="font-anton text-2xl uppercase tracking-tight text-slate-900 mb-4">
-              CUSTOMER REVIEWS ({productReviews.length || '380+'})
-            </h3>
-            <div className="space-y-4">
-              {productReviews.length > 0 ? (
-                productReviews.map((rev) => (
-                  <div key={rev.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/70">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-1 text-amber-400">
-                        {[...Array(rev.rating)].map((_, i) => (
-                          <Star key={i} size={13} fill="currentColor" />
-                        ))}
-                      </div>
-                      <span className="text-[11px] text-slate-400">{rev.date}</span>
-                    </div>
-                    <h4 className="text-xs font-bold text-slate-900 mb-1">"{rev.title}"</h4>
-                    <p className="text-xs text-slate-600 leading-relaxed">{rev.comment}</p>
-                    <span className="text-[10px] text-slate-400 block mt-2">
-                      — {rev.author} ({rev.location}) · Verified Purchase
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="p-4 bg-slate-50 rounded-2xl text-xs text-slate-600">
-                  Rated 4.9/5 by 380+ verified Korean beauty enthusiasts worldwide.
-                </div>
-              )}
-            </div>
-          </div>
+          <ProductReviews key={product.id} product={product} />
 
           {/* Section: Recommended Products */}
           <div className="pt-10">

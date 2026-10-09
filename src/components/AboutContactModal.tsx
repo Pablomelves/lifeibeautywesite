@@ -55,7 +55,7 @@ export const AboutContactModal: React.FC<AboutContactModalProps> = ({ isOpen, mo
         {!isContact ? (
           <div className="space-y-4 text-xs sm:text-sm text-slate-600 leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
             <div className="mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#EC3460] bg-[#FFF0F9] px-3 py-1 rounded-full border border-[#FFCDF2] inline-block">
+              <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-[#A64D63] bg-[#FFF0F9] px-3 py-1 rounded-full border border-[#FFCDF2] inline-block">
                 Life looks better with lifei
               </span>
             </div>

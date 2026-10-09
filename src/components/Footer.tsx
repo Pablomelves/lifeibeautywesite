@@ -29,7 +29,7 @@ export const Footer: React.FC<FooterProps> = ({
             <h3 className="font-anton text-3xl uppercase tracking-tight text-white mb-1">
               LI FEI BEAUTY
             </h3>
-            <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#FFCDF2] block mb-2">
+            <span className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#A64D63] block mb-2">
               Life looks better with lifei
             </span>
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60 block mb-4">

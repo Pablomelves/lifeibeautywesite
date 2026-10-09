@@ -14,11 +14,9 @@ import {
   Tag,
   DollarSign,
   Package,
-  Layers,
-  Zap
+  Layers
 } from 'lucide-react';
 import { AdminProduct } from '../../types';
-import { FastPictureProcessorModal } from '../FastPictureProcessorModal';
 
 interface AdminProductsTabProps {
   products: AdminProduct[];
@@ -38,10 +36,6 @@ export const AdminProductsTab: React.FC<AdminProductsTabProps> = ({
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'draft' | 'low_stock'>('all');
-
-  // Fast Picture Processor modal state
-  const [isProcessorOpen, setIsProcessorOpen] = useState(false);
-  const [processorTarget, setProcessorTarget] = useState<'modal' | 'standalone'>('standalone');
 
   // Edit / Add Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -211,18 +205,6 @@ export const AdminProductsTab: React.FC<AdminProductsTabProps> = ({
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            type="button"
-            onClick={() => {
-              setProcessorTarget('standalone');
-              setIsProcessorOpen(true);
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#FFF0F9] border border-[#FFCDF2] text-[#EC3460] hover:bg-[#EC3460] hover:text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-2xs cursor-pointer group"
-          >
-            <Zap size={15} className="text-[#EC3460] group-hover:text-white transition-colors" />
-            <span>Fast Picture Processor</span>
-          </button>
-
           <button
             onClick={handleOpenAdd}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-raspberry cursor-pointer"
@@ -625,17 +607,6 @@ export const AdminProductsTab: React.FC<AdminProductsTabProps> = ({
                   <label className="block font-bold text-slate-700 uppercase tracking-wider">
                     Product Image &amp; Studio Backdrop
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setProcessorTarget('modal');
-                      setIsProcessorOpen(true);
-                    }}
-                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#FFF0F9] border border-[#FFCDF2] text-[#EC3460] hover:bg-[#EC3460] hover:text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer group"
-                  >
-                    <Zap size={13} className="text-[#EC3460] group-hover:text-white transition-colors" />
-                    <span>⚡ Fast Picture Processor</span>
-                  </button>
                 </div>
                 
                 {/* Preset Picker */}
@@ -744,18 +715,6 @@ export const AdminProductsTab: React.FC<AdminProductsTabProps> = ({
         </div>
       )}
 
-      {/* Fast Picture Processor Modal */}
-      <FastPictureProcessorModal
-        isOpen={isProcessorOpen}
-        onClose={() => setIsProcessorOpen(false)}
-        initialImageUrl={processorTarget === 'modal' ? formData.src : undefined}
-        onApplyImage={(imageUrl) => {
-          if (processorTarget === 'modal') {
-            setFormData({ ...formData, src: imageUrl });
-          }
-          setIsProcessorOpen(false);
-        }}
-      />
     </div>
   );
 };
