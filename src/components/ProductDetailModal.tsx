@@ -26,6 +26,7 @@ import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { trackShoppingEvent } from '../services/analytics';
 
 interface ProductDetailModalProps {
+  brandHeader?: React.ReactNode;
   product: Product | null;
   allProducts?: Product[];
   onClose: () => void;
@@ -41,6 +42,7 @@ interface ProductDetailModalProps {
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
+  brandHeader,
   product,
   allProducts,
   onClose,
@@ -103,6 +105,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     if (!isAutoPlaying || !product?.images || product.images.length <= 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     
     const interval = setInterval(() => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
       setActiveImageIndex((prev) => (prev + 1) % product.images!.length);
     }, 4000);
     
@@ -247,6 +250,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Top Sticky Bar */}
+        {brandHeader}
         <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-white z-10 shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
