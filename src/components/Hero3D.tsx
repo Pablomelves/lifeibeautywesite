@@ -14,6 +14,9 @@ import {
 } from 'lucide-react';
 import { Product } from '../types';
 
+const SLIDE_TRANSITION_MS = 350;
+const AUTO_SLIDE_INTERVAL_MS = 4000;
+
 interface Hero3DProps {
   onAddToCart: (product: Product) => void;
   onQuickView: (product: Product) => void;
@@ -99,7 +102,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
 
     setTimeout(() => {
       setIsAnimating(false);
-    }, 650);
+    }, SLIDE_TRANSITION_MS);
   }, [isAnimating, heroProducts.length]);
 
   // Auto-slide effect
@@ -109,7 +112,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
       if (!isAnimating) {
         navigate('next');
       }
-    }, 6500);
+    }, AUTO_SLIDE_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [activeIndex, isAnimating, navigate, autoSlide]);
 
@@ -264,7 +267,9 @@ export const Hero3D: React.FC<Hero3DProps> = ({
 
   // 3D Carousel Positioning: Fills the page and covers GLOW with subtle mouse-follow parallax
   const getProduct3DStyles = (index: number) => {
-    const transition = 'transform 650ms cubic-bezier(0.4,0,0.2,1), filter 650ms cubic-bezier(0.4,0,0.2,1), opacity 650ms cubic-bezier(0.4,0,0.2,1), left 650ms cubic-bezier(0.4,0,0.2,1), width 650ms cubic-bezier(0.4,0,0.2,1), height 650ms cubic-bezier(0.4,0,0.2,1), top 650ms cubic-bezier(0.4,0,0.2,1)';
+    const transition = ['transform', 'filter', 'opacity', 'left', 'width', 'height', 'top']
+      .map((property) => `${property} ${SLIDE_TRANSITION_MS}ms cubic-bezier(0.4,0,0.2,1)`)
+      .join(', ');
     const willChange = 'transform, filter, opacity, left';
 
     // Center product: fills page, covers GLOW, subtle mouse-follow parallax movement for deep-space feel
@@ -302,7 +307,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
         opacity: 1,
         filter: 'none',
         zIndex: 25,
-        transition: isAnimating ? transition : 'opacity 650ms, filter 650ms',
+        transition: isAnimating ? transition : `opacity ${SLIDE_TRANSITION_MS}ms, filter ${SLIDE_TRANSITION_MS}ms`,
         willChange,
       };
     }
@@ -407,7 +412,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
           : activeProduct.shopifyId === 'gid://shopify/Product/10705876779148'
             ? '#E69201'
             : activeProduct.panel,
-        transition: 'background-color 650ms cubic-bezier(0.4, 0, 0.2, 1)',
+        transition: `background-color ${SLIDE_TRANSITION_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`,
       }}
     >
       {/* Full-bleed ambient atmospheric blur from active product visual */}
@@ -447,7 +452,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
         className="absolute inset-0 flex items-center justify-center pointer-events-none user-select-none z-[2]"
         style={{
           transform: `translate3d(${currentTilt.x * -42}px, ${currentTilt.y * -28}px, -110px)`,
-          transition: isAnimating ? 'transform 650ms ease-out' : 'none',
+          transition: isAnimating ? `transform ${SLIDE_TRANSITION_MS}ms ease-out` : 'none',
         }}
         aria-hidden="true"
       >
