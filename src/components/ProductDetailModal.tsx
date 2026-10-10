@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { Helmet } from 'react-helmet-async';
 import { 
   X, 
@@ -18,15 +19,19 @@ import {
   Scale
 } from 'lucide-react';
 import { Product } from '../types';
-import { getDemoProductReviews } from '../data/demoProductReviews';
-import { ProductReviews, ReviewStars } from './ProductReviews';
+import { ProductReviews } from './ProductReviews';
+import { StorefrontHtml } from './StorefrontHtml';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
+import { trackShoppingEvent } from '../services/analytics';
 
 interface ProductDetailModalProps {
   product: Product | null;
   allProducts?: Product[];
   onClose: () => void;
-  onAddToCart: (product: Product, quantity: number) => void;
+  onAddToCart: (product: Product, quantity: number) => boolean | void;
+  onOpenPolicy?: (type: 'shipping' | 'returns') => void;
+  onOpenContact?: () => void;
   onSelectRecommended: (product: Product) => void;
   onBuyNowDirect?: (product: Product, quantity: number) => void;
   isWishlisted?: boolean;
@@ -46,7 +51,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   onToggleWishlist,
   comparisonIds = [],
   onToggleComparison,
+  onOpenPolicy,
+  onOpenContact,
 }) => {
+  const modal = useModalAccessibility(!!product, onClose);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState<'benefits' | 'ingredients' | 'howTo' | 'results'>('benefits');
   const [added, setAdded] = useState(false);
@@ -63,9 +71,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   }, [isWishlisted]);
 
   const [isBuyingNow, setIsBuyingNow] = useState(false);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const checkoutPending = React.useRef(false);
   const [activeImage, setActiveImage] = useState<string>(product?.src || '');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  useEffect(() => { setQuantity(1); setAdded(false); }, [product?.id]);
+  useEffect(() => { if (product) trackShoppingEvent('view_item', [{ product, quantity: 1 }]); }, [product?.id]);
+  useEffect(() => {
+    if (!added) return;
+    const timer = setTimeout(() => setAdded(false), 2000);
+    return () => clearTimeout(timer);
+  }, [added]);
 
   useEffect(() => {
     if (product) {
@@ -82,7 +100,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   // Auto-slide effect
   useEffect(() => {
-    if (!isAutoPlaying || !product?.images || product.images.length <= 1) return;
+    if (!isAutoPlaying || !product?.images || product.images.length <= 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     
     const interval = setInterval(() => {
       setActiveImageIndex((prev) => (prev + 1) % product.images!.length);
@@ -115,12 +133,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const currentOriginalPrice = selectedVariant ? selectedVariant.compareAtPrice : product.originalPrice;
   const currentAvailable = selectedVariant ? selectedVariant.availableForSale : product.availableForSale;
 
-  const demoReviews = getDemoProductReviews(product);
   const recommended = (allProducts || [])
     .filter((p) => p.id !== product.id)
     .slice(0, 3);
 
   const handleAdd = () => {
+    if (added || !currentAvailable) return;
     const itemToAdd = {
       ...product,
       price: currentPrice,
@@ -128,12 +146,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       selectedVariantId: selectedVariant?.id,
       volume: selectedVariant && selectedVariant.title !== 'Default Title' ? selectedVariant.title : product.volume,
     };
-    onAddToCart(itemToAdd, quantity);
+    if (onAddToCart(itemToAdd, quantity) === false) return;
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
   };
 
   const handleBuyNow = async () => {
+    if (checkoutPending.current || !currentAvailable) return;
     const itemToAdd = {
       ...product,
       price: currentPrice,
@@ -149,18 +167,24 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
     const config = getShopifyConfig();
     if (config.isConnected) {
+      checkoutPending.current = true;
+      setPurchaseError(null);
       setIsBuyingNow(true);
       try {
         const checkoutUrl = await createShopifyCheckout([
           { product: itemToAdd, quantity, variantId: selectedVariant?.id }
         ]);
         if (checkoutUrl) {
+          trackShoppingEvent('begin_checkout', [{ product: itemToAdd, quantity }]);
           window.location.href = checkoutUrl;
           return;
         }
       } catch (err) {
-        console.warn('Instant checkout error:', err);
+        trackShoppingEvent('shopping_error');
+        setPurchaseError(err instanceof Error ? err.message : 'Shopify checkout is temporarily unavailable. Please try again.');
+        return;
       } finally {
+        checkoutPending.current = false;
         setIsBuyingNow(false);
       }
     }
@@ -180,13 +204,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             "name": product.name,
             "image": product.src,
             "description": product.description || product.fullDescription,
-            "brand": {
-              "@type": "Brand",
-              "name": "LI FEI BEAUTY"
-            },
             "offers": {
               "@type": "Offer",
-              "url": window.location.href,
+              "url": window.location.origin + '/products/' + product.handle,
               "priceCurrency": product.currencyCode || 'USD',
               "price": currentNumericPrice,
               "availability": currentAvailable ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
@@ -222,6 +242,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         onClick={onClose}
       >
       <div 
+        ref={modal}
         className="w-full max-w-4xl bg-white text-slate-900 rounded-3xl overflow-hidden shadow-2xl relative my-auto max-h-[92vh] flex flex-col font-inter"
         onClick={(e) => e.stopPropagation()}
       >
@@ -229,10 +250,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
         <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-white z-10 shrink-0">
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              SEOUL VERIFIED FORMULA
+              LI FEI BEAUTY PRODUCT DETAILS
             </span>
             <span className="text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded">
-              100% Authentic
+              Shopify catalog
             </span>
           </div>
 
@@ -328,12 +349,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   </>
                 )}
 
-                <img
+                <ResponsiveProductImage loading="eager" sizes="(max-width: 1024px) 90vw, 448px"
                   src={activeImage}
                   alt={product.name}
                   referrerPolicy="no-referrer"
                   className={`w-full h-full drop-shadow-xl transition-all duration-300 ${
-                    activeImage === product.src ? 'object-contain sm:scale-105' : 'object-cover rounded-2xl'
+                    activeImage === product.src ? 'object-contain sm:scale-105' : 'object-contain rounded-2xl'
                   }`}
                 />
 
@@ -383,7 +404,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               {/* Verified Sourcing Tag */}
               <div className="mt-4 flex items-center gap-2 text-xs text-slate-600 bg-slate-50 border border-slate-200/80 px-4 py-2 rounded-xl w-full justify-center">
                 <ShieldCheck size={16} className="text-emerald-600 shrink-0" />
-                <span>Authentic Sealed Batch · Direct Seoul Headquarters</span>
+                <span>Product information from the current store catalog</span>
               </div>
             </div>
 
@@ -400,14 +421,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                 {/* 2. Rating */}
                 <div className="flex items-center gap-2 mt-3 flex-wrap">
-                  <ReviewStars rating={demoReviews.rating} />
-                  <span className="text-xs font-bold text-slate-900">{demoReviews.rating.toFixed(1)}</span>
-                  <span className="text-slate-300">·</span>
                   <span className="text-xs text-emerald-700 font-semibold">{currentAvailable ? 'In Stock' : 'Out of Stock'}</span>
                 </div>
 
                 {/* 3. Price */}
-                <div className="flex items-baseline gap-3 my-4">
+                <div className="flex flex-wrap items-baseline gap-3 my-4">
                   <span className="font-mono text-2xl font-bold text-slate-950 tabular-nums">
                     {currentPrice}
                   </span>
@@ -435,13 +453,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                             key={v.id}
                             type="button"
                             onClick={() => setSelectedVariant(v)}
+                            aria-pressed={isSelected}
                             className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                               isSelected
                                 ? 'bg-[#EC3460] text-white border-[#EC3460] shadow-xs'
                                 : 'bg-white text-slate-700 border-[#FFCDF2] hover:bg-[#FFF0F9]'
                             }`}
                           >
-                            <span>{v.title}</span>
+                            <span>{v.title}{!v.availableForSale ? ' · Sold out' : ''}</span>
                             <span className="ml-1.5 opacity-80 font-mono">({v.price})</span>
                           </button>
                         );
@@ -453,12 +472,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 {/* 4. Benefits (Key Bullet Points) */}
                 <div className="mb-6">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-2">
-                    Key Clinical Benefits:
+                    Product description:
                   </span>
                   <ul className="space-y-2">
-                    {product.fullDescription && (
-                      <li className="text-xs text-slate-700 leading-relaxed whitespace-pre-line">{product.fullDescription}</li>
-                    )}
+                    {product.fullDescription && <li className="text-xs text-slate-700 leading-relaxed whitespace-pre-line">{product.descriptionHtml ? <StorefrontHtml html={product.descriptionHtml} /> : product.fullDescription}</li>}
                     {product.benefits.map((b, idx) => (
                       <li key={idx} className="flex items-start gap-2 text-xs text-slate-700 leading-relaxed">
                         <CheckCircle2 size={14} className="text-[#EC3460] shrink-0 mt-0.5" />
@@ -485,7 +502,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       {quantity}
                     </span>
                     <button
-                      onClick={() => setQuantity(quantity + 1)}
+                      onClick={() => setQuantity(previous => Math.min(999, previous + 1))}
                       className="p-1 text-slate-500 hover:text-[#EC3460] cursor-pointer"
                       aria-label="Increase quantity"
                     >
@@ -496,7 +513,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   {/* Add to Cart */}
                   <button
                     onClick={handleAdd}
-                    disabled={!currentAvailable}
+                    disabled={!currentAvailable || added}
                     className={`flex-1 font-semibold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-raspberry flex items-center justify-center gap-2 ${
                       added
                         ? 'bg-emerald-600 text-white'
@@ -511,7 +528,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     ) : (
                       <>
                         <ShoppingBag size={16} />
-                        <span>Add to Bag · ${(currentNumericPrice * quantity).toFixed(2)}</span>
+                        <span>{currentAvailable ? 'Add to Bag · ' + new Intl.NumberFormat('en-US', { style: 'currency', currency: product.currencyCode || 'USD' }).format(currentNumericPrice * quantity) : 'Sold out'}</span>
                       </>
                     )}
                   </button>
@@ -556,6 +573,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </>
                   )}
                 </button>
+                <div className="flex flex-wrap gap-3 text-xs text-[#B31940]">
+                  <button type="button" onClick={() => onOpenPolicy?.('shipping')} className="py-2 underline cursor-pointer">Shipping policy</button>
+                  <button type="button" onClick={() => onOpenPolicy?.('returns')} className="py-2 underline cursor-pointer">Returns and refunds</button>
+                  <button type="button" onClick={onOpenContact} className="py-2 underline cursor-pointer">Contact support</button>
+                </div>
+                {purchaseError && <p role="alert" className="text-xs text-[#B31940]">{purchaseError}</p>}
               </div>
             </div>
           </div>
@@ -593,20 +616,21 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   activeTab === 'results' ? 'bg-[#EC3460] text-white shadow-xs' : 'text-slate-600 hover:text-[#EC3460]'
                 }`}
               >
-                Clinical Results
+                Product information
               </button>
             </div>
 
             {/* Tab: Key Actives */}
             {activeTab === 'benefits' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {!product.keyIngredients.length && <p className="text-xs text-slate-600 leading-relaxed">See the product description and manufacturer’s packaging for supported ingredient and suitability information.</p>}
                 {product.keyIngredients.map((ing, i) => (
                   <div key={i} className="p-4 bg-[#FFF5FA] rounded-2xl border border-[#FFCDF2]/60">
                     <span className="text-xs font-bold text-slate-900 block mb-1">
                       {ing}
                     </span>
                     <span className="text-[11px] text-slate-600">
-                      High-potency Korean formulation engineered for immediate cellular bioavailability.
+                      Refer to the product description and manufacturer’s packaging for ingredient details.
                     </span>
                   </div>
                 ))}
@@ -617,10 +641,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             {activeTab === 'ingredients' && (
               <div className="p-4 bg-[#FFF5FA] rounded-2xl border border-[#FFCDF2]/60">
                 <p className="text-xs text-slate-600 leading-relaxed font-mono">
-                  {product.allIngredients}
+                  {product.allIngredients || 'A complete ingredient list is not separately available in the store catalog. Check the product description and manufacturer’s packaging before use.'}
                 </p>
                 <span className="text-[10px] text-slate-400 block mt-2">
-                  *Free from parabens, phthalates, synthetic mineral oils, and artificial colorants.
+                  Ingredient information is shown only when supplied by the store.
                 </span>
               </div>
             )}
@@ -628,6 +652,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             {/* Tab: How to Use */}
             {activeTab === 'howTo' && (
               <div className="space-y-3">
+                {!product.howToUse.length && <p className="text-xs text-slate-600 leading-relaxed">Directions are not separately available in the store catalog. Follow the directions in the product description and on the manufacturer’s packaging.</p>}
                 {product.howToUse.map((step, idx) => (
                   <div key={idx} className="flex items-start gap-3 p-3 bg-[#FFF5FA] rounded-xl border border-[#FFCDF2]/40">
                     <span className="w-5 h-5 rounded-full bg-[#EC3460] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -641,75 +666,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
             {/* Tab: Results / Before & After */}
             {activeTab === 'results' && (
-              <div className="space-y-6">
-                <div className="p-6 bg-[#FFF5FA] rounded-2xl border border-[#FFCDF2]">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#EC3460] block mb-2">
-                    Clinical Trial Highlights
-                  </span>
-                  <p className="text-sm font-semibold text-slate-900 mb-2">
-                    {product.clinicalClaim}
-                  </p>
-                  <p className="text-xs text-slate-600 leading-relaxed">
-                    {product.beforeAfterSummary || 'Over 94% of trial participants reported a visible improvement in skin luminosity and hydration.'}
-                  </p>
-                </div>
-
-                {/* Clear Before & After Face Picture Showcase for Roller */}
-                {isRollerProduct && (
-                  <div className="bg-white p-5 rounded-3xl border border-[#FFCDF2] shadow-sm space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#EC3460] block">
-                          SEOUL DERMATOLOGY CLINICAL PHOTOGRAPHY
-                        </span>
-                        <h4 className="font-anton text-lg uppercase text-slate-900">
-                          CLEAR BEFORE &amp; AFTER FACE PICTURE (10-MIN ROLLING TRIAL)
-                        </h4>
-                      </div>
-                      <span className="text-[10px] bg-[#FFF0F9] text-[#B31940] px-2.5 py-1 rounded-full font-bold border border-[#FFCDF2]">
-                        n=64 Trial Participants
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Before Picture */}
-                      <div className="space-y-2">
-                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
-                          <img
-                            src="/rolling/before.jpg"
-                            alt="Clear Before Face Picture for facial roller: baseline morning puffiness"
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover object-center"
-                          />
-                          <span className="absolute top-3 left-3 bg-slate-950/80 text-white text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border border-white/20">
-                            BEFORE · 0 MIN
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-600">
-                          <strong>Baseline:</strong> Sluggish lymphatic drainage, orbital morning puffiness, soft cheekbone contour.
-                        </p>
-                      </div>
-
-                      {/* After Picture */}
-                      <div className="space-y-2">
-                        <div className="relative aspect-square rounded-2xl overflow-hidden bg-slate-100 border border-[#EC3460]/40">
-                          <img
-                            src="/rolling/after.jpg"
-                            alt="Clear After Face Picture for facial roller: sculpted jawline, elevated cheekbones, and glass skin glow"
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover object-center"
-                          />
-                          <span className="absolute top-3 left-3 bg-[#EC3460] text-white text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border border-white/30 shadow-xs">
-                            AFTER · 10 MIN
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-600">
-                          <strong>After 10 Min:</strong> -38% puffiness drained, high-tension jawline elevation, radiant dewy glass glow.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              <div className="p-6 bg-[#FFF5FA] rounded-2xl border border-[#FFCDF2] text-xs text-slate-600 leading-relaxed">
+                Refer to the product description and manufacturer’s packaging for supported benefits and suitability. No independently verified clinical trial results or before-and-after customer photographs are available here.
               </div>
             )}
           </div>
@@ -732,7 +690,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     className="w-full aspect-square rounded-xl overflow-hidden flex items-center justify-center mb-3 border border-slate-200/50"
                     style={{ backgroundColor: rec.panel }}
                   >
-                    <img src={rec.src} alt={rec.name} className="w-full h-full object-cover object-center" />
+                    <ResponsiveProductImage src={rec.src} alt={rec.name} className="w-full h-full object-contain object-center" />
                   </div>
                   <div>
                     <h4 className="text-xs font-bold uppercase truncate text-slate-900">{rec.name}</h4>

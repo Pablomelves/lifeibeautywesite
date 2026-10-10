@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { Sun, Shield, Sparkles, Droplets, CheckCircle2, ArrowRight, ShoppingBag, Heart, Scale } from 'lucide-react';
 import { SKIN_CONCERNS } from '../data/storeData';
 import { Product } from '../types';
 
 interface SkinConcernSectionProps {
   onQuickView: (product: Product) => void;
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: Product) => boolean | void;
   products?: Product[];
   wishlistIds?: number[];
   onToggleWishlist?: (productId: number) => void;
@@ -42,7 +43,7 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
   }, [isWishlisted]);
 
   const handleAddToCartWithAnim = (product: Product) => {
-    onAddToCart(product);
+    if (onAddToCart(product) === false) return;
     setIsAdded(true);
     setTimeout(() => setIsAdded(false), 1000);
   };
@@ -148,10 +149,10 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
                 </button>
               )}
 
-              <img
+              <ResponsiveProductImage
                 src={recommendedProduct.src}
                 alt={recommendedProduct.name}
-                className="w-full h-full object-cover object-center drop-shadow-md group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-contain object-center drop-shadow-md transition-transform duration-500"
               />
             </div>
           </div>
@@ -172,12 +173,12 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
               {/* Clinical Metric Pill */}
               <div className="bg-white p-4 rounded-2xl border border-[#FFCDF2]/60 shadow-xs mb-6">
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block mb-1">
-                  Verified Clinical Study
+                  Store Product Information
                 </span>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 size={18} className="text-[#EC3460] shrink-0" />
                   <span className="text-sm sm:text-base font-bold text-slate-900">
-                    {activeConcern.clinicalResult}
+                    {recommendedProduct.description || 'Read the current product description for details.'}
                   </span>
                 </div>
               </div>
@@ -188,7 +189,7 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
                   Bioactive Formulation:
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  {activeConcern.targetActives.map((active, i) => (
+                  {recommendedProduct.keyIngredients.map((active, i) => (
                     <span 
                       key={i}
                       className="text-xs font-medium bg-[#FFF0F9] text-[#B31940] border border-[#FFCDF2]/60 px-3 py-1.5 rounded-xl"
@@ -224,7 +225,7 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
               <button
                 onClick={() => onQuickView(recommendedProduct)}
                 className="w-full sm:w-auto p-4 bg-slate-50 hover:bg-[#FFF0F9] text-slate-400 hover:text-[#EC3460] border border-slate-200 rounded-2xl transition-all cursor-pointer"
-                title="Read Full Clinical Protocol"
+                title="Read product information"
               >
                 <ArrowRight size={18} />
               </button>

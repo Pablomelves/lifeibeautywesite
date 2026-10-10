@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "test:shopify": "tsx --test tests/shopify-*.test.ts",
+    "test:storefront": "tsx --test tests/storefront-*.test.ts",
     "check:shopify": "tsc -p tsconfig.shopify.json",
     "shopify:collections": "tsx scripts/shopify-collections.mts"
   },

@@ -47,58 +47,20 @@ export const TrackOrderModal: React.FC<TrackOrderModalProps> = ({
     if (isOpen && initialOrderNumber) {
       setOrderNumber(initialOrderNumber);
       setEmail(initialEmail);
-      triggerLookup(initialOrderNumber, initialEmail);
+      triggerLookup();
     }
   }, [isOpen, initialOrderNumber, initialEmail]);
 
   if (!isOpen) return null;
 
-  const triggerLookup = async (lookupNumber: string, lookupEmail?: string) => {
-    if (!lookupNumber.trim()) {
-      setErrorMessage('Please enter an order number (e.g. #LF-1048 or 1048).');
-      return;
-    }
-
-    setLoading(true);
-    setErrorMessage(null);
-    setSearched(true);
-
-    try {
-      const cleanNum = lookupNumber.trim();
-      const cleanMail = (lookupEmail || '').trim();
-      const res = await fetch(`/api/orders/track?orderNumber=${encodeURIComponent(cleanNum)}${cleanMail ? `&email=${encodeURIComponent(cleanMail)}` : ''}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.found && data.order) {
-          setMatchedOrder(data.order);
-          setErrorMessage(null);
-          setLoading(false);
-          return;
-        }
-      }
-    } catch (e) {
-      // client fallback below
-    }
-
-    // Client-side fallback via adminService
-    const match = findOrderForTracking(lookupNumber, lookupEmail);
-    setLoading(false);
-    if (match) {
-      setMatchedOrder(match);
-      setErrorMessage(null);
-    } else {
-      setMatchedOrder(null);
-      setErrorMessage(
-        lookupEmail?.trim()
-          ? `No order found matching "${lookupNumber}" with email "${lookupEmail}". Please verify your details.`
-          : `No order found matching "${lookupNumber}". Please verify your order number.`
-      );
-    }
+  const triggerLookup = async () => {
+    setSearched(true); setLoading(false); setMatchedOrder(null);
+    setErrorMessage('Order lookup is not connected here. Use the tracking link in your Shopify shipping confirmation or contact Li Fei Beauty for help.');
   };
 
   const handleSearch = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    triggerLookup(orderNumber, email);
+    triggerLookup();
   };
 
   const handleCopyTracking = (code: string) => {

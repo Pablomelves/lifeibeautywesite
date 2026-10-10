@@ -1,26 +1,16 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle } from 'lucide-react';
+import { StorefrontHtml } from './StorefrontHtml';
+import type { StorefrontDocument } from '../services/storefrontContent';
 
-export const FaqSection: React.FC = () => {
+export const FaqSection: React.FC<{ document?: StorefrontDocument | null }> = ({ document }) => {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   const faqs = [
-    {
-      q: "Are Li Fei Beauty formulations 100% authentic and temperature-monitored?",
-      a: "Yes. Every single batch is produced and verified in Seoul's premier dermatological laboratories. We ship directly under climate-controlled conditions to protect delicate actives like bio-compatible Salmon PDRN, EGF, and live Ferments."
-    },
-    {
-      q: "How does the Rose Quartz Facial Roller enhance serum absorption?",
-      a: "Our Grade-A Brazilian Rose Quartz crystal provides gentle cryo-constriction followed by micro-circulation stimulation. Rolling over active ampoules increases topical dermal penetration by up to 94% compared to hand application alone."
-    },
-    {
-      q: "Can I use Medicube PDRN Pink and EGF NAD serums together?",
-      a: "Absolutely. Layering them provides ultimate cellular synergy: PDRN stimulates collagen synthesis and rapid skin barrier rebound, while NAD+ powers mitochondrial ATP to smooth deeper fine lines."
-    },
-    {
-      q: "What is your return and satisfaction policy?",
-      a: "We offer a 30-day 100% satisfaction guarantee. If your skin does not experience noticeable hydration and barrier comfort, contact our Seoul care team for a hassle-free refund or exchange."
-    }
+    { q: 'How do I choose a product option?', a: 'Open a product to see its current description, price, available variants, and stock status from the store catalog. Sold-out options cannot be purchased.' },
+    { q: 'When are shipping costs calculated?', a: 'Shopify calculates available shipping methods and costs at checkout after you enter your delivery details. Final costs depend on your destination and the items in your bag.' },
+    { q: 'Where can I find ingredients and directions?', a: 'Refer to the published product description and manufacturer’s packaging. No ingredients, treatment results, or suitability claims are assumed when that information is unavailable.' },
+    { q: 'Where can I check returns or request help?', a: 'Use the Returns and Refunds and Contact links in the footer. If a policy is not published, contact Li Fei Beauty for details before placing an order.' },
   ];
 
   return (
@@ -32,11 +22,12 @@ export const FaqSection: React.FC = () => {
             <span>Frequently Asked Questions</span>
           </div>
           <h2 className="font-anton text-3xl sm:text-4xl uppercase text-stone-900 tracking-wide">
-            Seoul Science & Ritual FAQs
+            Shopping & Store FAQs
           </h2>
         </div>
 
         <div className="space-y-3">
+          {document && <StorefrontHtml html={document.body} />}
           {faqs.map((faq, idx) => {
             const isOpen = openIdx === idx;
             return (
@@ -46,6 +37,7 @@ export const FaqSection: React.FC = () => {
               >
                 <button
                   onClick={() => setOpenIdx(isOpen ? null : idx)}
+                  aria-expanded={isOpen}
                   className="w-full px-6 py-4.5 text-left flex items-center justify-between gap-4 cursor-pointer hover:bg-stone-50/50 transition-colors"
                 >
                   <span className="font-bold text-stone-900 text-sm sm:text-base">{faq.q}</span>

@@ -5,33 +5,33 @@ export const WhyLiFei: React.FC = () => {
   const pillars = [
     {
       icon: ShieldCheck,
-      title: '100% Genuine Seoul Sourcing',
-      desc: 'We circumvent secondary gray-market wholesalers. Every bottle is sourced directly from certified Seoul brand laboratories with holographic manufacturer verification seals.'
+      title: 'Current Product Catalog',
+      desc: 'Product names, descriptions, images, and options are retrieved from the connected Shopify store.'
     },
     {
       icon: ThermometerSnowflake,
-      title: 'Climate-Preserved Efficacy',
-      desc: 'Active bio-peptides, PDRN DNA, and unstable vitamins degrade in hot cargo holds. Our logistics chain uses climate-buffered containers to ensure maximum topical potency.'
+      title: 'Destination-Based Shipping',
+      desc: 'Shopify calculates available delivery options using your address and the actual items in your bag.'
     },
     {
       icon: Sparkles,
-      title: 'Zero-Filler Ingredient Integrity',
-      desc: 'Every formula in our boutique is individually evaluated for bio-compatibility, EWG green-grade certification, and proven clinical dermal absorption.'
+      title: 'Read Before You Choose',
+      desc: 'Review the product description and manufacturer’s packaging for ingredients and directions.'
     },
     {
       icon: Lock,
-      title: 'Bank-Grade Encrypted Checkout',
-      desc: 'Shop with complete peace of mind. We utilize 256-bit SSL encryption and full support for Apple Pay, Google Pay, Shop Pay, and major credit cards.'
+      title: 'Shopify Checkout',
+      desc: 'Orders are completed in Shopify checkout. Available payment methods are displayed there.'
     },
     {
       icon: Award,
-      title: 'Clinical Efficacy & Transparency',
-      desc: 'We publish full clinical trial statistics, ingredient percentages, and exact molecular weights so you know exactly what is penetrating your skin barrier.'
+      title: 'Product Availability',
+      desc: 'The storefront retrieves current product availability and checks selected items with Shopify before checkout.'
     },
     {
       icon: HeartHandshake,
-      title: '30-Day Radiant Skin Guarantee',
-      desc: 'Your skin journey is personal. If a formula doesn’t suit your skin type within 30 days, enjoy simple returns or complimentary consultation with our skincare specialists.'
+      title: 'Store Policies and Help',
+      desc: 'Read the published store policies or contact Li Fei Beauty for information that is not yet available.'
     }
   ];
 
@@ -46,7 +46,7 @@ export const WhyLiFei: React.FC = () => {
             WHY TRUST LI FEI BEAUTY?
           </h2>
           <p className="text-sm text-slate-600 mt-3 leading-relaxed">
-            The skincare you put on your face must be pure, potent, and genuine. We built Li Fei Beauty on unrelenting authenticity and scientific transparency.
+            Find product details, available options, and store information before choosing your skincare.
           </p>
         </div>
 

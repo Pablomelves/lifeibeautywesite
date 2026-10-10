@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { ROUTINE_STEPS } from '../data/storeData';
 import { Product } from '../types';
 import { Check, ArrowRight, Sparkles, Droplets } from 'lucide-react';
@@ -112,10 +113,10 @@ export const SkincareRoutine: React.FC<SkincareRoutineProps> = ({
                     className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden relative shrink-0 border border-slate-200/50"
                     style={{ backgroundColor: product.panel }}
                   >
-                    <img
+                    <ResponsiveProductImage
                       src={product.src}
                       alt={product.name}
-                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform"
+                      className="w-full h-full object-contain object-center transition-transform"
                     />
                   </div>
 

@@ -36,6 +36,7 @@ export interface Product {
   skinType: string;
   fullDescription: string;
   description?: string;
+  descriptionHtml?: string;
   stockStatus: 'In Stock' | 'Low Stock' | 'Out of Stock' | string;
   beforeAfterSummary?: string;
   faqs?: { q: string; a: string }[];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
 import { Hero3D } from './components/Hero3D';
 import { TrustBar } from './components/TrustBar';
@@ -18,12 +18,10 @@ import { Footer } from './components/Footer';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { CartDrawer } from './components/CartDrawer';
 import { SearchModal } from './components/SearchModal';
-import { AccountModal } from './components/AccountModal';
 import { PolicyModal } from './components/PolicyModal';
 import { AboutContactModal } from './components/AboutContactModal';
 import { ShopifyConnectModal } from './components/ShopifyConnectModal';
 import { QuickAddWidget } from './components/QuickAddWidget';
-import { AdminPortal } from './components/admin/AdminPortal';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { TrackOrderModal } from './components/TrackOrderModal';
 
@@ -31,9 +29,18 @@ import { Product, CartItem, StoreContentSettings, CartNotificationData, Wishlist
 import { createShopifyCheckout, getShopifyConfig, getShopifyProducts } from './services/shopify';
 import { getStoreContentSettings, verifyAdminSession } from './services/adminService';
 import { Check, SlidersHorizontal } from 'lucide-react';
+import { usePersistentBag } from './hooks/usePersistentBag';
+import { getStorefrontContent, type StorefrontContent } from './services/storefrontContent';
+import { trackShoppingEvent } from './services/analytics';
+
+const AccountModal = lazy(() => import('./components/AccountModal').then(module => ({ default: module.AccountModal })));
+const AdminPortal = lazy(() => import('./components/admin/AdminPortal').then(module => ({ default: module.AdminPortal })));
 
 export function App() {
   const instantCheckoutPending = useRef(false);
+  const lastAddition = useRef({ key: '', time: 0 });
+  const [storefrontInfo, setStorefrontInfo] = useState<StorefrontContent | null>(null);
+  const [storefrontInfoError, setStorefrontInfoError] = useState<string | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [isProductsLoading, setIsProductsLoading] = useState<boolean>(true);
   const [productError, setProductError] = useState<string | null>(null);
@@ -142,10 +149,12 @@ export function App() {
   };
 
   // Cart state
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const { cartItems, setCartItems, cartReady, persistenceError, retryPersistence, flushPersistence } = usePersistentBag(products, !isProductsLoading, productError);
   const [cartOpen, setCartOpen] = useState(false);
+  useEffect(() => { if (cartOpen && cartReady) trackShoppingEvent('view_cart', cartItems); }, [cartOpen, cartReady]);
 
   useEffect(() => {
+    if (!products.length) return;
     setCartItems(items => items.map(item => {
       const latestProduct = products.find(product => product.id === item.product.id);
       if (!latestProduct) return { ...item, product: { ...item.product, availableForSale: false, stockStatus: 'Out of Stock' } };
@@ -169,6 +178,36 @@ export function App() {
   const [trackOrderParams, setTrackOrderParams] = useState({ orderNumber: '', email: '' });
   const [policyType, setPolicyType] = useState<'shipping' | 'returns' | 'privacy' | 'terms' | null>(null);
   const [aboutContactMode, setAboutContactMode] = useState<'about' | 'contact' | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    getStorefrontContent(controller.signal).then(setStorefrontInfo).catch(() => {
+      if (!controller.signal.aborted) setStorefrontInfoError('Store information is temporarily unavailable. Please try again later.');
+    });
+    return () => controller.abort();
+  }, []);
+
+  useEffect(() => {
+    const syncRoute = () => {
+      const path = window.location.pathname.replace(/\/$/, '');
+      const policies: Record<string, 'shipping' | 'returns' | 'privacy' | 'terms'> = { '/policies/shipping-policy': 'shipping', '/policies/refund-policy': 'returns', '/policies/privacy-policy': 'privacy', '/policies/terms-of-service': 'terms' };
+      if (policies[path]) setPolicyType(policies[path]);
+      if (path === '/pages/about-us') setAboutContactMode('about');
+      if (path === '/pages/contact') setAboutContactMode('contact');
+      if (path === '/pages/faqs') document.getElementById('faq-section')?.scrollIntoView();
+      let handle = '';
+      try { handle = path.startsWith('/products/') ? decodeURIComponent(path.slice('/products/'.length)) : ''; }
+      catch { showToast('This product link is invalid. Please choose an item from the catalog.'); }
+      if (handle && products.length) {
+        const product = products.find(product => product.handle === handle);
+        if (product) setQuickViewProduct(product);
+        else showToast('This product is not available in the current storefront.');
+      }
+    };
+    syncRoute();
+    window.addEventListener('popstate', syncRoute);
+    return () => window.removeEventListener('popstate', syncRoute);
+  }, [products]);
 
   const handleOpenTrackOrder = (orderNum = '', orderEmail = '') => {
     setTrackOrderParams({ orderNumber: orderNum, email: orderEmail });
@@ -342,13 +381,20 @@ export function App() {
   }, []);
 
   const handleAddToCart = (product: Product, quantity = 1) => {
+    if (!cartReady) { showToast('Your saved bag is loading. Please try again in a moment.'); return false; }
+    const current = products.find(current => current.id === product.id);
+    if (!current) { showToast('This product is no longer available.'); return false; }
     const variantId = product.selectedVariantId || product.variants?.find(variant => variant.availableForSale)?.id;
-    const variant = product.variants?.find(variant => variant.id === variantId);
-    if (!variant?.availableForSale || !Number.isInteger(quantity) || quantity < 1) {
+    const variant = current.variants?.find(variant => variant.id === variantId);
+    const existing = cartItems.find(item => item.variantId === variantId)?.quantity || 0;
+    if (!current.availableForSale || !variant?.availableForSale || !Number.isInteger(quantity) || quantity < 1 || quantity + existing > 999) {
       showToast('This variant is unavailable. Please select an available option.');
-      return;
+      return false;
     }
-    product = { ...product, selectedVariantId: variant.id, price: variant.price, numericPrice: variant.numericPrice, volume: variant.title === 'Default Title' ? product.volume : variant.title };
+    const key = `${product.id}-${variant.id}`;
+    if (lastAddition.current.key === key && Date.now() - lastAddition.current.time < 350) return false;
+    lastAddition.current = { key, time: Date.now() };
+    product = { ...current, selectedVariantId: variant.id, price: variant.price, numericPrice: variant.numericPrice, volume: variant.title === 'Default Title' ? current.volume : variant.title };
     setCartItems((prev) => {
       const existingIndex = prev.findIndex((item) => {
         const itemVariant = item.variantId || item.product.selectedVariantId || item.product.variants?.[0]?.id;
@@ -366,6 +412,8 @@ export function App() {
     });
     // Pop up darker pink notification from Quick Add on bottom-right corner
     triggerCartNotification(product, quantity, product.volume);
+    trackShoppingEvent('add_to_cart', [{ product, quantity, variantId }]);
+    return true;
   };
 
   const handleBuyNow = async (product: Product, quantity = 1) => {
@@ -376,12 +424,14 @@ export function App() {
       try {
         const checkoutUrl = await createShopifyCheckout([{ product, quantity }]);
         if (checkoutUrl) {
+          trackShoppingEvent('begin_checkout', [{ product, quantity }]);
           window.location.href = checkoutUrl;
           return;
         }
       } catch (err) {
-        console.warn('Instant buy error:', err);
+        trackShoppingEvent('shopping_error');
         showToast(err instanceof Error ? err.message : 'Shopify checkout is temporarily unavailable.');
+        return;
       } finally {
         instantCheckoutPending.current = false;
       }
@@ -392,6 +442,9 @@ export function App() {
   };
 
   const handleUpdateQuantity = (productId: number, delta: number, variantId?: string) => {
+    const item = cartItems.find(item => item.product.id === productId && (!variantId || item.variantId === variantId));
+    if (!item || !Number.isInteger(delta)) return;
+    if (delta > 0 && (item.product.availableForSale === false || item.quantity + delta > 999)) { showToast('This quantity or variant is unavailable.'); return; }
     setCartItems((prev) => {
       return prev
         .map((item) => {
@@ -414,6 +467,10 @@ export function App() {
         return !(item.product.id === productId && (!variantId || itemVariant === variantId));
       })
     );
+  };
+
+  const closeRoutedView = () => {
+    if (/^\/(products|policies|pages)\//.test(window.location.pathname)) window.history.replaceState({}, '', '/');
   };
 
   const handleClearCart = () => {
@@ -553,7 +610,7 @@ export function App() {
       />
 
       {/* 13. FAQ Accordion */}
-      <FaqSection />
+      <FaqSection document={storefrontInfo?.faq} />
 
       {/* 14. Newsletter / Discount Signup (GLOW15) */}
       <Newsletter />
@@ -572,11 +629,13 @@ export function App() {
       <ProductDetailModal
         product={quickViewProduct ? products.find(product => product.id === quickViewProduct.id) || null : null}
         allProducts={products}
-        onClose={() => setQuickViewProduct(null)}
+        onClose={() => { setQuickViewProduct(null); closeRoutedView(); }}
         onAddToCart={handleAddToCart}
         onSelectRecommended={(p) => setQuickViewProduct(p)}
         isWishlisted={quickViewProduct ? wishlistIds.includes(quickViewProduct.id) : false}
         onToggleWishlist={handleToggleWishlist}
+        onOpenPolicy={setPolicyType}
+        onOpenContact={() => setAboutContactMode('contact')}
       />
 
       {/* Cart Slide-Over Drawer */}
@@ -587,6 +646,10 @@ export function App() {
         onUpdateQuantity={handleUpdateQuantity}
         onRemoveItem={handleRemoveCartItem}
         onClearCart={handleClearCart}
+        isLoading={!cartReady}
+        persistenceError={persistenceError}
+        onRetryPersistence={() => { if (productError && !products.length) loadProducts(false); else retryPersistence(); }}
+        onBeforeCheckout={flushPersistence}
         onTrackOrder={(num, mail) => handleOpenTrackOrder(num, mail)}
       />
 
@@ -599,7 +662,7 @@ export function App() {
       />
 
       {/* Customer Account & Glow Rewards Modal */}
-      <AccountModal
+      {accountOpen && <Suspense fallback={<div role="status" className="fixed inset-0 z-[140] bg-white/95 flex items-center justify-center">Loading your account…</div>}><AccountModal
         isOpen={accountOpen}
         onClose={() => setAccountOpen(false)}
         wishlistIds={wishlistIds}
@@ -619,7 +682,7 @@ export function App() {
         onOpenTrackOrder={(num, mail) => handleOpenTrackOrder(num, mail)}
         profileInfo={profileInfo}
         onUpdateProfile={handleUpdateProfile}
-      />
+      /></Suspense>}
 
       {/* Track My Order Modal */}
       <TrackOrderModal
@@ -633,14 +696,20 @@ export function App() {
       <PolicyModal
         isOpen={Boolean(policyType)}
         type={policyType}
-        onClose={() => setPolicyType(null)}
+        onClose={() => { setPolicyType(null); closeRoutedView(); }}
+        document={policyType ? storefrontInfo?.policies[policyType] : null}
+        isLoading={!storefrontInfo && !storefrontInfoError}
+        error={storefrontInfoError}
+        onOpenContact={() => { setPolicyType(null); setAboutContactMode('contact'); }}
       />
 
       {/* About & Contact Modal */}
       <AboutContactModal
         isOpen={Boolean(aboutContactMode)}
         mode={aboutContactMode || 'about'}
-        onClose={() => setAboutContactMode(null)}
+        onClose={() => { setAboutContactMode(null); closeRoutedView(); }}
+        aboutDocument={storefrontInfo?.about}
+        contactDocument={storefrontInfo?.contact}
       />
 
       {/* Shopify Headless Storefront Connect Modal */}
@@ -679,7 +748,7 @@ export function App() {
 
       {/* Master Admin Portal Modal - Only rendered when authenticated as admin */}
       {adminOpen && isAdminAuthenticated && (
-        <AdminPortal
+        <Suspense fallback={<div role="status" className="fixed inset-0 z-[140] bg-white/95 flex items-center justify-center">Loading store administration…</div>}><AdminPortal
           onClose={() => setAdminOpen(false)}
           onRefreshStoreData={handleRefreshStoreData}
           onLogoutSuccess={() => {
@@ -688,7 +757,7 @@ export function App() {
             setAdminOpen(false);
             showToast('Signed out of Admin Hub');
           }}
-        />
+        /></Suspense>
       )}
 
       {/* Store Owner Secure Authentication Modal */}

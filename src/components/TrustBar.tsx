@@ -18,17 +18,17 @@ export const TrustBar: React.FC<TrustBarProps> = ({ onVerifyClick, onTrackClick 
             </div>
             <div>
               <h4 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-white">
-                100% Authentic Guaranteed
+                Current Shopify Catalog
               </h4>
               <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 leading-relaxed font-medium">
-                Direct Seoul laboratory sourcing with verifiable manufacturer batch codes.
+                Current product descriptions, options, prices, and availability from the store.
               </p>
               {onVerifyClick && (
                 <button
                   onClick={onVerifyClick}
                   className="mt-1 text-[10px] sm:text-[11px] font-bold underline text-[#FFCDF2] hover:text-white transition-colors cursor-pointer block"
                 >
-                  Verify Authenticity →
+                  Store shipping information →
                 </button>
               )}
             </div>
@@ -41,10 +41,10 @@ export const TrustBar: React.FC<TrustBarProps> = ({ onVerifyClick, onTrackClick 
             </div>
             <div>
               <h4 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-white">
-                Free Express Sourcing
+                Shipping at Checkout
               </h4>
               <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 leading-relaxed font-medium">
-                Fast courier dispatch on orders over $50 with real-time end-to-end tracking.
+                Check available shipping methods and costs after entering your delivery details.
               </p>
               {onTrackClick && (
                 <button
@@ -64,10 +64,10 @@ export const TrustBar: React.FC<TrustBarProps> = ({ onVerifyClick, onTrackClick 
             </div>
             <div>
               <h4 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-white">
-                Clinical Bio-Actives
+                Product Information
               </h4>
               <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 leading-relaxed font-medium">
-                PDRN Salmon DNA, NAD+ Coenzymes & Pure Kojic Acid for genuine glass skin.
+                Read the published description and manufacturer’s packaging before use.
               </p>
             </div>
           </div>
@@ -79,10 +79,10 @@ export const TrustBar: React.FC<TrustBarProps> = ({ onVerifyClick, onTrackClick 
             </div>
             <div>
               <h4 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-white">
-                30-Day Radiant Guarantee
+                Store Support
               </h4>
               <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 leading-relaxed font-medium">
-                Try your ritual risk-free. Easy returns or expert skincare adjustments.
+                Check published store policies and contact Li Fei Beauty with any questions.
               </p>
             </div>
           </div>

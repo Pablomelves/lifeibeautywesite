@@ -47,62 +47,7 @@ export interface PastOrder {
   destination: string;
 }
 
-const INITIAL_ORDERS: PastOrder[] = [
-  {
-    id: '#LF-94108',
-    date: 'Oct 5, 2026',
-    email: 'customer@lifeibeauty.com',
-    status: 'In Transit',
-    carrier: 'Seoul Express Air Courier (Direct Flight)',
-    trackingNumber: 'KR-AIR-9410882',
-    estimatedDelivery: 'Oct 9, 2026',
-    total: 68.00,
-    stepIndex: 2, // In Flight
-    origin: 'Gangnam Laboratory HQ, Seoul, South Korea',
-    destination: 'United States Express Delivery',
-    items: [
-      {
-        id: 1,
-        name: 'MEDICUBE PDRN PINK',
-        volume: '30 ml / 1.01 fl. oz.',
-        price: 36.00,
-        quantity: 1,
-        image: '/products/medicube-pink.jpg',
-      },
-      {
-        id: 8,
-        name: 'LI FEI ROSE QUARTZ CONTOUR ROLLER',
-        volume: 'Grade-A Natural Rose Quartz Crystal',
-        price: 32.00,
-        quantity: 1,
-        image: '/products/facial-roller.jpg',
-      }
-    ]
-  },
-  {
-    id: '#LF-89241',
-    date: 'Sep 24, 2026',
-    email: 'customer@lifeibeauty.com',
-    status: 'Delivered',
-    carrier: 'Seoul Express Air Courier',
-    trackingNumber: 'KR-AIR-8924104',
-    estimatedDelivery: 'Sep 28, 2026',
-    total: 42.00,
-    stepIndex: 3, // Delivered
-    origin: 'Seoul Central Logistics, Republic of Korea',
-    destination: 'Residential Front Door',
-    items: [
-      {
-        id: 2,
-        name: 'MEDICUBE EGF NAD',
-        volume: '30 ml / 1.01 fl. oz.',
-        price: 42.00,
-        quantity: 1,
-        image: '/products/medicube-firming.jpg',
-      }
-    ]
-  }
-];
+const INITIAL_ORDERS: PastOrder[] = [];
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -134,17 +79,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   onUpdateProfile,
 }) => {
   const [activeTab, setActiveTab] = useState<'points' | 'orders' | 'tracking' | 'profile' | 'wishlist' | 'favorites'>(initialTab);
-  const [pastOrders, setPastOrders] = useState<PastOrder[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('lifei_past_orders');
-        if (saved) return JSON.parse(saved);
-      } catch (e) {
-        // ignore
-      }
-    }
-    return INITIAL_ORDERS;
-  });
+  const [pastOrders] = useState<PastOrder[]>([]);
 
   // Personal Information State (Lifted to App.tsx)
   const isProfileIncomplete = !profileInfo.firstName || !profileInfo.lastName || !profileInfo.email;
@@ -157,31 +92,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   const catalog = products || [];
 
   // AI Recommendations Fetcher
-  const fetchRecommendations = async () => {
-    if (!profileInfo.skinGoal && !profileInfo.skinType) return;
-    setIsRecLoading(true);
-    try {
-      const response = await fetch('/api/gemini/recommendations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          profileInfo: {
-            skinGoal: profileInfo.skinGoal,
-            skinType: profileInfo.skinType,
-          },
-          products: catalog,
-        }),
-      });
-      const data = await response.json();
-      if (data.recommendedIds) {
-        setRecommendedIds(data.recommendedIds);
-      }
-    } catch (err) {
-      console.error('Failed to fetch recommendations:', err);
-    } finally {
-      setIsRecLoading(false);
-    }
-  };
+  const fetchRecommendations = async () => { setRecommendedIds([]); setIsRecLoading(false); };
 
   useEffect(() => {
     if (activeTab === 'profile' && (profileInfo.skinGoal || profileInfo.skinType)) {
@@ -216,9 +127,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   };
 
   // Order Tracking Form State
-  const [trackingOrderNumber, setTrackingOrderNumber] = useState('#LF-94108');
-  const [trackingEmail, setTrackingEmail] = useState('customer@lifeibeauty.com');
-  const [activeTrackedOrder, setActiveTrackedOrder] = useState<PastOrder | null>(INITIAL_ORDERS[0]);
+  const [trackingOrderNumber, setTrackingOrderNumber] = useState('');
+  const [trackingEmail, setTrackingEmail] = useState('');
+  const [activeTrackedOrder, setActiveTrackedOrder] = useState<PastOrder | null>(null);
   const [isCopiedTracking, setIsCopiedTracking] = useState(false);
   const [trackingNotice, setTrackingNotice] = useState<string | null>(null);
   const [addedModalIds, setAddedModalIds] = useState<Record<number, boolean>>({});
@@ -241,98 +152,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   };
 
   // Dummy order generator
-  const handleGenerateDummyOrder = () => {
-    const randomCount = Math.floor(Math.random() * 2) + 1; // 1 or 2 products
-    const shuffled = [...catalog].sort(() => 0.5 - Math.random());
-    const selected = shuffled.slice(0, randomCount);
-    
-    const items: OrderItem[] = selected.map((p) => ({
-      id: p.id,
-      name: p.name,
-      volume: p.volume,
-      price: p.numericPrice,
-      quantity: 1,
-      image: p.src,
-    }));
+  const handleGenerateDummyOrder = () => { setTrackingNotice('Order history is not connected here. Use the order confirmation sent by Shopify.'); };
 
-    const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-    const randomNum = Math.floor(10000 + Math.random() * 90000);
-    const newOrderId = `#LF-${randomNum}`;
-    const newTrackingNum = `KR-AIR-${randomNum}${Math.floor(10 + Math.random() * 90)}`;
-
-    const statuses: Array<'Seoul Lab Processing' | 'In Transit' | 'Delivered'> = ['In Transit', 'Seoul Lab Processing', 'Delivered'];
-    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-    const stepIndex = randomStatus === 'Delivered' ? 3 : randomStatus === 'In Transit' ? 2 : 1;
-
-    const newOrder: PastOrder = {
-      id: newOrderId,
-      date: 'Just now',
-      email: trackingEmail || 'customer@lifeibeauty.com',
-      status: randomStatus,
-      carrier: 'Seoul Express Air Courier (Direct Flight)',
-      trackingNumber: newTrackingNum,
-      estimatedDelivery: 'In 3-4 Days',
-      items,
-      total,
-      stepIndex,
-      origin: 'Gangnam Laboratory Cleanroom, Seoul, South Korea',
-      destination: 'Residential Doorstep Delivery',
-    };
-
-    const updated = [newOrder, ...pastOrders];
-    setPastOrders(updated);
-    try {
-      localStorage.setItem('lifei_past_orders', JSON.stringify(updated));
-    } catch (e) {
-      // ignore
-    }
-
-    setTrackingNotice(`Generated new simulated order ${newOrderId}!`);
-    setTimeout(() => setTrackingNotice(null), 3000);
-  };
-
-  const handleTrackSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const query = trackingOrderNumber.trim().toUpperCase();
-    if (!query) return;
-
-    // Normalize with # if omitted
-    const cleanId = query.startsWith('#') ? query : `#${query}`;
-
-    // Find in existing orders or create dynamic simulated tracking
-    const match = pastOrders.find((o) => o.id.toUpperCase() === cleanId || o.trackingNumber.toUpperCase() === query);
-    if (match) {
-      setActiveTrackedOrder(match);
-      setTrackingNotice(null);
-    } else {
-      // Generate simulated tracking for entered order number
-      const simulated: PastOrder = {
-        id: cleanId,
-        date: 'Recent Purchase',
-        email: trackingEmail.trim() || 'customer@lifeibeauty.com',
-        status: 'In Transit',
-        carrier: 'Seoul Express Air Courier (Korea Post EMS)',
-        trackingNumber: `KR-AIR-${cleanId.replace(/\D/g, '') || '994821'}`,
-        estimatedDelivery: 'Estimated in 2-3 Business Days',
-        total: 58.00,
-        stepIndex: 2,
-        origin: 'Direct Seoul Laboratory Dispatch, South Korea',
-        destination: trackingEmail ? `Dispatched to ${trackingEmail}` : 'Verified Customer Destination',
-        items: [
-          {
-            id: 1,
-            name: catalog[0]?.name || 'MEDICUBE PDRN PINK',
-            volume: catalog[0]?.volume || 'Full Size',
-            price: catalog[0]?.numericPrice || 36,
-            quantity: 1,
-            image: catalog[0]?.src || '',
-          }
-        ]
-      };
-      setActiveTrackedOrder(simulated);
-      setTrackingNotice(`Located shipment for ${cleanId}`);
-      setTimeout(() => setTrackingNotice(null), 3000);
-    }
+  const handleTrackSubmit = (event: React.FormEvent) => {
+    event.preventDefault(); setActiveTrackedOrder(null);
+    setTrackingNotice('Order lookup is not connected here. Use the tracking link in your Shopify shipping confirmation or contact support.');
   };
 
   const handleJumpToTracking = (order: PastOrder) => {
@@ -858,14 +682,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   </h4>
                 </div>
 
-                <button
-                  onClick={handleGenerateDummyOrder}
-                  className="bg-[#FFF0F9] border border-[#FFCDF2] hover:bg-[#FFE6F6] text-[#B31940] px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
-                  title="Generate a sample mock order for testing"
-                >
-                  <Sparkles size={13} className="text-[#EC3460]" />
-                  <span>Generate Sample Order</span>
-                </button>
+
               </div>
 
               {pastOrders.length === 0 ? (
@@ -875,14 +692,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   </div>
                   <h5 className="font-bold text-slate-900 text-sm uppercase">No Past Orders Found</h5>
                   <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
-                    You haven't placed an order yet. Click below to generate sample past purchases for testing.
+                    Authenticated order history is not connected here. Check your Shopify order confirmation or contact support.
                   </p>
-                  <button
-                    onClick={handleGenerateDummyOrder}
-                    className="mt-4 px-4 py-2 bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-raspberry"
-                  >
-                    Generate Sample Order
-                  </button>
+
                 </div>
               ) : (
                 <div className="space-y-3.5">
@@ -951,64 +763,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           {/* =========================================================
               4. Glow Rewards Tab
           ========================================================= */}
-          {activeTab === 'points' && (
-            <div className="space-y-4">
-              <div className="bg-gradient-to-br from-[#FFF5FA] to-[#FFF0F9] p-6 rounded-2xl border border-[#FFCDF2] text-center">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 block mb-1">
-                  CURRENT REWARD BALANCE
-                </span>
-                <span className="font-anton text-4xl text-[#EC3460] block my-1">
-                  340 GLOW POINTS
-                </span>
-                <span className="text-xs text-[#B31940] font-semibold block">
-                  = $17.00 credit towards your next Seoul shipment
-                </span>
-              </div>
-
-              {/* My Favorites Quick Access Entry */}
-              <div className="p-4 bg-white rounded-2xl border border-[#FFCDF2] flex items-center justify-between gap-3 shadow-2xs">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#FFF0F9] text-[#EC3460] flex items-center justify-center shrink-0 border border-[#FFCDF2]/60">
-                    <Heart size={18} fill="#EC3460" />
-                  </div>
-                  <div>
-                    <h5 className="font-bold text-xs uppercase text-slate-900">
-                      My Favorites ({wishlistedProducts.length})
-                    </h5>
-                    <p className="text-[11px] text-slate-500">
-                      {wishlistedProducts.length} saved {wishlistedProducts.length === 1 ? 'formula' : 'formulas'} with 1-click cart addition
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('favorites')}
-                  className="px-3 py-1.5 bg-[#FFF0F9] hover:bg-[#FFE6F6] text-[#EC3460] text-xs font-semibold rounded-xl border border-[#FFCDF2] transition-colors cursor-pointer shrink-0"
-                >
-                  View Favorites
-                </button>
-              </div>
-
-              <div className="text-xs space-y-2 pt-2">
-                <span className="font-bold text-slate-900 uppercase block text-[11px]">
-                  How to earn more points:
-                </span>
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                  <span>Place an order ($1 = 1 Glow Point)</span>
-                  <span className="font-semibold text-[#EC3460]">+1 pt / $1</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                  <span>Write a verified product review</span>
-                  <span className="font-semibold text-[#EC3460]">+50 pts</span>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                  <span>Tag @lifeibeauty on Instagram / TikTok</span>
-                  <span className="font-semibold text-rose-600">+100 pts</span>
-                </div>
-              </div>
-            </div>
-          )}
+          {activeTab === 'points' && <div className="space-y-4 rounded-2xl bg-[#FFF5FA] border border-[#FFCDF2] p-6 text-sm text-slate-600">No connected rewards program or verified reward balance is available. Your saved favorites remain accessible in the Wishlist tab.</div>}
 
           {/* =========================================================
               5. Customer Profile Tab

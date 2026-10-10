@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { Star, ShoppingBag, Eye, Sparkles, Check, Heart, Scale } from 'lucide-react';
 import { Product } from '../types';
 import { belongsToCollection } from '../services/collectionRules';
-import { getDemoProductReviews } from '../data/demoProductReviews';
 
 interface BestSellersProps {
   onQuickView: (product: Product) => void;
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: Product) => boolean | void;
   onBuyNow?: (product: Product) => void;
   selectedCategory: string;
   onSelectCategory: (catId: string) => void;
@@ -28,7 +28,7 @@ const ProductCard: React.FC<{
   onToggleWishlist?: (id: number) => void;
   onQuickView: (p: Product) => void;
   handleAdd: (e: React.MouseEvent, p: Product) => void;
-  onAddToCart: (p: Product) => void;
+  onAddToCart: (p: Product) => boolean | void;
   onBuyNow?: (p: Product) => void;
   isComparing: boolean;
   onToggleComparison?: (id: number) => void;
@@ -44,7 +44,6 @@ const ProductCard: React.FC<{
   isComparing,
   onToggleComparison
 }) => {
-  const demoReviews = getDemoProductReviews(product);
   const galleryRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [justWishlisted, setJustWishlisted] = useState(false);
@@ -179,10 +178,10 @@ const ProductCard: React.FC<{
             key={idx} 
             className="w-full h-full shrink-0 snap-center flex items-center justify-center relative"
           >
-            <img
+            <ResponsiveProductImage
               src={img}
               alt={`${product.name} view ${idx + 1}`}
-              className="w-full h-full object-cover object-center transform group-hover:scale-106 transition-transform duration-500 ease-out drop-shadow-sm"
+              className="w-full h-full object-contain object-center transform transition-transform duration-500 ease-out drop-shadow-sm"
             />
           </div>
         ))}
@@ -202,13 +201,6 @@ const ProductCard: React.FC<{
         <div>
           {/* Stars & Reviews */}
           <div className="flex items-center gap-1 mb-1 sm:mb-1.5">
-            <div className="flex items-center text-amber-400">
-              <Star size={isMobile ? 10 : 13} fill="currentColor" />
-            </div>
-            <span className="text-[10px] sm:text-xs font-bold text-slate-800">
-              {demoReviews.rating.toFixed(1)}
-            </span>
-            <span className="text-slate-300 mx-1 hidden xs:inline">·</span>
             <span className="text-[9px] sm:text-[11px] text-slate-500 font-medium">
               {product.volume}
             </span>
@@ -251,7 +243,7 @@ const ProductCard: React.FC<{
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2">
             <button
               onClick={(e) => handleAdd(e, product)}
-              disabled={product.availableForSale === false}
+              disabled={product.availableForSale === false || isAdded}
               className={`flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center justify-center gap-1 ${
                 isAdded
                   ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 animate-pop'
@@ -278,7 +270,7 @@ const ProductCard: React.FC<{
                 if (onBuyNow) {
                   onBuyNow(product);
                 } else {
-                  onAddToCart(product);
+                  if (onAddToCart(product) === false) return;
                 }
               }}
               className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center justify-center gap-1 bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry border border-transparent"
@@ -340,7 +332,7 @@ export const BestSellers: React.FC<BestSellersProps> = ({
 
   const handleAdd = (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
-    onAddToCart(product);
+    if (onAddToCart(product) === false) return;
     setAddedId(product.id);
     setTimeout(() => setAddedId(null), 1800);
   };
@@ -369,7 +361,7 @@ export const BestSellers: React.FC<BestSellersProps> = ({
               FEATURED & BEST SELLERS
             </h2>
             <p className="text-sm text-slate-600 max-w-xl mt-3 leading-relaxed">
-              Clinical-grade Korean beauty favorites rigorously tested for real cellular rejuvenation, pore refinement, and lasting glass luminosity.
+              Explore current store products, available options, and published descriptions before choosing your skincare.
             </p>
           </div>
 

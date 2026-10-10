@@ -1,5 +1,12 @@
 import { pgTable, text, timestamp, integer, jsonb, boolean, index } from 'drizzle-orm/pg-core';
 
+export const storefrontBags = pgTable('storefront_bags', {
+  id: text('id').primaryKey(),
+  lines: jsonb('lines').$type<Array<{ productId: number; variantId: string; quantity: number }>>().notNull(),
+  revision: integer('revision').notNull().default(1),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+}, table => [index('storefront_bags_expiry_idx').on(table.expiresAt)]);
+
 export const shopifySyncState = pgTable('shopify_sync_state', {
   id: text('id').primaryKey(),
   cursor: text('cursor'),
