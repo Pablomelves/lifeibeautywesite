@@ -1,5 +1,7 @@
 import type { Config, Context } from '@netlify/functions';
 
+const CHECKOUT_DOMAIN = 'checkout.lifeibeauty.com';
+
 export default async (req: Request, context: Context) => {
   const responseHeaders = { 'Cache-Control': 'no-store' };
   if (req.method !== 'POST' && req.method !== 'GET') {
@@ -61,10 +63,10 @@ export default async (req: Request, context: Context) => {
     const cart = data.data?.cartCreate?.cart;
     if (typeof cart?.checkoutUrl === 'string') {
       const checkout = new URL(cart.checkoutUrl);
-      if (checkout.protocol !== 'https:' || ![domain, 'lifeibeauty.com', 'www.lifeibeauty.com'].includes(checkout.hostname)) {
+      if (checkout.protocol !== 'https:' || ![domain, CHECKOUT_DOMAIN, 'lifeibeauty.com', 'www.lifeibeauty.com'].includes(checkout.hostname)) {
         return Response.json({ error: 'Shopify returned an unexpected checkout destination. Please contact the store owner.' }, { status: 502, headers: responseHeaders });
       }
-      checkout.hostname = domain;
+      checkout.hostname = CHECKOUT_DOMAIN;
       checkout.searchParams.set('_fd', '0');
       cart.checkoutUrl = checkout.toString();
     }

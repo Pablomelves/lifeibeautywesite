@@ -20,9 +20,11 @@ Requests use `no-store`. The visible storefront refreshes its catalog every minu
 
 ## Shopify checkout handoff
 
-The store's generated checkout URLs used lifeibeauty.com, which serves the Netlify application. Changing only the checkout hostname caused Shopify to redirect back to that domain. The function therefore keeps Shopify's generated cart path and key, uses the canonical Shopify hostname, and applies Shopify's domain-redirect bypass parameter. No DNS, Shopify domain, or Netlify redirect configuration change is needed for this handoff.
+The function sends customers to checkout.lifeibeauty.com while retaining maison-co-store1.myshopify.com for Storefront API requests. It keeps Shopify's generated cart path and query parameters and sets `_fd=0` to prevent Shopify from redirecting checkout back to lifeibeauty.com, which serves the Netlify application. The branded checkout hostname is always used; `SHOPIFY_CHECKOUT_DOMAIN` is no longer required. Checkout URLs must still use HTTPS and an expected store hostname before they are rewritten.
 
-Browser verification reached a Shopify-hosted checkout page with HTTP 200 and a visible contact email field. No customer information or payment details were submitted, and no paid order was placed. Failed cart creation or unavailable products do not trigger a simulated order or clear the customer's shopping bag.
+The checkout subdomain must remain connected to Shopify with active HTTPS. On October 10, 2026, its DNS CNAME pointed to shops.myshopify.com and HTTPS requests with the redirect-bypass parameter returned HTTP 200. No DNS, Shopify domain, or Netlify redirect settings were changed for this update.
+
+Earlier browser verification reached a Shopify-hosted checkout page on the myshopify domain with HTTP 200 and a visible contact email field. Verification of the branded-domain update on October 10, 2026 successfully loaded the real catalog and created a cart with a checkout.lifeibeauty.com checkout URL. The automated request to that checkout page returned HTTP 403, so the complete branded checkout flow still requires browser verification after deployment. No customer information or payment details were submitted, and no paid order was placed. Failed cart creation or unavailable products do not trigger a simulated order or clear the customer's shopping bag.
 
 ## Production release prerequisite
 
