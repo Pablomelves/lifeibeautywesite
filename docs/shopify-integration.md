@@ -12,6 +12,8 @@ Review Shopify's supported API versions during maintenance and validate an updat
 
 ## Product synchronization
 
+Collection assignment automation and its required Admin permissions, activation steps, manual-review reports, and live verification checklist are documented in `docs/shopify-collection-automation.md`. Product filters and counts use the saved memberships returned by the existing Storefront connection. The assignment worker remains inactive unless explicitly authorized and enabled.
+
 Published Shopify products and additional variant pages are fetched with cursor pagination. Real descriptions, images, prices, options, handles, and availability are used without demo product fallback or fabricated product metadata. Initial failures display the existing error state. Background failures retain the last successfully fetched real catalog.
 
 Requests use `no-store`. The visible storefront refreshes its catalog every minute and on regained tab focus or connectivity. Open product details and cart prices/availability use the refreshed catalog. Shopify validates the final cart and prices at checkout. Changes in Shopify appear on the next successful refresh without reconnecting the website.

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node"],
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true
+  },
+  "include": ["db/**/*.ts", "netlify/lib/shopify-*.ts", "netlify/functions/shopify-collection-*.mts", "src/services/collectionRules.ts", "tests/**/*.ts", "scripts/shopify-collections.mts", "drizzle.config.ts"]
+}

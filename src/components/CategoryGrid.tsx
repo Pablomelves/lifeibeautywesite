@@ -2,6 +2,7 @@ import React from 'react';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { CATEGORIES } from '../data/storeData';
 import { Product } from '../types';
+import { belongsToCollection } from '../services/collectionRules';
 
 interface CategoryGridProps {
   onSelectCategory: (catId: string) => void;
@@ -14,25 +15,9 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
   onNavigateSection,
   products,
 }) => {
-  const getCategoryCount = (id: string, defaultText: string) => {
-    if (!products || products.length === 0) return defaultText;
-    if (id === 'serums') {
-      const c = products.filter((p) => p.category === 'Serums').length;
-      return `${c} ${c === 1 ? 'Product' : 'Products'}`;
-    }
-    if (id === 'masks') {
-      const c = products.filter((p) => p.category === 'Masks').length;
-      return `${c} ${c === 1 ? 'Product' : 'Products'}`;
-    }
-    if (id === 'cleansers') {
-      const c = products.filter((p) => p.category === 'Cleansers').length;
-      return `${c} ${c === 1 ? 'Product' : 'Products'}`;
-    }
-    if (id === 'moisturizers') {
-      const c = products.filter((p) => p.category === 'Moisturizers').length;
-      return `${c} ${c === 1 ? 'Product' : 'Products'}`;
-    }
-    return defaultText;
+  const getCategoryCount = (id: string) => {
+    const count = (products || []).filter(product => belongsToCollection(product, id)).length;
+    return `${count} ${count === 1 ? 'Product' : 'Products'}`;
   };
 
   const visualCategories = [
@@ -41,7 +26,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
       title: 'Targeted Serums',
       korean: '세럼 & 앰플',
       desc: 'PDRN salmon DNA, EGF longevity peptides & kojic acid',
-      count: getCategoryCount('serums', '3 Products'),
+      count: getCategoryCount('serums'),
       bgGradient: 'from-[#FFF0F9] to-[#FFE6F6]',
       tagColor: 'text-[#EC3460] bg-white border border-[#FFCDF2]'
     },
@@ -50,7 +35,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
       title: 'Bio-Collagen Masks',
       korean: '콜라겐 팩',
       desc: 'Viral low-molecular hydrogel treatments for poreless glass skin',
-      count: getCategoryCount('masks', '1 Product'),
+      count: getCategoryCount('masks'),
       bgGradient: 'from-[#F5F3FF] to-[#EDE9FE]',
       tagColor: 'text-[#8B5CF6] bg-white border border-[#DDD6FE]'
     },
@@ -59,7 +44,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
       title: 'Pore Cleansers & Toners',
       korean: '클렌징 & 토너 패드',
       desc: 'AHA/BHA dual-textured exfoliating pads and green tea infusions',
-      count: getCategoryCount('cleansers', '2 Products'),
+      count: getCategoryCount('cleansers'),
       bgGradient: 'from-[#F0FDF4] to-[#DCFCE7]',
       tagColor: 'text-[#16A34A] bg-white border border-[#BBF7D0]'
     },
@@ -68,7 +53,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
       title: 'Barrier Cushion Creams',
       korean: '수분 보습 크림',
       desc: '5-Ceramide lipid cushions that seal in active serum nutrients',
-      count: getCategoryCount('moisturizers', '2 Products'),
+      count: getCategoryCount('moisturizers'),
       bgGradient: 'from-[#FFF7ED] to-[#FFEDD5]',
       tagColor: 'text-[#EA580C] bg-white border border-[#FED7AA]'
     }

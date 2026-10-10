@@ -1,4 +1,5 @@
 import type { Product, ShopifyVariant, CartItem, ShopifyConfig } from '../types';
+import { collectionFamily } from './collectionRules';
 
 const DEFAULT_DOMAIN = 'maison-co-store1.myshopify.com';
 const DEFAULT_API_VERSION = '2026-10';
@@ -63,6 +64,10 @@ const PRODUCTS_QUERY = `
           descriptionHtml
           productType
           tags
+          collections(first: 100) {
+            pageInfo { hasNextPage endCursor }
+            nodes { id title handle }
+          }
           availableForSale
           priceRange {
             minVariantPrice {
@@ -124,6 +129,10 @@ const SEARCH_QUERY = `
           descriptionHtml
           productType
           tags
+          collections(first: 100) {
+            pageInfo { hasNextPage endCursor }
+            nodes { id title handle }
+          }
           availableForSale
           priceRange {
             minVariantPrice {
@@ -174,8 +183,9 @@ const SEARCH_QUERY = `
 `;
 
 const COLLECTIONS_QUERY = `
-  query GetCollections($first: Int!) {
-    collections(first: $first) {
+  query GetCollections($first: Int!, $after: String) {
+    collections(first: $first, after: $after) {
+      pageInfo { hasNextPage endCursor }
       edges {
         node {
           id
@@ -229,6 +239,10 @@ export interface ShopifyProductNode {
   descriptionHtml?: string;
   productType: string;
   tags: string[];
+  collections?: {
+    nodes: { id: string; title: string; handle: string }[];
+    pageInfo: { hasNextPage: boolean; endCursor: string | null };
+  };
   availableForSale: boolean;
   priceRange: {
     minVariantPrice: {
@@ -301,24 +315,10 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
   }));
   const defaultVariant = variants.find(variant => variant.availableForSale) || variants[0];
 
-  // Map category based on productType or tags
-  let category: Product['category'] = 'Serums';
-  const typeLower = (node.productType || '').toLowerCase();
-  const tagsStr = (node.tags || []).join(' ').toLowerCase();
-
-  if (typeLower.includes('mask') || tagsStr.includes('mask')) {
-    category = 'Masks';
-  } else if (typeLower.includes('cream') || typeLower.includes('moistur') || tagsStr.includes('moisturizer')) {
-    category = 'Moisturizers';
-  } else if (typeLower.includes('clean') || typeLower.includes('pad') || tagsStr.includes('cleanser')) {
-    category = 'Cleansers';
-  } else if (typeLower.includes('eye') || tagsStr.includes('eye')) {
-    category = 'Eye Care';
-  } else if (typeLower.includes('set') || typeLower.includes('bundle') || tagsStr.includes('set')) {
-    category = 'Sets & Bundles';
-  } else if (typeLower.includes('roller') || typeLower.includes('tool') || tagsStr.includes('roller')) {
-    category = 'Tools & Rollers';
-  }
+  const collections = node.collections?.nodes || [];
+  const categoryNames: Record<string, string> = { serums: 'Serums', masks: 'Masks', cleansers: 'Cleansers', moisturizers: 'Moisturizers', eye: 'Eye Care', bundles: 'Sets & Bundles', tools: 'Tools & Rollers' };
+  const family = collections.map(collection => collectionFamily(collection.title)).find(Boolean);
+  const category: Product['category'] = family ? categoryNames[family] : collections[0]?.title || 'Uncategorized';
 
   // Soft Korean brand background aesthetics
   const palettes = [
@@ -348,6 +348,7 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     originalPrice,
     volume: defaultVariant?.title && defaultVariant.title !== 'Default Title' ? defaultVariant.title : '',
     category,
+    collections,
     rating: 0,
     reviewsCount: 0,
     badge: (node.tags || []).includes('bestseller') ? 'Bestseller' : (node.tags || []).includes('new') ? 'New Arrival' : undefined,
@@ -396,8 +397,12 @@ export async function getShopifyProducts(first = 24): Promise<Product[]> {
     }
     nodes.push(...data.products.edges.map(edge => edge.node));
     after = data.products.pageInfo.hasNextPage ? data.products.pageInfo.endCursor : null;
+    if (data.products.pageInfo.hasNextPage && !after) throw new Error('Shopify returned an invalid product cursor.');
   } while (after);
-  await Promise.all(nodes.map(loadRemainingVariants));
+  await Promise.all(nodes.map(async node => {
+    await loadRemainingVariants(node);
+    await loadRemainingCollections(node);
+  }));
   return nodes.map(transformShopifyProduct);
 }
 
@@ -424,6 +429,23 @@ async function loadRemainingVariants(node: ShopifyProductNode): Promise<void> {
   }
 }
 
+async function loadRemainingCollections(node: ShopifyProductNode): Promise<void> {
+  while (node.collections?.pageInfo.hasNextPage) {
+    const after = node.collections.pageInfo.endCursor;
+    if (!after) throw new Error('Shopify returned an invalid collection membership cursor.');
+    const data = await shopifyFetch<{ product: { collections: NonNullable<ShopifyProductNode['collections']> } | null }>(`
+      query ProductCollections($id: ID!, $after: String!) {
+        product(id: $id) {
+          collections(first: 100, after: $after) { nodes { id title handle } pageInfo { hasNextPage endCursor } }
+        }
+      }
+    `, { id: node.id, after });
+    if (!data?.product?.collections) throw new Error('Unable to load all Shopify collection memberships.');
+    node.collections.nodes.push(...data.product.collections.nodes);
+    node.collections.pageInfo = data.product.collections.pageInfo;
+  }
+}
+
 /**
  * Search products via Shopify Storefront API
  */
@@ -441,7 +463,10 @@ export async function searchShopifyProducts(searchQuery: string, first = 10): Pr
     return null;
   }
 
-  await Promise.all(data.products.edges.map(edge => loadRemainingVariants(edge.node)));
+  await Promise.all(data.products.edges.map(async edge => {
+    await loadRemainingVariants(edge.node);
+    await loadRemainingCollections(edge.node);
+  }));
   return data.products.edges.map((edge, idx) => transformShopifyProduct(edge.node, idx));
 }
 
@@ -451,6 +476,7 @@ export async function searchShopifyProducts(searchQuery: string, first = 10): Pr
 export async function getShopifyCollections(first = 10): Promise<Array<{ id: string; title: string; handle: string; description: string; image?: string }> | null> {
   interface CollectionsResponse {
     collections: {
+      pageInfo: { hasNextPage: boolean; endCursor: string | null };
       edges: Array<{
         node: {
           id: string;
@@ -463,16 +489,19 @@ export async function getShopifyCollections(first = 10): Promise<Array<{ id: str
     };
   }
 
-  const data = await shopifyFetch<CollectionsResponse>(COLLECTIONS_QUERY, { first });
-  if (!data?.collections?.edges) return null;
-
-  return data.collections.edges.map((e) => ({
-    id: e.node.id,
-    title: e.node.title,
-    handle: e.node.handle,
-    description: e.node.description,
-    image: e.node.image?.url,
-  }));
+  const collections: NonNullable<Awaited<ReturnType<typeof getShopifyCollections>>> = [];
+  let after: string | null = null;
+  do {
+    const data: CollectionsResponse | null = await shopifyFetch<CollectionsResponse>(COLLECTIONS_QUERY, { first: Math.min(100, Math.max(1, first)), after });
+    if (!data?.collections?.edges || !data.collections.pageInfo) return null;
+    collections.push(...data.collections.edges.map(edge => ({
+      id: edge.node.id, title: edge.node.title, handle: edge.node.handle,
+      description: edge.node.description, image: edge.node.image?.url,
+    })));
+    after = data.collections.pageInfo.hasNextPage ? data.collections.pageInfo.endCursor : null;
+    if (data.collections.pageInfo.hasNextPage && !after) throw new Error('Shopify returned an invalid collection cursor.');
+  } while (after);
+  return collections;
 }
 
 /**
