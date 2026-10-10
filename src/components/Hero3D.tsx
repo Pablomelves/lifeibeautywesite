@@ -74,6 +74,10 @@ export const Hero3D: React.FC<Hero3DProps> = ({
   // Take all available products for the 3D Hero Carousel
   const heroProducts = products || [];
   const activeProduct = heroProducts[activeIndex] || heroProducts[0];
+  const productDescription = activeProduct?.fullDescription || '';
+  const shortDescription = productDescription.length > 160
+    ? `${productDescription.slice(0, 157).replace(/\s+\S*$/, '').trimEnd()}...`
+    : productDescription;
 
   const isWishlisted = activeProduct ? wishlistIds.includes(activeProduct.id) : false;
 
@@ -759,7 +763,7 @@ export const Hero3D: React.FC<Hero3DProps> = ({
           </h2>
 
           <p className="font-inter text-xs sm:text-sm text-white opacity-90 leading-[1.5]">
-            {isMobile ? activeProduct.subtitle : activeProduct.fullDescription}
+            {isMobile ? activeProduct.subtitle : shortDescription}
           </p>
 
           <div className="flex items-center gap-2 text-[11px] text-white font-medium pt-0.5">
