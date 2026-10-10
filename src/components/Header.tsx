@@ -54,7 +54,16 @@ export const Header: React.FC<HeaderProps> = ({
   const headerRef = useRef<HTMLElement>(null);
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const navigationId = useId();
+
+  useEffect(() => {
+    if (!pageHeader) return;
+    const updateScrolled = () => setScrolled(window.scrollY > 8);
+    updateScrolled();
+    window.addEventListener('scroll', updateScrolled, { passive: true });
+    return () => window.removeEventListener('scroll', updateScrolled);
+  }, [pageHeader]);
 
   useEffect(() => {
     if (!pageHeader || !headerRef.current) return;
@@ -84,8 +93,8 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header 
       ref={headerRef}
-      className={reference ? `reference-header ${referenceOverlay ? 'reference-header-overlay' : ''}` : 'site-header sticky top-0 z-[65] bg-white/85 sm:bg-white/70 backdrop-blur-sm border-b border-slate-200/40 text-slate-900 py-4'}
-      style={reference ? { backgroundColor: reference.background } : undefined}
+      className={reference ? `reference-header ${referenceOverlay ? 'reference-header-overlay' : ''} ${scrolled ? 'reference-header-scrolled' : ''}` : 'site-header sticky top-0 z-[65] bg-white border-b border-slate-200/40 text-slate-900 py-4'}
+      style={reference ? { backgroundColor: scrolled ? '#ffffff' : reference.background } : undefined}
       onKeyDown={event => {
         if (event.key !== 'Escape') return;
         setMobileNavOpen(false);
@@ -101,11 +110,13 @@ export const Header: React.FC<HeaderProps> = ({
             event.preventDefault();
             onNavigateSection('hero');
             setMobileNavOpen(false);
-          }} />
-          <button type="button" className="reference-hit-target reference-search-target" onClick={onOpenSearch} aria-label="Search products" />
-          <button type="button" className="reference-hit-target reference-account-target" onClick={() => onOpenAccount('profile')} aria-label="Open My Profile personal information" />
-          <button type="button" className="reference-hit-target reference-cart-target" onClick={onOpenCart} aria-label={`Shopping Cart, ${cartCount} items`} />
-          <button type="button" className="reference-hit-target reference-menu-target" onClick={() => setMobileNavOpen(previous => !previous)} aria-label="Toggle menu" aria-expanded={mobileNavOpen} aria-controls={navigationId} />
+          }}>
+            {scrolled && <><img className="reference-scrolled-logo" src="/BC0C39FF-CA32-434C-8D58-12498BC5C2E2.png" alt="" /><span className="reference-scrolled-tagline">Life looks better with lifei</span></>}
+          </a>
+          <button type="button" className="reference-hit-target reference-search-target" onClick={onOpenSearch} aria-label="Search products">{scrolled && <Search aria-hidden="true" />}</button>
+          <button type="button" className="reference-hit-target reference-account-target" onClick={() => onOpenAccount('profile')} aria-label="Open My Profile personal information">{scrolled && <User aria-hidden="true" />}</button>
+          <button type="button" className="reference-hit-target reference-cart-target" onClick={onOpenCart} aria-label={`Shopping Cart, ${cartCount} items`}>{scrolled && <ShoppingBag aria-hidden="true" />}</button>
+          <button type="button" className="reference-hit-target reference-menu-target" onClick={() => setMobileNavOpen(previous => !previous)} aria-label="Toggle menu" aria-expanded={mobileNavOpen} aria-controls={navigationId}>{scrolled && (mobileNavOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />)}</button>
         </div>
       )}
       {!reference && (

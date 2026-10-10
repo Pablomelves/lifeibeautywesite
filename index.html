@@ -6,9 +6,9 @@
     <link rel="preload" as="image" href="/hero/medicube-egf-nad.webp" fetchpriority="high" />
     <link rel="preload" as="image" href="/hero/medicube-egf-nad-header.webp" fetchpriority="high" />
     <style>
-      .initial-hero { position: relative; display: grid; place-items: start center; box-sizing: border-box; background: #5f0b0c; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-      .initial-hero-frame { position: relative; width: min(100%, 851px, max(320px, calc((100svh - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 851 / 1848))); aspect-ratio: 851 / 1848; }
-      .initial-hero::after { content: ''; height: 56px; }
+      .initial-hero { position: relative; isolation: isolate; overflow: clip; min-height: 100svh; display: grid; place-items: start center; box-sizing: border-box; background: #5f0b0c; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+      .initial-hero-frame { position: relative; width: min(100%, max(320px, calc((100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 851 / 1848))); aspect-ratio: 851 / 1848; }
+      .initial-hero::before { content: ''; position: absolute; inset: -24px; z-index: -1; background: url('/hero/medicube-egf-nad.webp') center / cover; filter: blur(24px); pointer-events: none; }
       .initial-hero img { display: block; width: 100%; height: auto; }
       .initial-hero a { position: absolute; min-height: 44px; }
       html[data-storefront-route="other"] .initial-hero { display: none; }
