@@ -258,10 +258,10 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
-              onClick={() => onOpenAccount()}
-              aria-label="Account and Glow Club"
+              onClick={() => onOpenAccount('profile')}
+              aria-label="Open My Profile personal information"
               className="relative p-1.5 sm:p-2 text-slate-700 hover:text-[#EC3460] hover:bg-[#FFF0F9] rounded-full transition-colors cursor-pointer"
-              title="Account & Glow Rewards"
+              title="My Profile & Personal Information"
             >
               <User size={18} strokeWidth={2} />
               {profileIncomplete && (
