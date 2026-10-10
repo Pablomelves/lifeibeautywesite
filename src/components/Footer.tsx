@@ -192,7 +192,7 @@ export const Footer: React.FC<FooterProps> = ({
           </div>
 
           {/* Payment Badges Simulator */}
-          <div className="flex items-center gap-3 text-[11px] font-semibold tracking-wider text-white/60">
+          <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold tracking-wider text-white/60">
             <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Apple Pay</span>
             <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Visa</span>
             <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Mastercard</span>

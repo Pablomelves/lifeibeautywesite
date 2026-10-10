@@ -160,7 +160,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               }
             }}
             placeholder="Search by ingredient (PDRN, NAD+), formula, or skin concern..."
-            className="flex-1 text-sm sm:text-base outline-none placeholder:text-slate-400 text-slate-900 font-medium"
+            className="flex-1 min-w-0 text-sm sm:text-base outline-none placeholder:text-slate-400 text-slate-900 font-medium"
           />
           {query && (
             <button
