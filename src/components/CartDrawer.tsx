@@ -308,7 +308,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 className="w-full bg-[#EC3460] text-white font-semibold text-xs uppercase tracking-wider py-4 rounded-2xl shadow-raspberry flex items-center justify-center gap-2 mt-1 opacity-90 cursor-wait"
               >
                 <Loader2 size={18} className="animate-spin" />
-                <span>Redirecting to Shopify Checkout...</span>
+                <span>Redirecting to Checkout...</span>
               </button>
             ) : orderSuccess ? (
               <div className="bg-[#FFF0F9] border border-[#FFCDF2] p-5 rounded-3xl text-center space-y-3 animate-in zoom-in-95 shadow-md">
