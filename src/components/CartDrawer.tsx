@@ -17,7 +17,6 @@ import {
 import { CartItem } from '../types';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
 import { validateCoupon } from '../services/adminService';
-import { ShippingCalculator } from './ShippingCalculator';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -136,7 +135,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
         <div className="bg-[#FFF5FA] p-4 border-b border-[#FFCDF2]/60 text-xs text-slate-700 flex items-center gap-2">
           <Truck size={14} className="text-[#EC3460] shrink-0" />
-          Check shipping below using your delivery address.
+          Shipping is calculated at checkout after you enter your delivery details.
         </div>
 
         {/* Cart Item List */}
@@ -224,7 +223,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               );
             })
           )}
-          {items.length > 0 && <ShippingCalculator items={items} discountCode={activeDiscountCode || undefined} />}
         </div>
 
         {/* Bottom Checkout & Promo Section */}
@@ -269,7 +267,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <span>Item Total</span>
                 <span className="font-mono text-base tabular-nums">${finalTotal.toFixed(2)}</span>
               </div>
-              <p className="text-[11px] text-slate-500">Shipping estimates appear above. Final shipping and taxes are confirmed at checkout.</p>
+              <p className="text-[11px] text-slate-500">Shipping and taxes are calculated at checkout after you enter your delivery details.</p>
             </div>
 
             {checkoutError && (
