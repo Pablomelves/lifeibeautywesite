@@ -24,7 +24,6 @@ import {
   Order, 
   Customer, 
   Discount, 
-  ReviewModeration, 
   StoreContentSettings, 
   AdminUser 
 } from '../../types';
@@ -46,8 +45,6 @@ import {
   saveAdminCustomers,
   getAdminDiscounts, 
   saveAdminDiscounts,
-  getAdminReviews, 
-  saveAdminReviews,
   getStoreContentSettings, 
   saveStoreContentSettings, 
   getDashboardMetrics 
@@ -95,7 +92,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
   const [orders, setOrders] = useState<Order[]>(() => getAdminOrders());
   const [customers, setCustomers] = useState<Customer[]>(() => getAdminCustomers());
   const [discounts, setDiscounts] = useState<Discount[]>(() => getAdminDiscounts());
-  const [reviews, setReviews] = useState<ReviewModeration[]>(() => getAdminReviews());
   const [contentSettings, setContentSettings] = useState<StoreContentSettings>(() => getStoreContentSettings());
 
   // Metrics
@@ -210,14 +206,6 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     showToast('Discount rule updated');
   };
 
-  // Review handlers
-  const handleSaveReviews = (updatedReviews: ReviewModeration[]) => {
-    saveAdminReviews(updatedReviews);
-    setReviews(getAdminReviews());
-    showToast('Reviews updated');
-    if (onRefreshStoreData) onRefreshStoreData();
-  };
-
   // Content handlers
   const handleSaveContentSettings = (settings: StoreContentSettings) => {
     saveStoreContentSettings(settings);
@@ -312,7 +300,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     { id: 'customers', label: 'Customers', icon: Users, badge: customers.length },
     { id: 'inventory', label: 'Inventory', icon: Layers, badge: metrics.lowStockCount > 0 ? metrics.lowStockCount : undefined, badgeColor: 'bg-amber-600' },
     { id: 'discounts', label: 'Discounts', icon: Tag, badge: discounts.filter(d => d.active).length },
-    { id: 'reviews', label: 'Reviews', icon: Star, badge: metrics.pendingReviewsCount > 0 ? metrics.pendingReviewsCount : undefined, badgeColor: 'bg-amber-500' },
+    { id: 'reviews', label: 'Reviews', icon: Star },
     { id: 'content', label: 'Homepage/Content', icon: FileText },
   ];
 
@@ -494,11 +482,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             )}
 
             {activeTab === 'reviews' && (
-              <AdminReviewsTab
-                reviews={reviews}
-                products={products}
-                onSaveReviews={handleSaveReviews}
-              />
+              <AdminReviewsTab />
             )}
 
             {activeTab === 'content' && (

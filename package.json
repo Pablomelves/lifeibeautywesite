@@ -16,6 +16,7 @@
   "dependencies": {
     "@netlify/database": "^2.0.1",
     "@netlify/functions": "^6.0.2",
+    "@netlify/identity": "^2.0.0",
     "drizzle-orm": "^1.0.0-beta.22",
     "firebase": "^13.0.0",
     "lucide-react": "^0.546.0",
