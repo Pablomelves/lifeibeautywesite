@@ -41,7 +41,6 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAbout,
   onOpenContact,
   onOpenShopifyConnect,
-  isShopifyConnected,
   onOpenAdmin,
   onOpenTrackOrder,
 }) => {
@@ -228,23 +227,6 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <span className="w-1.5 h-1.5 rounded-full bg-[#EC3460] animate-pulse" />
                 <span>Admin Hub</span>
-              </button>
-            )}
-
-            {/* Shopify Storefront indicator / button - Hidden on small mobile */}
-            {onOpenShopifyConnect && (
-              <button
-                onClick={onOpenShopifyConnect}
-                aria-label="Shopify Storefront Settings"
-                title={isShopifyConnected ? "Shopify Headless Storefront Connected" : "Connect Shopify Storefront API"}
-                className={`hidden md:flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-xl border transition-all cursor-pointer ${
-                  isShopifyConnected
-                    ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-                    : 'bg-[#FFF0F9] text-[#B31940] border-[#FFCDF2] hover:bg-[#FFE6F6]'
-                }`}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${isShopifyConnected ? 'bg-emerald-500 animate-pulse' : 'bg-[#EC3460]'}`} />
-                <span>{isShopifyConnected ? 'Shopify Live' : 'Shopify'}</span>
               </button>
             )}
 
