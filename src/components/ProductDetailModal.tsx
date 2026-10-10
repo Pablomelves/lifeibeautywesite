@@ -21,6 +21,7 @@ import { Product } from '../types';
 import { getDemoProductReviews } from '../data/demoProductReviews';
 import { ProductReviews, ReviewStars } from './ProductReviews';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
+import { ShippingCalculator } from './ShippingCalculator';
 
 interface ProductDetailModalProps {
   product: Product | null;
@@ -417,7 +418,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </span>
                   )}
                   <span className="text-[11px] font-semibold text-[#B31940] bg-[#FFF0F9] border border-[#FFCDF2] px-2 py-0.5 rounded">
-                    Free Seoul Express Available
+                    Shipping rates for your address
                   </span>
                 </div>
 
@@ -556,6 +557,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     </>
                   )}
                 </button>
+                <ShippingCalculator
+                  key={product.id}
+                  items={[{
+                    product: { ...product, selectedVariantId: selectedVariant?.id || product.selectedVariantId, availableForSale: currentAvailable },
+                    variantId: selectedVariant?.id || product.selectedVariantId,
+                    quantity,
+                  }]}
+                />
               </div>
             </div>
           </div>

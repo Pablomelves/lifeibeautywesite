@@ -1,4 +1,5 @@
 import type { Config, Context } from '@netlify/functions';
+import { readShopifyResponse } from '../lib/shopify-response.js';
 
 const CHECKOUT_DOMAIN = 'checkout.lifeibeauty.com';
 
@@ -43,7 +44,8 @@ export default async (req: Request, context: Context) => {
   const shopifyEndpoint = `https://${domain}/api/${apiVersion}/graphql.json`;
 
   try {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json', Accept: 'application/json' };
+    const deferred = /\bquery\s+ShippingRates\b/.test(query) && query.includes('@defer');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', Accept: deferred ? 'multipart/mixed; deferSpec=20220824, application/json' : 'application/json' };
     if (token) headers['X-Shopify-Storefront-Access-Token'] = token;
     if (privateToken) {
       headers['Shopify-Storefront-Private-Token'] = privateToken;
@@ -53,13 +55,13 @@ export default async (req: Request, context: Context) => {
       method: 'POST',
       headers,
       body: JSON.stringify({ query, variables }),
-      signal: AbortSignal.timeout(12000),
+      signal: AbortSignal.timeout(deferred ? 25000 : 12000),
     });
 
     if (!shopifyRes.ok) {
       return Response.json({ error: 'Shopify is unavailable or Storefront access was rejected. Check product publication and server configuration.' }, { status: shopifyRes.status, headers: responseHeaders });
     }
-    const data = await shopifyRes.json();
+    const data = await readShopifyResponse(shopifyRes);
     const cart = data.data?.cartCreate?.cart;
     if (typeof cart?.checkoutUrl === 'string') {
       const checkout = new URL(cart.checkoutUrl);

@@ -573,10 +573,7 @@ export function App() {
         product={quickViewProduct ? products.find(product => product.id === quickViewProduct.id) || null : null}
         allProducts={products}
         onClose={() => setQuickViewProduct(null)}
-        onAddToCart={(product, qty) => {
-          handleAddToCart(product, qty);
-          setCartOpen(true);
-        }}
+        onAddToCart={handleAddToCart}
         onSelectRecommended={(p) => setQuickViewProduct(p)}
         isWishlisted={quickViewProduct ? wishlistIds.includes(quickViewProduct.id) : false}
         onToggleWishlist={handleToggleWishlist}

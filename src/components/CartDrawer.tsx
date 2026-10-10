@@ -17,6 +17,7 @@ import {
 import { CartItem } from '../types';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
 import { validateCoupon } from '../services/adminService';
+import { ShippingCalculator } from './ShippingCalculator';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -60,10 +61,6 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     ? fixedDiscountAmount 
     : rawSubtotal * appliedDiscount;
   const finalTotal = Math.max(0, rawSubtotal - discountAmount);
-
-  const freeShippingThreshold = 50;
-  const amountNeeded = Math.max(0, freeShippingThreshold - rawSubtotal);
-  const progressPercent = Math.min(100, (rawSubtotal / freeShippingThreshold) * 100);
 
   const handleApplyPromo = (e: React.FormEvent) => {
     e.preventDefault();
@@ -137,29 +134,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           </button>
         </div>
 
-        {/* Free Shipping Progress Meter */}
-        <div className="bg-[#FFF5FA] p-4 border-b border-[#FFCDF2]/60 text-xs">
-          <div className="flex items-center justify-between mb-1.5 font-medium">
-            <span className="flex items-center gap-1.5 text-slate-700">
-              <Truck size={14} className="text-[#EC3460]" />
-              {amountNeeded > 0 ? (
-                <>Add <strong className="text-[#EC3460] font-mono">${amountNeeded.toFixed(2)}</strong> for Free Express</>
-              ) : (
-                <span className="text-[#B31940] font-bold">🎉 You qualify for Free Seoul Express!</span>
-              )}
-            </span>
-            <span className="font-mono text-[11px] text-[#EC3460] font-bold">{Math.round(progressPercent)}%</span>
-          </div>
-          <div className="w-full h-2 bg-white border border-[#FFCDF2] rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-[#EC3460] rounded-full transition-all duration-300 shadow-xs"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
+        <div className="bg-[#FFF5FA] p-4 border-b border-[#FFCDF2]/60 text-xs text-slate-700 flex items-center gap-2">
+          <Truck size={14} className="text-[#EC3460] shrink-0" />
+          Check shipping below using your delivery address.
         </div>
 
         {/* Cart Item List */}
-        <div className="flex-1 overflow-y-auto p-5 divide-y divide-slate-100">
+        <div className="flex-1 min-h-0 overflow-y-auto p-5 divide-y divide-slate-100">
           {items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 gap-3">
               <div className="w-16 h-16 rounded-full bg-[#FFF0F9] border border-[#FFCDF2] flex items-center justify-center text-[#EC3460]">
@@ -243,6 +224,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               );
             })
           )}
+          {items.length > 0 && <ShippingCalculator items={items} discountCode={activeDiscountCode || undefined} />}
         </div>
 
         {/* Bottom Checkout & Promo Section */}
@@ -283,16 +265,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <span>Subtotal</span>
                 <span className="font-mono tabular-nums text-slate-800">${rawSubtotal.toFixed(2)}</span>
               </div>
-              <div className="flex items-center justify-between text-slate-500">
-                <span>Seoul Direct Shipping</span>
-                <span className="font-semibold text-emerald-700">
-                  {rawSubtotal >= freeShippingThreshold ? 'Free' : '$4.99'}
-                </span>
-              </div>
               <div className="flex items-center justify-between text-sm font-bold text-slate-950 pt-2 border-t border-slate-200/80">
-                <span>Estimated Total</span>
+                <span>Item Total</span>
                 <span className="font-mono text-base tabular-nums">${finalTotal.toFixed(2)}</span>
               </div>
+              <p className="text-[11px] text-slate-500">Shipping estimates appear above. Final shipping and taxes are confirmed at checkout.</p>
             </div>
 
             {checkoutError && (
