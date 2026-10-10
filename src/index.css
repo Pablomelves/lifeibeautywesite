@@ -25,7 +25,7 @@
   --cotton: #FFCDF2;
   --cotton-light: #FFF0F9;
   --cotton-soft: #FFE6F6;
-  --reference-artwork-width: min(851px, calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right)), max(320px, calc((100svh - 56px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 851 / 1848)));
+  --reference-artwork-width: min(calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right)), max(320px, calc((100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 851 / 1848)));
   --storefront-header-height: calc(var(--reference-artwork-width) * 146 / 851 + env(safe-area-inset-top));
   scroll-padding-top: calc(var(--storefront-header-height) + 12px);
 }
@@ -131,9 +131,24 @@ body {
 
 .reference-hero {
   position: relative;
+  isolation: isolate;
   display: grid;
   place-items: start center;
+  min-height: 100svh;
+  overflow: clip;
   padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.reference-hero::before {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  z-index: -1;
+  background-image: var(--reference-backdrop);
+  background-size: cover;
+  background-position: center;
+  filter: blur(24px);
+  pointer-events: none;
 }
 
 .reference-header-overlay + .reference-hero {
@@ -209,6 +224,46 @@ body {
   width: min(100%, var(--reference-artwork-width));
 }
 
+.reference-header-scrolled {
+  color: #0f172a;
+  box-shadow: 0 1px 0 rgb(15 23 42 / 8%);
+}
+
+.reference-header-scrolled .reference-header-artwork {
+  visibility: hidden;
+}
+
+.reference-header-scrolled .reference-hit-target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reference-header-scrolled .reference-logo-target {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.reference-scrolled-logo {
+  width: 100%;
+  height: 65%;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.reference-scrolled-tagline {
+  font-size: clamp(5px, 1.4vw, 9px);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #a64d63;
+  white-space: nowrap;
+}
+
+.reference-header-scrolled :is(a, button):focus-visible {
+  outline-color: #4a0818;
+}
+
 .reference-logo-target {
   left: 4.8%;
   top: 16%;
@@ -243,10 +298,16 @@ body {
   display: grid;
   grid-template-columns: 44px 1fr 44px;
   align-items: center;
-  width: min(100%, 851px);
   min-height: 56px;
   padding: 6px 8px;
   gap: 4px;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  align-content: end;
+  z-index: 2;
+  padding-bottom: max(6px, env(safe-area-inset-bottom));
+  pointer-events: none;
 }
 
 .reference-slide-controls button {
@@ -256,18 +317,34 @@ body {
   border: 0;
   color: white;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .reference-slide-arrow {
+  position: absolute;
+  top: calc(50svh - 22px);
+  width: 44px;
+  height: 44px;
+  z-index: 3;
   background: #4a0818;
   border-radius: 50%;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 20%);
   font-size: 32px;
   line-height: 1;
 }
 
+.reference-slide-controls .reference-slide-arrow {
+  border: 1px solid rgb(255 255 255 / 65%);
+}
+
+.reference-slide-previous { left: max(12px, env(safe-area-inset-left)); }
+.reference-slide-next { right: max(12px, env(safe-area-inset-right)); }
+
 .reference-slide-indicators {
   display: flex;
   justify-content: center;
+  grid-column: 1 / -1;
+  justify-self: end;
 }
 
 .reference-slide-indicator {
@@ -299,18 +376,6 @@ body {
 .site-header :is(button, a):focus-visible {
   outline: 2px solid #4a0818;
   outline-offset: 2px;
-}
-
-@media (min-width: 640px) and (min-aspect-ratio: 3/4) {
-  .reference-slide-arrow {
-    position: absolute;
-    top: calc((100% - 56px) / 2);
-    width: 44px;
-    height: 44px;
-  }
-  .reference-slide-previous { left: max(12px, calc((100% - var(--reference-artwork-width)) / 2 - 56px)); }
-  .reference-slide-next { right: max(12px, calc((100% - var(--reference-artwork-width)) / 2 - 56px)); }
-  .reference-slide-indicators { grid-column: 2; }
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -70,7 +70,7 @@ test('reference product headers are restricted to the three exact Shopify produc
   assert.doesNotMatch(defaultHeader, /reference-header/);
 });
 
-test('homepage header reuses the original header crop so its logo and icons remain visible while scrolling', () => {
+test('homepage header initially reuses the original header crop and preserves sticky positioning', () => {
   const html = renderToStaticMarkup(React.createElement(Header, { ...headerProps, reference: REFERENCE_HEROES[0], referenceOverlay: true }));
   assert.match(html, /reference-header-overlay/);
   assert.equal((html.match(/<img/g) || []).length, 1);
@@ -111,13 +111,37 @@ test('carousel contains exactly three accessible slides, two arrows, and three m
   }
 });
 
-test('header sizing follows resize and orientation changes without scroll-triggered changes', () => {
+test('header sizing follows resize and orientation changes while scrolling changes only its appearance', () => {
   const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
   assert.match(header, /new ResizeObserver\(updateHeight\)/);
   assert.match(header, /addEventListener\('orientationchange', updateHeight\)/);
   assert.match(header, /addEventListener\('resize', updateHeight\)/);
-  assert.doesNotMatch(header, /setScrolled|addEventListener\('scroll'|transition-all duration-300/);
+  assert.match(header, /setScrolled\(window.scrollY > 8\)/);
+  assert.match(header, /addEventListener\('scroll', updateScrolled, \{ passive: true \}\)/);
+  assert.match(header, /removeEventListener\('scroll', updateScrolled\)/);
+  assert.match(header, /backgroundColor: scrolled \? '#ffffff' : reference.background/);
+  assert.doesNotMatch(header, /transition-all duration-300/);
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  assert.match(css, /\.reference-header-scrolled \.reference-header-artwork \{\s*visibility: hidden;/);
+  assert.match(header, /scrolled && <Search aria-hidden="true"/);
+  assert.match(header, /scrolled && <ShoppingBag aria-hidden="true"/);
   const html = renderToStaticMarkup(React.createElement(Header, headerProps));
   assert.match(html, /site-header sticky top-0 z-\[65\]/);
   assert.match(html, /aria-label="Toggle menu" aria-expanded="false" aria-controls=/);
+});
+
+test('heroes fill the viewport with matching artwork backdrops and overlay arrows on all screen sizes', () => {
+  for (const reference of REFERENCE_HEROES) {
+    const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
+    assert.ok(html.includes(`--reference-backdrop:url(&quot;${reference.artwork}&quot;)`));
+  }
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  assert.match(css, /\.reference-hero \{[^}]*min-height: 100svh;/);
+  assert.match(css, /\.reference-hero::before \{[^}]*background-size: cover;/);
+  assert.match(css, /\.reference-slide-arrow \{\s*position: absolute;\s*top: calc\(50svh - 22px\);/);
+  assert.match(css, /\.reference-slide-controls \{[^}]*inset: 0;[^}]*z-index: 2;/);
+  assert.doesNotMatch(css, /100svh - 56px/);
+  const document = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(document, /\.initial-hero \{[^}]*min-height: 100svh;/);
+  assert.match(document, /\.initial-hero::before \{[^}]*center \/ cover/);
 });

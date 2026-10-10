@@ -24,7 +24,7 @@ export function StaticHero({ reference, products, onSelectReference, onOpenProdu
   });
 
   return (
-      <section id="hero" className="reference-hero" aria-label="Featured skincare products" aria-roledescription="carousel" tabIndex={0} style={{ backgroundColor: reference.background }}
+      <section id="hero" className="reference-hero" aria-label="Featured skincare products" aria-roledescription="carousel" tabIndex={0} style={{ backgroundColor: reference.background, '--reference-backdrop': `url("${reference.artwork}")` } as React.CSSProperties}
         onKeyDown={event => {
           if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
           if (event.key === 'ArrowRight') selectSlide(activeIndex + 1);
