@@ -20,11 +20,11 @@ export function StaticHero({ reference, products, onSelectReference, onOpenProdu
     onOpenProduct(handle);
   };
   const placement = (area: ReferenceHero['shop'] | ReferenceHero['details']): React.CSSProperties => ({
-    left: `${area.left}%`, top: `min(${area.top}%, calc(100% - 44px))`, width: `${area.width}%`, height: `${area.height}%`,
+    left: `${area.left}%`, top: `min(${area.top}%, calc(100% - 44px), calc(50% + 50svh - 44px - env(safe-area-inset-bottom)))`, width: `${area.width}%`, height: `${area.height}%`,
   });
 
   return (
-      <section id="hero" className="reference-hero" aria-label="Featured skincare products" aria-roledescription="carousel" tabIndex={0} style={{ backgroundColor: reference.background, '--reference-backdrop': `url("${reference.artwork}")` } as React.CSSProperties}
+      <section id="hero" className="reference-hero" aria-label="Featured skincare products" aria-roledescription="carousel" tabIndex={0} style={{ backgroundColor: reference.background }}
         onKeyDown={event => {
           if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
           if (event.key === 'ArrowRight') selectSlide(activeIndex + 1);
@@ -65,13 +65,19 @@ export function StaticHero({ reference, products, onSelectReference, onOpenProdu
               const active = index === activeIndex;
               return (
                 <div key={hero.id} id={`hero-slide-${hero.id}`} className="reference-hero-slide" role="group" aria-roledescription="slide" aria-label={`${index + 1} of 3: ${hero.title}`} aria-hidden={!active} inert={!active}>
-                  <img className="reference-hero-artwork" src={hero.artwork} width={851} height={1848} alt={`${hero.title} — original LiFei Beauty banner with product, promotional text and shopping buttons`} fetchPriority={active ? 'high' : 'low'} loading={active ? 'eager' : 'lazy'} draggable={false} />
+                  <div className="reference-hero-composition">
+                    <img className="reference-hero-artwork" src={hero.artwork} width={851} height={1848} alt={`${hero.title} — original LiFei Beauty banner with product, promotional text and shopping buttons`} fetchPriority={active ? 'high' : 'low'} loading={active ? 'eager' : 'lazy'} draggable={false} />
+                    <a className="reference-hit-target" href={destination} onClick={event => openProduct(event, handle)} style={placement(hero.shop)} aria-label={`SHOP NOW → — ${hero.title}`} />
+                    <a className="reference-hit-target" href={destination} onClick={event => openProduct(event, handle)} style={placement(hero.details)} aria-label={`VIEW CLINICAL DETAILS — ${hero.title}`} />
+                  </div>
                   <div className="sr-only">
                     <p>LIFE LOOKS BETTER WITH LIFEI</p>
                     {active ? <h1>{hero.title}</h1> : <h2>{hero.title}</h2>}
                   </div>
-                  <a className="reference-hit-target" href={destination} onClick={event => openProduct(event, handle)} style={placement(hero.shop)} aria-label={`SHOP NOW → — ${hero.title}`} />
-                  <a className="reference-hit-target" href={destination} onClick={event => openProduct(event, handle)} style={placement(hero.details)} aria-label={`VIEW CLINICAL DETAILS — ${hero.title}`} />
+                  <div className="reference-hero-actions">
+                    <a className="reference-hero-shop" href={destination} onClick={event => openProduct(event, handle)} aria-label={`SHOP NOW → — ${hero.title}`}>SHOP NOW →</a>
+                    <a className="reference-hero-details" href={destination} onClick={event => openProduct(event, handle)} aria-label={`VIEW CLINICAL DETAILS — ${hero.title}`}>VIEW CLINICAL DETAILS</a>
+                  </div>
                 </div>
               );
             })}

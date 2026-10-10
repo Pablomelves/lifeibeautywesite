@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Product } from '../types';
 import { ProductReviews } from './ProductReviews';
+import { ProductInformationSection } from './ProductInformationSection';
 import { StorefrontHtml } from './StorefrontHtml';
 import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
@@ -58,7 +59,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 }) => {
   const modal = useModalAccessibility(!!product, onClose);
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState<'benefits' | 'ingredients' | 'howTo' | 'results'>('benefits');
   const [added, setAdded] = useState(false);
   const [justWishlisted, setJustWishlisted] = useState(false);
   const [selectedVariant, setSelectedVariant] = useState<any>(null);
@@ -584,94 +584,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
           </div>
 
-          {/* Section: Ingredients, How to Use, Clinical Results tabs */}
-          <div className="py-10">
-            <div className="flex items-center gap-2 border-b border-slate-200 pb-3 mb-6 overflow-x-auto">
-              <button
-                onClick={() => setActiveTab('benefits')}
-                className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                  activeTab === 'benefits' ? 'bg-[#EC3460] text-white shadow-xs' : 'text-slate-600 hover:text-[#EC3460]'
-                }`}
-              >
-                Key Bio-Actives
-              </button>
-              <button
-                onClick={() => setActiveTab('ingredients')}
-                className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                  activeTab === 'ingredients' ? 'bg-[#EC3460] text-white shadow-xs' : 'text-slate-600 hover:text-[#EC3460]'
-                }`}
-              >
-                Full Ingredients
-              </button>
-              <button
-                onClick={() => setActiveTab('howTo')}
-                className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                  activeTab === 'howTo' ? 'bg-[#EC3460] text-white shadow-xs' : 'text-slate-600 hover:text-[#EC3460]'
-                }`}
-              >
-                How to Use
-              </button>
-              <button
-                onClick={() => setActiveTab('results')}
-                className={`text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-colors cursor-pointer ${
-                  activeTab === 'results' ? 'bg-[#EC3460] text-white shadow-xs' : 'text-slate-600 hover:text-[#EC3460]'
-                }`}
-              >
-                Product information
-              </button>
-            </div>
-
-            {/* Tab: Key Actives */}
-            {activeTab === 'benefits' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {!product.keyIngredients.length && <p className="text-xs text-slate-600 leading-relaxed">See the product description and manufacturer’s packaging for supported ingredient and suitability information.</p>}
-                {product.keyIngredients.map((ing, i) => (
-                  <div key={i} className="p-4 bg-[#FFF5FA] rounded-2xl border border-[#FFCDF2]/60">
-                    <span className="text-xs font-bold text-slate-900 block mb-1">
-                      {ing}
-                    </span>
-                    <span className="text-[11px] text-slate-600">
-                      Refer to the product description and manufacturer’s packaging for ingredient details.
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Tab: Full Ingredients */}
-            {activeTab === 'ingredients' && (
-              <div className="p-4 bg-[#FFF5FA] rounded-2xl border border-[#FFCDF2]/60">
-                <p className="text-xs text-slate-600 leading-relaxed font-mono">
-                  {product.allIngredients || 'A complete ingredient list is not separately available in the store catalog. Check the product description and manufacturer’s packaging before use.'}
-                </p>
-                <span className="text-[10px] text-slate-400 block mt-2">
-                  Ingredient information is shown only when supplied by the store.
-                </span>
-              </div>
-            )}
-
-            {/* Tab: How to Use */}
-            {activeTab === 'howTo' && (
-              <div className="space-y-3">
-                {!product.howToUse.length && <p className="text-xs text-slate-600 leading-relaxed">Directions are not separately available in the store catalog. Follow the directions in the product description and on the manufacturer’s packaging.</p>}
-                {product.howToUse.map((step, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3 bg-[#FFF5FA] rounded-xl border border-[#FFCDF2]/40">
-                    <span className="w-5 h-5 rounded-full bg-[#EC3460] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                      {idx + 1}
-                    </span>
-                    <span className="text-xs text-slate-700 leading-relaxed">{step}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Tab: Results / Before & After */}
-            {activeTab === 'results' && (
-              <div className="p-6 bg-[#FFF5FA] rounded-2xl border border-[#FFCDF2] text-xs text-slate-600 leading-relaxed">
-                Refer to the product description and manufacturer’s packaging for supported benefits and suitability. No independently verified clinical trial results or before-and-after customer photographs are available here.
-              </div>
-            )}
-          </div>
+          <ProductInformationSection key={product.id} product={product} />
 
           <ProductReviews key={product.id} product={product} />
 

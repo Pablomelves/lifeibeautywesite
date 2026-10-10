@@ -1,5 +1,34 @@
 import { sql } from 'drizzle-orm';
 import { pgTable, text, timestamp, integer, jsonb, boolean, index, serial, uuid, check } from 'drizzle-orm/pg-core';
+import type { AnalysisStatus, ProductAnalysisSource, ProductAnalysisWork, ProductInformation } from '../src/types/productInformation.js';
+
+export const productImageAnalysis = pgTable('product_image_analysis', {
+  productId: text('product_id').primaryKey(),
+  fingerprint: text('fingerprint').notNull(),
+  source: jsonb('source').$type<ProductAnalysisSource>().notNull(),
+  work: jsonb('work').$type<ProductAnalysisWork>().notNull(),
+  information: jsonb('information').$type<ProductInformation>(),
+  published: jsonb('published').$type<ProductInformation>(),
+  status: text('status').$type<AnalysisStatus>().notNull().default('pending'),
+  nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index('product_image_analysis_queue_idx').on(table.status, table.nextAttemptAt),
+  check('product_image_analysis_status_check', sql`${table.status} IN ('pending', 'processing', 'needs_review', 'verified', 'failed')`),
+]);
+
+export const productAnalysisScan = pgTable('product_analysis_scan', {
+  id: text('id').primaryKey(),
+  cursor: text('cursor'),
+  scanActive: boolean('scan_active').notNull().default(true),
+  scanRequested: boolean('scan_requested').notNull().default(false),
+  discoveredProducts: integer('discovered_products').notNull().default(0),
+  nextScanAt: timestamp('next_scan_at', { withTimezone: true }).notNull().defaultNow(),
+  completedAt: timestamp('completed_at', { withTimezone: true }),
+  lockToken: text('lock_token'),
+  lockedUntil: timestamp('locked_until', { withTimezone: true }),
+  lastError: text('last_error'),
+});
 
 export const customerProductReviews = pgTable('customer_product_reviews', {
   id: serial('id').primaryKey(),
