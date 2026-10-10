@@ -11,11 +11,23 @@
       .initial-hero img { display: block; width: 100%; height: auto; }
       .initial-hero a { position: absolute; min-height: 44px; }
       .initial-hero-actions { display: none; }
+      .initial-hero-shop span { display: none; }
+      .initial-shop-arrow { font-size: 1.5em; line-height: 1; }
       @media (min-aspect-ratio: 1 / 2) {
         .initial-hero-frame a { display: none; }
         .initial-hero-actions { position: absolute; left: max(20px, env(safe-area-inset-left)); right: max(20px, env(safe-area-inset-right)); bottom: max(64px, calc(env(safe-area-inset-bottom) + 56px)); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
         .initial-hero-actions a { position: static; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 12px 20px; border-radius: 6px; font: 700 12px sans-serif; letter-spacing: 0.08em; text-decoration: none; color: #4a0818; background: white; }
         .initial-hero-actions a + a { color: white; background: #4a0818; }
+        .initial-hero-actions a:first-child { gap: 24px; min-height: 52px; padding: 12px 28px; border-radius: 999px; font-size: 16px; letter-spacing: 0.02em; color: #780b16; background: #ffdae3; }
+      }
+      @media (max-width: 767px) {
+        .initial-hero { height: auto; min-height: 0; padding-bottom: 56px; }
+        .initial-hero-frame { position: relative; width: 100%; left: auto; top: auto; transform: none; }
+        .initial-hero-frame a { display: block; }
+        .initial-hero-frame .initial-hero-shop { display: flex; align-items: center; justify-content: center; gap: clamp(12px, 3.8vw, 28px); border-radius: 999px; background: #ffdae3; color: #780b16; font: 700 clamp(13px, 3.85vw, 28px) sans-serif; letter-spacing: 0.02em; text-decoration: none; }
+        .initial-hero-shop span { display: inline; }
+        .initial-hero-actions { display: none; }
+        .initial-hero-shop:focus-visible { outline: 2px solid #780b16; outline-offset: -4px; }
       }
       html[data-storefront-route="other"] .initial-hero { display: none; }
       body { margin: 0; }
@@ -74,11 +86,11 @@
         <div class="initial-hero-frame">
           <img src="/hero/medicube-egf-nad.webp" width="851" height="1848" fetchpriority="high" alt="LiFei Beauty — LIFE LOOKS BETTER WITH LIFEI — MEDICUBE EGF NAD FIRMING SERUM" />
           <a href="/" aria-label="LiFei Beauty homepage" style="left:4.8%;top:1.26%;width:45%;height:5.69%"></a>
-          <a href="/products/age-defying-firming-serum" aria-label="SHOP NOW →" style="left:5.52%;top:86.31%;width:49.59%;height:5.41%"></a>
-          <a href="/products/age-defying-firming-serum" aria-label="VIEW CLINICAL DETAILS" style="left:5.52%;top:min(93.02%, calc(100% - 44px), calc(50% + 50svh - 44px - env(safe-area-inset-bottom)));width:38.07%;height:2.38%"></a>
+          <a class="initial-hero-shop" href="/products/age-defying-firming-serum" aria-label="SHOP NOW →" style="left:5.52%;top:min(86.31%, calc(93.02% - 48px));width:49.59%;height:5.41%"><span>SHOP NOW</span><span class="initial-shop-arrow" aria-hidden="true">→</span></a>
+          <a href="/products/age-defying-firming-serum" aria-label="VIEW CLINICAL DETAILS" style="left:5.52%;top:93.02%;width:38.07%;height:2.38%"></a>
         </div>
         <div class="initial-hero-actions">
-          <a href="/products/age-defying-firming-serum" aria-label="SHOP NOW →">SHOP NOW →</a>
+          <a href="/products/age-defying-firming-serum" aria-label="SHOP NOW →"><span>SHOP NOW</span><span class="initial-shop-arrow" aria-hidden="true">→</span></a>
           <a href="/products/age-defying-firming-serum" aria-label="VIEW CLINICAL DETAILS">VIEW CLINICAL DETAILS</a>
         </div>
       </section>

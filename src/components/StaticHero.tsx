@@ -20,7 +20,7 @@ export function StaticHero({ reference, products, onSelectReference, onOpenProdu
     onOpenProduct(handle);
   };
   const placement = (area: ReferenceHero['shop'] | ReferenceHero['details']): React.CSSProperties => ({
-    left: `${area.left}%`, top: `min(${area.top}%, calc(100% - 44px), calc(50% + 50svh - 44px - env(safe-area-inset-bottom)))`, width: `${area.width}%`, height: `${area.height}%`,
+    left: `${area.left}%`, top: `${area.top}%`, width: `${area.width}%`, height: `${area.height}%`,
   });
 
   return (
@@ -64,10 +64,10 @@ export function StaticHero({ reference, products, onSelectReference, onOpenProdu
               const destination = `/products/${encodeURIComponent(handle)}`;
               const active = index === activeIndex;
               return (
-                <div key={hero.id} id={`hero-slide-${hero.id}`} className="reference-hero-slide" role="group" aria-roledescription="slide" aria-label={`${index + 1} of 3: ${hero.title}`} aria-hidden={!active} inert={!active}>
+                <div key={hero.id} id={`hero-slide-${hero.id}`} className="reference-hero-slide" role="group" aria-roledescription="slide" aria-label={`${index + 1} of 3: ${hero.title}`} aria-hidden={!active} inert={!active} style={{ '--hero-shop-background': hero.shopBackground, '--hero-shop-color': hero.shopColor } as React.CSSProperties}>
                   <div className="reference-hero-composition">
                     <img className="reference-hero-artwork" src={hero.artwork} width={851} height={1848} alt={`${hero.title} — original LiFei Beauty banner with product, promotional text and shopping buttons`} fetchPriority={active ? 'high' : 'low'} loading={active ? 'eager' : 'lazy'} draggable={false} />
-                    <a className="reference-hit-target" href={destination} onClick={event => openProduct(event, handle)} style={placement(hero.shop)} aria-label={`SHOP NOW → — ${hero.title}`} />
+                    <a className="reference-hit-target reference-hero-artwork-shop" href={destination} onClick={event => openProduct(event, handle)} style={{ ...placement(hero.shop), top: `min(${hero.shop.top}%, calc(${hero.details.top}% - 48px))` }} aria-label={`SHOP NOW → — ${hero.title}`}><span>SHOP NOW</span><span className="reference-shop-arrow" aria-hidden="true">→</span></a>
                     <a className="reference-hit-target" href={destination} onClick={event => openProduct(event, handle)} style={placement(hero.details)} aria-label={`VIEW CLINICAL DETAILS — ${hero.title}`} />
                   </div>
                   <div className="sr-only">
@@ -75,7 +75,7 @@ export function StaticHero({ reference, products, onSelectReference, onOpenProdu
                     {active ? <h1>{hero.title}</h1> : <h2>{hero.title}</h2>}
                   </div>
                   <div className="reference-hero-actions">
-                    <a className="reference-hero-shop" href={destination} onClick={event => openProduct(event, handle)} aria-label={`SHOP NOW → — ${hero.title}`}>SHOP NOW →</a>
+                    <a className="reference-hero-shop" href={destination} onClick={event => openProduct(event, handle)} aria-label={`SHOP NOW → — ${hero.title}`}><span>SHOP NOW</span><span className="reference-shop-arrow" aria-hidden="true">→</span></a>
                     <a className="reference-hero-details" href={destination} onClick={event => openProduct(event, handle)} aria-label={`VIEW CLINICAL DETAILS — ${hero.title}`}>VIEW CLINICAL DETAILS</a>
                   </div>
                 </div>

@@ -142,7 +142,7 @@ test('reference headers span the viewport with proportionate branding and edge-a
   assert.match(css, /\.reference-header-scrolled \.reference-logo-target > \*,\s*\.reference-header-scrolled \.reference-hit-target > svg \{\s*display: block;/);
 });
 
-test('heroes cover the viewport with sharp proportional artwork and overlay arrows on all screen sizes', () => {
+test('tablet and desktop heroes keep viewport-covering artwork and overlay arrows', () => {
   for (const reference of REFERENCE_HEROES) {
     const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
     assert.match(html, /class="reference-hero-composition"/);
@@ -162,9 +162,9 @@ test('heroes cover the viewport with sharp proportional artwork and overlay arro
   assert.doesNotMatch(document, /\.initial-hero::before|filter: blur/);
 });
 
-test('cropped tablet, desktop, and landscape heroes retain visible shopping links above the indicators', () => {
+test('cropped tablet and desktop heroes retain visible shopping links above the indicators', () => {
   const component = readFileSync(new URL('../src/components/StaticHero.tsx', import.meta.url), 'utf8');
-  assert.ok(component.includes('calc(50% + 50svh - 44px - env(safe-area-inset-bottom))'));
+  assert.ok(component.includes('top: `${area.top}%`'));
   const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
   assert.match(css, /@media \(min-aspect-ratio: 1 \/ 2\)/);
   assert.match(css, /\.reference-hero-composition \.reference-hit-target \{\s*display: none;/);
@@ -172,7 +172,37 @@ test('cropped tablet, desktop, and landscape heroes retain visible shopping link
   assert.match(css, /\.reference-hero-actions a \{[^}]*min-height: 44px;/);
   for (const reference of REFERENCE_HEROES) {
     const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
-    assert.match(html, /class="reference-hero-shop"[^>]*>SHOP NOW →<\/a>/);
+    assert.match(html, /class="reference-hero-shop"[^>]*><span>SHOP NOW<\/span><span class="reference-shop-arrow" aria-hidden="true">→<\/span><\/a>/);
     assert.match(html, /class="reference-hero-details"[^>]*>VIEW CLINICAL DETAILS<\/a>/);
   }
+});
+
+test('mobile heroes keep complete artwork and reference-shaped themed shopping controls in both orientations', () => {
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  const mobile = css.slice(css.indexOf('@media (max-width: 767px)'));
+  assert.match(css, /\.reference-hero-actions \.reference-hero-shop \{[^}]*border-radius: 999px;[^}]*background: var\(--hero-shop-background\);[^}]*color: var\(--hero-shop-color\);/);
+  assert.equal(new Set(REFERENCE_HEROES.map(reference => reference.shopBackground)).size, 3);
+  assert.match(mobile, /\.reference-hero \{\s*height: auto;\s*min-height: 0;/);
+  assert.match(mobile, /\.reference-hero-composition \{\s*position: relative;\s*width: 100%;[^}]*transform: none;/);
+  assert.match(mobile, /border-radius: 999px;\s*background: var\(--hero-shop-background\);\s*color: var\(--hero-shop-color\);/);
+  assert.doesNotMatch(mobile, /--reference-target-left|--reference-target-width/);
+  assert.match(mobile, /\.reference-hero-artwork-shop span \{\s*display: inline;/);
+  assert.match(mobile, /\.reference-slide-controls \{\s*position: static;/);
+  assert.match(mobile, /\.reference-hero-actions \{\s*display: none;/);
+  for (const reference of REFERENCE_HEROES) {
+    const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
+    assert.match(html, /class="reference-hit-target reference-hero-artwork-shop"[^>]*><span>SHOP NOW<\/span><span class="reference-shop-arrow" aria-hidden="true">→<\/span><\/a>/);
+    assert.ok(html.includes(`--hero-shop-background:${reference.shopBackground}`));
+    assert.ok(html.includes(`--hero-shop-color:${reference.shopColor}`));
+    assert.ok(html.includes(`left:${reference.shop.left}%;`));
+    assert.ok(html.includes(`width:${reference.shop.width}%;`));
+    assert.ok(html.includes(`top:min(${reference.shop.top}%, calc(${reference.details.top}% - 48px))`));
+    assert.ok(html.includes(`top:${reference.details.top}%`));
+  }
+  const document = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(document, /@media \(max-width: 767px\)/);
+  assert.match(document, /\.initial-hero \{ height: auto; min-height: 0; padding-bottom: 56px;/);
+  assert.match(document, /class="initial-hero-shop"[^>]*><span>SHOP NOW<\/span><span class="initial-shop-arrow" aria-hidden="true">→<\/span><\/a>/);
+  assert.ok(document.includes(`background: ${REFERENCE_HEROES[0].shopBackground}`));
+  assert.ok(document.includes(`color: ${REFERENCE_HEROES[0].shopColor}`));
 });
