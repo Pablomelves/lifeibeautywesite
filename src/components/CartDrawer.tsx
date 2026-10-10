@@ -255,7 +255,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 placeholder="Discount Code (e.g. GLOW15)"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
-                className="flex-1 bg-white border border-[#FFCDF2] rounded-xl px-3 py-2 text-xs uppercase placeholder:normal-case focus:outline-none focus:border-[#EC3460] font-mono"
+                className="flex-1 min-w-0 bg-white border border-[#FFCDF2] rounded-xl px-3 py-2 text-xs uppercase placeholder:normal-case focus:outline-none focus:border-[#EC3460] font-mono"
               />
               <button
                 type="submit"

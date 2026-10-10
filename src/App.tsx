@@ -34,6 +34,7 @@ import { getStoreContentSettings, verifyAdminSession } from './services/adminSer
 import { Check, SlidersHorizontal } from 'lucide-react';
 
 export function App() {
+  const instantCheckoutPending = useRef(false);
   const [products, setProducts] = useState<Product[]>([]);
   const [isProductsLoading, setIsProductsLoading] = useState<boolean>(true);
   const [productError, setProductError] = useState<string | null>(null);
@@ -369,8 +370,10 @@ export function App() {
   };
 
   const handleBuyNow = async (product: Product, quantity = 1) => {
+    if (instantCheckoutPending.current) return;
     const config = getShopifyConfig();
     if (config.isConnected) {
+      instantCheckoutPending.current = true;
       try {
         const checkoutUrl = await createShopifyCheckout([{ product, quantity }]);
         if (checkoutUrl) {
@@ -380,6 +383,8 @@ export function App() {
       } catch (err) {
         console.warn('Instant buy error:', err);
         showToast(err instanceof Error ? err.message : 'Shopify checkout is temporarily unavailable.');
+      } finally {
+        instantCheckoutPending.current = false;
       }
     }
     // Fallback: Add to cart and open it
@@ -612,9 +617,13 @@ export function App() {
         wishlistIds={wishlistIds}
         products={products}
         onToggleWishlist={handleToggleWishlist}
-        onQuickView={(p) => setQuickViewProduct(p)}
-        onAddToCart={(p) => {
-          handleAddToCart(p);
+        onQuickView={(product) => {
+          setAccountOpen(false);
+          setQuickViewProduct(product);
+        }}
+        onAddToCart={(product) => {
+          handleAddToCart(product);
+          setAccountOpen(false);
           setCartOpen(true);
         }}
         initialTab={accountTab}

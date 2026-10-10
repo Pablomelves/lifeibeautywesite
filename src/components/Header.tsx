@@ -72,7 +72,7 @@ export const Header: React.FC<HeaderProps> = ({
           : 'bg-white/85 sm:bg-white/70 backdrop-blur-sm border-b border-slate-200/40 text-slate-900 py-4'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-3 sm:px-8 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3 max-[360px]:px-1 sm:px-8 flex items-center justify-between">
         {/* Left: Brand Mark */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <button 
@@ -217,7 +217,7 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           {/* Action Icons: Shopify, Search, Account, Cart */}
-          <div className="flex items-center gap-1 sm:gap-2.5">
+          <div className="flex items-center gap-1 max-[360px]:gap-0 sm:gap-2.5">
             {/* Admin Hub Button - Hidden on small mobile */}
             {onOpenAdmin && (
               <button
