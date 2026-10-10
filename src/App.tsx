@@ -200,7 +200,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const syncRoute = () => {
+    const syncRoute = (isNavigation = false) => {
       const path = window.location.pathname.replace(/\/$/, '');
       setRoutePath(path || '/');
       const policies: Record<string, 'shipping' | 'returns' | 'privacy' | 'terms'> = { '/policies/shipping-policy': 'shipping', '/policies/refund-policy': 'returns', '/policies/privacy-policy': 'privacy', '/policies/terms-of-service': 'terms' };
@@ -211,7 +211,7 @@ export function App() {
       let handle = '';
       try { handle = path.startsWith('/products/') ? decodeURIComponent(path.slice('/products/'.length)) : ''; }
       catch { showToast('This product link is invalid. Please choose an item from the catalog.'); }
-      if (!handle) setQuickViewProduct(null);
+      if (!handle && isNavigation) setQuickViewProduct(null);
       if (handle && products.length) {
         const product = products.find(product => product.handle === handle);
         if (product) setQuickViewProduct(product);
@@ -219,8 +219,9 @@ export function App() {
       }
     };
     syncRoute();
-    window.addEventListener('popstate', syncRoute);
-    return () => window.removeEventListener('popstate', syncRoute);
+    const handleNavigation = () => syncRoute(true);
+    window.addEventListener('popstate', handleNavigation);
+    return () => window.removeEventListener('popstate', handleNavigation);
   }, [products]);
 
   const handleOpenTrackOrder = (orderNum = '', orderEmail = '') => {
