@@ -57,6 +57,7 @@ import { AdminCustomersTab } from './AdminCustomersTab';
 import { AdminInventoryTab } from './AdminInventoryTab';
 import { AdminDiscountsTab } from './AdminDiscountsTab';
 import { AdminReviewsTab } from './AdminReviewsTab';
+import { AdminProductAnalysisTab } from './AdminProductAnalysisTab';
 import { AdminContentTab } from './AdminContentTab';
 
 interface AdminPortalProps {
@@ -81,7 +82,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
 
   // Active tab
   const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'products' | 'orders' | 'customers' | 'inventory' | 'discounts' | 'reviews' | 'content'
+    'dashboard' | 'products' | 'orders' | 'customers' | 'inventory' | 'discounts' | 'reviews' | 'analysis' | 'content'
   >('dashboard');
 
   // Selected order for direct opening from dashboard
@@ -301,6 +302,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
     { id: 'inventory', label: 'Inventory', icon: Layers, badge: metrics.lowStockCount > 0 ? metrics.lowStockCount : undefined, badgeColor: 'bg-amber-600' },
     { id: 'discounts', label: 'Discounts', icon: Tag, badge: discounts.filter(d => d.active).length },
     { id: 'reviews', label: 'Reviews', icon: Star },
+    { id: 'analysis', label: 'Product Source Review', icon: ShieldCheck },
     { id: 'content', label: 'Homepage/Content', icon: FileText },
   ];
 
@@ -484,6 +486,8 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({
             {activeTab === 'reviews' && (
               <AdminReviewsTab />
             )}
+
+            {activeTab === 'analysis' && <AdminProductAnalysisTab />}
 
             {activeTab === 'content' && (
               <AdminContentTab

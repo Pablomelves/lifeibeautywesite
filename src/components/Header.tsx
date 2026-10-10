@@ -111,12 +111,12 @@ export const Header: React.FC<HeaderProps> = ({
             onNavigateSection('hero');
             setMobileNavOpen(false);
           }}>
-            {scrolled && <><img className="reference-scrolled-logo" src="/BC0C39FF-CA32-434C-8D58-12498BC5C2E2.png" alt="" /><span className="reference-scrolled-tagline">Life looks better with lifei</span></>}
+            <img className="reference-scrolled-logo" src="/BC0C39FF-CA32-434C-8D58-12498BC5C2E2.png" alt="" /><span className="reference-scrolled-tagline">Life looks better with lifei</span>
           </a>
-          <button type="button" className="reference-hit-target reference-search-target" onClick={onOpenSearch} aria-label="Search products">{scrolled && <Search aria-hidden="true" />}</button>
-          <button type="button" className="reference-hit-target reference-account-target" onClick={() => onOpenAccount('profile')} aria-label="Open My Profile personal information">{scrolled && <User aria-hidden="true" />}</button>
-          <button type="button" className="reference-hit-target reference-cart-target" onClick={onOpenCart} aria-label={`Shopping Cart, ${cartCount} items`}>{scrolled && <ShoppingBag aria-hidden="true" />}</button>
-          <button type="button" className="reference-hit-target reference-menu-target" onClick={() => setMobileNavOpen(previous => !previous)} aria-label="Toggle menu" aria-expanded={mobileNavOpen} aria-controls={navigationId}>{scrolled && (mobileNavOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />)}</button>
+          <button type="button" className="reference-hit-target reference-search-target" onClick={onOpenSearch} aria-label="Search products"><Search aria-hidden="true" /></button>
+          <button type="button" className="reference-hit-target reference-account-target" onClick={() => onOpenAccount('profile')} aria-label="Open My Profile personal information"><User aria-hidden="true" /></button>
+          <button type="button" className="reference-hit-target reference-cart-target" onClick={onOpenCart} aria-label={`Shopping Cart, ${cartCount} items`}><ShoppingBag aria-hidden="true" /></button>
+          <button type="button" className="reference-hit-target reference-menu-target" onClick={() => setMobileNavOpen(previous => !previous)} aria-label="Toggle menu" aria-expanded={mobileNavOpen} aria-controls={navigationId}>{mobileNavOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button>
         </div>
       )}
       {!reference && (

@@ -11,6 +11,8 @@
     "test:shopify": "tsx --test tests/shopify-*.test.ts",
     "test:storefront": "tsx --test tests/storefront-*.test.ts",
     "check:shopify": "tsc -p tsconfig.shopify.json",
+    "check:product-analysis": "tsc -p tsconfig.product-analysis.json",
+    "audit:product-images": "tsx scripts/audit-product-images.mts",
     "shopify:collections": "tsx scripts/shopify-collections.mts"
   },
   "dependencies": {

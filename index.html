@@ -6,11 +6,17 @@
     <link rel="preload" as="image" href="/hero/medicube-egf-nad.webp" fetchpriority="high" />
     <link rel="preload" as="image" href="/hero/medicube-egf-nad-header.webp" fetchpriority="high" />
     <style>
-      .initial-hero { position: relative; isolation: isolate; overflow: clip; min-height: 100svh; display: grid; place-items: start center; box-sizing: border-box; background: #5f0b0c; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
-      .initial-hero-frame { position: relative; width: min(100%, max(320px, calc((100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 851 / 1848))); aspect-ratio: 851 / 1848; }
-      .initial-hero::before { content: ''; position: absolute; inset: -24px; z-index: -1; background: url('/hero/medicube-egf-nad.webp') center / cover; filter: blur(24px); pointer-events: none; }
+      .initial-hero { position: relative; isolation: isolate; overflow: clip; height: 100svh; min-height: 100svh; background: #5f0b0c; }
+      .initial-hero-frame { position: absolute; width: max(100%, calc(100svh * 851 / 1848)); aspect-ratio: 851 / 1848; left: 50%; top: 50%; transform: translate(-50%, -50%); }
       .initial-hero img { display: block; width: 100%; height: auto; }
       .initial-hero a { position: absolute; min-height: 44px; }
+      .initial-hero-actions { display: none; }
+      @media (min-aspect-ratio: 1 / 2) {
+        .initial-hero-frame a { display: none; }
+        .initial-hero-actions { position: absolute; left: max(20px, env(safe-area-inset-left)); right: max(20px, env(safe-area-inset-right)); bottom: max(64px, calc(env(safe-area-inset-bottom) + 56px)); display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
+        .initial-hero-actions a { position: static; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 12px 20px; border-radius: 6px; font: 700 12px sans-serif; letter-spacing: 0.08em; text-decoration: none; color: #4a0818; background: white; }
+        .initial-hero-actions a + a { color: white; background: #4a0818; }
+      }
       html[data-storefront-route="other"] .initial-hero { display: none; }
       body { margin: 0; }
     </style>
@@ -69,7 +75,11 @@
           <img src="/hero/medicube-egf-nad.webp" width="851" height="1848" fetchpriority="high" alt="LiFei Beauty — LIFE LOOKS BETTER WITH LIFEI — MEDICUBE EGF NAD FIRMING SERUM" />
           <a href="/" aria-label="LiFei Beauty homepage" style="left:4.8%;top:1.26%;width:45%;height:5.69%"></a>
           <a href="/products/age-defying-firming-serum" aria-label="SHOP NOW →" style="left:5.52%;top:86.31%;width:49.59%;height:5.41%"></a>
-          <a href="/products/age-defying-firming-serum" aria-label="VIEW CLINICAL DETAILS" style="left:5.52%;top:93.02%;width:38.07%;height:2.38%"></a>
+          <a href="/products/age-defying-firming-serum" aria-label="VIEW CLINICAL DETAILS" style="left:5.52%;top:min(93.02%, calc(100% - 44px), calc(50% + 50svh - 44px - env(safe-area-inset-bottom)));width:38.07%;height:2.38%"></a>
+        </div>
+        <div class="initial-hero-actions">
+          <a href="/products/age-defying-firming-serum" aria-label="SHOP NOW →">SHOP NOW →</a>
+          <a href="/products/age-defying-firming-serum" aria-label="VIEW CLINICAL DETAILS">VIEW CLINICAL DETAILS</a>
         </div>
       </section>
     </div>

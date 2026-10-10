@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.shopify.json",
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "db/**/*.ts",
+    "netlify/lib/product-analysis-*.ts",
+    "netlify/functions/product-analysis-*.mts",
+    "netlify/functions/product-information.mts",
+    "src/types/productInformation.ts",
+    "src/services/productInformation.ts",
+    "src/components/BeforeAfterComparison.tsx",
+    "src/components/ProductInformationSection.tsx",
+    "scripts/audit-product-images.mts",
+    "tests/storefront-product-information.test.ts"
+  ]
+}

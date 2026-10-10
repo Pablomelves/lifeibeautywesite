@@ -44,7 +44,7 @@ test('hero destinations follow the corresponding live Shopify ID, not catalog or
   const reference = REFERENCE_HEROES[0];
   const products = [{ shopifyId: REFERENCE_HEROES[2].shopifyId, handle: 'pink' }, { shopifyId: reference.shopifyId, handle: 'merchant-updated-handle' }] as Product[];
   const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products, onSelectReference: noop, onOpenProduct: noop }));
-  assert.equal((html.match(/href="\/products\/merchant-updated-handle"/g) || []).length, 2);
+  assert.equal((html.match(/href="\/products\/merchant-updated-handle"/g) || []).length, 4);
 });
 
 test('reference product headers are restricted to the three exact Shopify products and routes', () => {
@@ -73,9 +73,9 @@ test('reference product headers are restricted to the three exact Shopify produc
 test('homepage header initially reuses the original header crop and preserves sticky positioning', () => {
   const html = renderToStaticMarkup(React.createElement(Header, { ...headerProps, reference: REFERENCE_HEROES[0], referenceOverlay: true }));
   assert.match(html, /reference-header-overlay/);
-  assert.equal((html.match(/<img/g) || []).length, 1);
+  assert.equal((html.match(/<img/g) || []).length, 2);
   assert.ok(html.includes(REFERENCE_HEROES[0].headerArtwork));
-  assert.doesNotMatch(html, /<svg|BC0C39FF/);
+  assert.match(html, /reference-scrolled-logo/);
   const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
   assert.match(css, /\.reference-header \{\s*position: sticky;\s*top: 0;/);
   assert.match(css, /\.reference-header-overlay \+ \.reference-hero/);
@@ -123,25 +123,56 @@ test('header sizing follows resize and orientation changes while scrolling chang
   assert.doesNotMatch(header, /transition-all duration-300/);
   const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
   assert.match(css, /\.reference-header-scrolled \.reference-header-artwork \{\s*visibility: hidden;/);
-  assert.match(header, /scrolled && <Search aria-hidden="true"/);
-  assert.match(header, /scrolled && <ShoppingBag aria-hidden="true"/);
+  assert.match(header, /<Search aria-hidden="true"/);
+  assert.match(header, /<ShoppingBag aria-hidden="true"/);
   const html = renderToStaticMarkup(React.createElement(Header, headerProps));
   assert.match(html, /site-header sticky top-0 z-\[65\]/);
   assert.match(html, /aria-label="Toggle menu" aria-expanded="false" aria-controls=/);
 });
 
-test('heroes fill the viewport with matching artwork backdrops and overlay arrows on all screen sizes', () => {
+test('reference headers span the viewport with proportionate branding and edge-aligned tablet and desktop actions', () => {
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  assert.match(css, /\.reference-header \{[^}]*width: 100%;/);
+  assert.match(css, /\.reference-header-frame \{[^}]*width: 100%;/);
+  assert.doesNotMatch(css, /reference-artwork-width|max-width: 851px/);
+  assert.match(css, /@media \(min-width: 768px\)/);
+  assert.match(css, /\.reference-header-frame \{[^}]*height: clamp\(76px, 6vw, 96px\);[^}]*aspect-ratio: auto;/);
+  assert.match(css, /\.reference-scrolled-logo \{[^}]*width: 180px;[^}]*height: 40px;/);
+  assert.match(css, /\.reference-menu-target \{ right: clamp\(20px, 3vw, 48px\); \}/);
+  assert.match(css, /\.reference-header-scrolled \.reference-logo-target > \*,\s*\.reference-header-scrolled \.reference-hit-target > svg \{\s*display: block;/);
+});
+
+test('heroes cover the viewport with sharp proportional artwork and overlay arrows on all screen sizes', () => {
   for (const reference of REFERENCE_HEROES) {
     const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
-    assert.ok(html.includes(`--reference-backdrop:url(&quot;${reference.artwork}&quot;)`));
+    assert.match(html, /class="reference-hero-composition"/);
+    assert.match(html, /class="reference-hero-actions"/);
   }
   const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
   assert.match(css, /\.reference-hero \{[^}]*min-height: 100svh;/);
-  assert.match(css, /\.reference-hero::before \{[^}]*background-size: cover;/);
+  assert.match(css, /\.reference-hero-frame \{[^}]*width: 100%;[^}]*height: 100%;/);
+  assert.match(css, /\.reference-hero-composition \{[^}]*width: max\(100%, calc\(100svh \* 851 \/ 1848\)\);[^}]*aspect-ratio: 851 \/ 1848;/);
+  assert.doesNotMatch(css, /reference-backdrop|\.reference-hero::before|\.reference-hero-artwork \{[^}]*object-fit: contain/);
   assert.match(css, /\.reference-slide-arrow \{\s*position: absolute;\s*top: calc\(50svh - 22px\);/);
   assert.match(css, /\.reference-slide-controls \{[^}]*inset: 0;[^}]*z-index: 2;/);
   assert.doesNotMatch(css, /100svh - 56px/);
   const document = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(document, /\.initial-hero \{[^}]*min-height: 100svh;/);
-  assert.match(document, /\.initial-hero::before \{[^}]*center \/ cover/);
+  assert.match(document, /\.initial-hero-frame \{[^}]*width: max\(100%, calc\(100svh \* 851 \/ 1848\)\);[^}]*aspect-ratio: 851 \/ 1848;/);
+  assert.doesNotMatch(document, /\.initial-hero::before|filter: blur/);
+});
+
+test('cropped tablet, desktop, and landscape heroes retain visible shopping links above the indicators', () => {
+  const component = readFileSync(new URL('../src/components/StaticHero.tsx', import.meta.url), 'utf8');
+  assert.ok(component.includes('calc(50% + 50svh - 44px - env(safe-area-inset-bottom))'));
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  assert.match(css, /@media \(min-aspect-ratio: 1 \/ 2\)/);
+  assert.match(css, /\.reference-hero-composition \.reference-hit-target \{\s*display: none;/);
+  assert.match(css, /\.reference-hero-actions \{[^}]*bottom: max\(64px, calc\(env\(safe-area-inset-bottom\) \+ 56px\)\);[^}]*display: flex;[^}]*flex-wrap: wrap;/);
+  assert.match(css, /\.reference-hero-actions a \{[^}]*min-height: 44px;/);
+  for (const reference of REFERENCE_HEROES) {
+    const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
+    assert.match(html, /class="reference-hero-shop"[^>]*>SHOP NOW →<\/a>/);
+    assert.match(html, /class="reference-hero-details"[^>]*>VIEW CLINICAL DETAILS<\/a>/);
+  }
 });
