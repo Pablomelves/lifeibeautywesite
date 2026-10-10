@@ -70,15 +70,20 @@ test('reference product headers are restricted to the three exact Shopify produc
   assert.doesNotMatch(defaultHeader, /reference-header/);
 });
 
-test('homepage header overlays the supplied header pixels without a second logo, strip, or replacement icons', () => {
+test('homepage header reuses the original header crop so its logo and icons remain visible while scrolling', () => {
   const html = renderToStaticMarkup(React.createElement(Header, { ...headerProps, reference: REFERENCE_HEROES[0], referenceOverlay: true }));
   assert.match(html, /reference-header-overlay/);
-  assert.doesNotMatch(html, /<img|<svg|background-color/);
+  assert.equal((html.match(/<img/g) || []).length, 1);
+  assert.ok(html.includes(REFERENCE_HEROES[0].headerArtwork));
+  assert.doesNotMatch(html, /<svg|BC0C39FF/);
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  assert.match(css, /\.reference-header \{\s*position: sticky;\s*top: 0;/);
+  assert.match(css, /\.reference-header-overlay \+ \.reference-hero/);
 });
 
 test('hero contains no motion implementation and the initial document already includes the red reference', () => {
   const component = readFileSync(new URL('../src/components/StaticHero.tsx', import.meta.url), 'utf8');
-  assert.doesNotMatch(component, /setInterval|setTimeout|requestAnimationFrame|useEffect|onMouseMove|onTouchMove|transform|transition|animation/);
+  assert.doesNotMatch(component, /setInterval|setTimeout|requestAnimationFrame|useEffect|onMouseMove|onTouchMove|transition|animation/);
   assert.equal(existsSync(new URL('../src/components/Hero3D.tsx', import.meta.url)), false);
   const document = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(document, /rel="preload" as="image" href="\/hero\/medicube-egf-nad.webp"/);
@@ -87,4 +92,32 @@ test('hero contains no motion implementation and the initial document already in
   const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
   assert.doesNotMatch(css, /floatLevitate|pulseGlow|orbitBubble|perspective:|transform-style:/);
   assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+});
+
+test('carousel contains exactly three accessible slides, two arrows, and three manual indicators', () => {
+  for (const reference of REFERENCE_HEROES) {
+    const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
+    assert.equal((html.match(/aria-roledescription="slide"/g) || []).length, 3);
+    assert.equal((html.match(/class="reference-slide-indicator"/g) || []).length, 3);
+    assert.equal((html.match(/aria-hidden="true" inert=""/g) || []).length, 2);
+    assert.equal((html.match(/loading="lazy"/g) || []).length, 2);
+    assert.match(html, /aria-label="Previous hero slide"/);
+    assert.match(html, /aria-label="Next hero slide"/);
+    assert.match(html, /aria-roledescription="carousel" tabindex="0"/);
+    assert.match(html, /aria-live="polite" aria-atomic="true"/);
+    for (const hero of REFERENCE_HEROES) {
+      assert.ok(html.includes(`aria-controls="hero-slide-${hero.id}"`));
+    }
+  }
+});
+
+test('header sizing follows resize and orientation changes without scroll-triggered changes', () => {
+  const header = readFileSync(new URL('../src/components/Header.tsx', import.meta.url), 'utf8');
+  assert.match(header, /new ResizeObserver\(updateHeight\)/);
+  assert.match(header, /addEventListener\('orientationchange', updateHeight\)/);
+  assert.match(header, /addEventListener\('resize', updateHeight\)/);
+  assert.doesNotMatch(header, /setScrolled|addEventListener\('scroll'|transition-all duration-300/);
+  const html = renderToStaticMarkup(React.createElement(Header, headerProps));
+  assert.match(html, /site-header sticky top-0 z-\[65\]/);
+  assert.match(html, /aria-label="Toggle menu" aria-expanded="false" aria-controls=/);
 });

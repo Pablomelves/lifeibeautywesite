@@ -538,6 +538,7 @@ export function App() {
       {/* 2. Main Navigation Header */}
       <Header
         {...headerProps}
+        pageHeader
         reference={routePath === '/' ? heroReference : referenceHeroForPath(routePath)}
         referenceOverlay={routePath === '/'}
       />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useId } from 'react';
+import React, { useState, useEffect, useId, useRef } from 'react';
 import { 
   Search, 
   User, 
@@ -16,6 +16,7 @@ import type { ReferenceHero } from '../data/referenceHeroes';
 interface HeaderProps {
   reference?: ReferenceHero;
   referenceOverlay?: boolean;
+  pageHeader?: boolean;
   cartCount: number;
   wishlistCount: number;
   profileIncomplete?: boolean;
@@ -35,6 +36,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   reference,
   referenceOverlay = false,
+  pageHeader = false,
   cartCount,
   wishlistCount,
   profileIncomplete,
@@ -49,19 +51,28 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenAdmin,
   onOpenTrackOrder,
 }) => {
-  const [scrolled, setScrolled] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const navigationId = useId();
 
   useEffect(() => {
-    if (reference) return;
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40);
+    if (!pageHeader || !headerRef.current) return;
+    const element = headerRef.current;
+    const updateHeight = () => {
+      document.documentElement.style.setProperty('--storefront-header-height', `${element.getBoundingClientRect().height}px`);
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [reference]);
+    updateHeight();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateHeight);
+    observer?.observe(element);
+    window.addEventListener('resize', updateHeight);
+    window.addEventListener('orientationchange', updateHeight);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', updateHeight);
+      window.removeEventListener('orientationchange', updateHeight);
+    };
+  }, [pageHeader]);
 
   const handleCategoryClick = (catId: string) => {
     setShopMenuOpen(false);
@@ -72,16 +83,19 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header 
-      className={reference ? `reference-header ${referenceOverlay ? 'reference-header-overlay' : ''}` : `sticky top-0 z-[65] transition-all duration-300 ${
-        scrolled 
-          ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100 text-slate-900 py-3' 
-          : 'bg-white/85 sm:bg-white/70 backdrop-blur-sm border-b border-slate-200/40 text-slate-900 py-4'
-      }`}
-      style={reference && !referenceOverlay ? { backgroundColor: reference.background } : undefined}
+      ref={headerRef}
+      className={reference ? `reference-header ${referenceOverlay ? 'reference-header-overlay' : ''}` : 'site-header sticky top-0 z-[65] bg-white/85 sm:bg-white/70 backdrop-blur-sm border-b border-slate-200/40 text-slate-900 py-4'}
+      style={reference ? { backgroundColor: reference.background } : undefined}
+      onKeyDown={event => {
+        if (event.key !== 'Escape') return;
+        setMobileNavOpen(false);
+        setShopMenuOpen(false);
+        event.currentTarget.querySelector<HTMLButtonElement>('button[aria-controls]')?.focus();
+      }}
     >
       {reference && (
         <div className="reference-header-frame">
-          {!referenceOverlay && <img className="reference-header-artwork" src={reference.headerArtwork} width={851} height={146} alt="" loading="eager" />}
+          <img className="reference-header-artwork" src={reference.headerArtwork} width={851} height={146} alt="" loading="eager" />
           <a href="/" className="reference-hit-target reference-logo-target" aria-label="LiFei Beauty homepage — LIFE LOOKS BETTER WITH LIFEI" onClick={(event) => {
             if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
             event.preventDefault();
@@ -293,6 +307,8 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               onClick={() => setMobileNavOpen(prev => !prev)}
               aria-label="Toggle menu"
+              aria-expanded={mobileNavOpen}
+              aria-controls={navigationId}
               className="lg:hidden p-1.5 sm:p-2 text-slate-700 hover:text-slate-950 hover:bg-slate-100 rounded-full cursor-pointer"
             >
               {mobileNavOpen ? <X size={20} /> : <Menu size={20} />}
@@ -304,7 +320,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile Navigation Drawer */}
       {mobileNavOpen && (
-        <div id={navigationId} className={reference ? 'reference-navigation bg-white px-5 py-4 flex flex-col gap-3' : 'lg:hidden border-t border-slate-100 bg-white px-5 py-4 flex flex-col gap-3 animate-in slide-in-from-top-2 duration-200'}>
+        <div id={navigationId} className={`reference-navigation ${reference ? '' : 'lg:hidden border-t border-slate-100 '}bg-white px-5 py-4 flex flex-col gap-3`}>
           <div className="flex flex-col gap-2">
             <button
               onClick={() => {
