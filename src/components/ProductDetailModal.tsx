@@ -252,9 +252,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
               LI FEI BEAUTY PRODUCT DETAILS
             </span>
-            <span className="text-[10px] bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded">
-              Shopify catalog
-            </span>
           </div>
 
           <div className="flex items-center gap-2">
