@@ -181,6 +181,15 @@ body {
   display: none;
 }
 
+.reference-hero-artwork-shop span {
+  display: none;
+}
+
+.reference-shop-arrow {
+  font-size: 1.5em;
+  line-height: 1;
+}
+
 @media (min-aspect-ratio: 1 / 2) {
   .reference-hero-composition .reference-hit-target {
     display: none;
@@ -211,9 +220,15 @@ body {
     text-decoration: none;
   }
 
-  .reference-hero-shop {
-    background: white;
-    color: #4a0818;
+  .reference-hero-actions .reference-hero-shop {
+    gap: 24px;
+    min-height: 52px;
+    padding: 12px 28px;
+    border-radius: 999px;
+    background: var(--hero-shop-background);
+    color: var(--hero-shop-color);
+    font-size: 16px;
+    letter-spacing: 0.02em;
   }
 
   .reference-hero-details {
@@ -478,6 +493,71 @@ body {
   outline: 2px solid white;
   outline-offset: -3px;
   box-shadow: 0 0 0 2px #4a0818;
+}
+
+@media (max-width: 767px) {
+  .reference-hero {
+    height: auto;
+    min-height: 0;
+  }
+
+  .reference-hero-frame,
+  .reference-hero-track,
+  .reference-hero-slide {
+    height: auto;
+  }
+
+  .reference-hero-composition {
+    position: relative;
+    width: 100%;
+    left: auto;
+    top: auto;
+    transform: none;
+  }
+
+  .reference-hero-composition .reference-hit-target {
+    display: block;
+  }
+
+  .reference-hero-composition .reference-hero-artwork-shop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(12px, 3.8vw, 28px);
+    border-radius: 999px;
+    background: var(--hero-shop-background);
+    color: var(--hero-shop-color);
+    font-size: clamp(13px, 3.85vw, 28px);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+  }
+
+  .reference-hero-artwork-shop span {
+    display: inline;
+  }
+
+  .reference-hero-artwork-shop:focus-visible {
+    outline-offset: -4px;
+    outline-color: var(--hero-shop-color);
+  }
+
+  .reference-hero-actions {
+    display: none;
+  }
+
+  .reference-slide-controls {
+    position: static;
+    min-height: 56px;
+  }
+
+  .reference-slide-arrow {
+    top: calc(50% - 50px);
+  }
+
+  .reference-slide-indicators {
+    justify-self: center;
+  }
 }
 
 .site-header :is(button, a):focus-visible {
