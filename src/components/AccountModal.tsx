@@ -1159,17 +1159,17 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
                   <div className="flex gap-2 pt-2">
                     <button
-                      type="submit"
-                      className="flex-1 bg-[#EC3460] hover:bg-[#D8224F] text-white py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-raspberry transition-all"
-                    >
-                      Done
-                    </button>
-                    <button
                       type="button"
                       onClick={() => setIsEditingProfile(false)}
                       className="px-6 bg-slate-100 hover:bg-slate-200 text-slate-600 py-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
                     >
                       Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 bg-[#EC3460] hover:bg-[#D8224F] text-white py-3 rounded-xl text-xs font-bold uppercase tracking-wider shadow-raspberry transition-all"
+                    >
+                      Done
                     </button>
                   </div>
                 </form>
