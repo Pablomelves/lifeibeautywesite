@@ -41,6 +41,7 @@ export interface Product {
   faqs?: { q: string; a: string }[];
   // Shopify Headless & Inventory fields
   shopifyId?: string;
+  collections?: { id: string; title: string; handle: string }[];
   handle?: string;
   variants?: ShopifyVariant[];
   selectedVariantId?: string;

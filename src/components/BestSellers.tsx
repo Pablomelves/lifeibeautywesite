@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Star, ShoppingBag, Eye, Sparkles, Check, Heart, Scale } from 'lucide-react';
 import { Product } from '../types';
+import { belongsToCollection } from '../services/collectionRules';
 import { getDemoProductReviews } from '../data/demoProductReviews';
 
 interface BestSellersProps {
@@ -318,17 +319,15 @@ export const BestSellers: React.FC<BestSellersProps> = ({
   const filteredProducts = currentProducts.filter((product) => {
     // If selectedCategory from menu/category grid is active and not 'all'
     if (selectedCategory && selectedCategory !== 'all') {
-      const catLower = (product.category || '').toLowerCase();
-      const targetLower = selectedCategory.toLowerCase();
-      if (!catLower.includes(targetLower) && !targetLower.includes(catLower)) {
+      if (!belongsToCollection(product, selectedCategory)) {
         return false;
       }
     }
 
     if (activeTab === 'all') return true;
-    if (activeTab === 'serums') return product.category === 'Serums';
-    if (activeTab === 'masks') return product.category === 'Masks' || product.category === 'Cleansers';
-    if (activeTab === 'moisturizers') return product.category === 'Moisturizers';
+    if (activeTab === 'serums') return belongsToCollection(product, 'serums');
+    if (activeTab === 'masks') return belongsToCollection(product, 'masks') || belongsToCollection(product, 'cleansers');
+    if (activeTab === 'moisturizers') return belongsToCollection(product, 'moisturizers');
     return true;
   });
 
