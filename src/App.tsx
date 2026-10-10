@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AnnouncementBar } from './components/AnnouncementBar';
 import { Header } from './components/Header';
 import { Hero3D } from './components/Hero3D';
 import { TrustBar } from './components/TrustBar';
@@ -440,14 +439,6 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-inter selection:bg-[#FFCDF2] selection:text-[#4A0818]">
-      {/* 1. Announcement Bar */}
-      <AnnouncementBar 
-        customText={contentSettings.announcementText}
-        promoCode={contentSettings.promoCode}
-        onOpenPromo={() => showToast(`Use code ${contentSettings.promoCode} at checkout for discounts`)}
-        onOpenTrackOrder={() => handleOpenTrackOrder()} 
-      />
-
       {/* 2. Main Navigation Header */}
       <Header
         cartCount={totalCartCount}

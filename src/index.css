@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+#nl-badge-frame {
+  display: none !important;
+}
+
 @theme {
   --font-display: 'Anton', sans-serif;
   --font-body: 'Inter', sans-serif;
@@ -190,5 +194,4 @@ body {
 .animate-shrink-bar {
   animation: shrinkWidth 4.5s linear forwards;
 }
-
 
