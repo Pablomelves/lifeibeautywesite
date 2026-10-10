@@ -68,7 +68,7 @@ const ProductCard: React.FC<{
 
   useEffect(() => {
     const el = galleryRef.current;
-    if (!el || !product.images || product.images.length <= 1) return;
+    if (!el || !product.images || product.images.length <= 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let index = 0;
     const count = product.images.length;
@@ -78,7 +78,7 @@ const ProductCard: React.FC<{
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           interval = setInterval(() => {
-            if (isHovered) return;
+            if (isHovered || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
             index = (index + 1) % count;
             if (el) {
               el.scrollTo({ left: index * el.offsetWidth, behavior: 'smooth' });

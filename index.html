@@ -2,7 +2,17 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <link rel="preload" as="image" href="/hero/medicube-egf-nad.webp" fetchpriority="high" />
+    <style>
+      .initial-hero { position: relative; display: grid; place-items: start center; min-height: 100svh; box-sizing: border-box; background: #5f0b0c; padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+      .initial-hero-frame { position: relative; width: min(100%, calc((100svh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) * 851 / 1848)); aspect-ratio: 851 / 1848; }
+      .initial-hero img { display: block; width: 100%; height: auto; }
+      .initial-hero a { position: absolute; min-height: 44px; }
+      html[data-storefront-route="other"] .initial-hero { display: none; }
+      body { margin: 0; }
+    </style>
+    <script>document.documentElement.dataset.storefrontRoute = window.location.pathname === '/' ? 'home' : 'other';</script>
     <title>LI FEI BEAUTY | Premium Korean Skincare & Barrier Repair</title>
     <meta name="description" content="Discover premium Korean skincare and intensive barrier repair essentials. Authentic Seoul serums, PDRN ampoules, and ceramide creams for lasting glass skin." />
     <meta name="keywords" content="Premium Korean Skincare, barrier repair, K-beauty, Korean skincare routine, ceramide barrier repair, PDRN serum, glass skin, Medicube, Biodance collagen, facial contour roller, hydrating ampoule" />
@@ -51,8 +61,16 @@
     </script>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <section class="initial-hero" aria-label="MEDICUBE EGF NAD FIRMING SERUM">
+        <div class="initial-hero-frame">
+          <img src="/hero/medicube-egf-nad.webp" width="851" height="1848" fetchpriority="high" alt="LiFei Beauty — LIFE LOOKS BETTER WITH LIFEI — MEDICUBE EGF NAD FIRMING SERUM" />
+          <a href="/" aria-label="LiFei Beauty homepage" style="left:4.8%;top:1.26%;width:45%;height:5.69%"></a>
+          <a href="/products/age-defying-firming-serum" aria-label="SHOP NOW →" style="left:5.52%;top:86.31%;width:49.59%;height:5.41%"></a>
+          <a href="/products/age-defying-firming-serum" aria-label="VIEW CLINICAL DETAILS" style="left:5.52%;top:93.02%;width:38.07%;height:2.38%"></a>
+        </div>
+      </section>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

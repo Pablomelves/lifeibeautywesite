@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useId } from 'react';
 import { 
   Search, 
   User, 
@@ -11,8 +11,11 @@ import {
   Heart
 } from 'lucide-react';
 import { CATEGORIES } from '../data/storeData';
+import type { ReferenceHero } from '../data/referenceHeroes';
 
 interface HeaderProps {
+  reference?: ReferenceHero;
+  referenceOverlay?: boolean;
   cartCount: number;
   wishlistCount: number;
   profileIncomplete?: boolean;
@@ -30,6 +33,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
+  reference,
+  referenceOverlay = false,
   cartCount,
   wishlistCount,
   profileIncomplete,
@@ -47,14 +52,16 @@ export const Header: React.FC<HeaderProps> = ({
   const [scrolled, setScrolled] = useState(false);
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const navigationId = useId();
 
   useEffect(() => {
+    if (reference) return;
     const handleScroll = () => {
       setScrolled(window.scrollY > 40);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [reference]);
 
   const handleCategoryClick = (catId: string) => {
     setShopMenuOpen(false);
@@ -65,12 +72,29 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header 
-      className={`sticky top-0 z-[65] transition-all duration-300 ${
+      className={reference ? `reference-header ${referenceOverlay ? 'reference-header-overlay' : ''}` : `sticky top-0 z-[65] transition-all duration-300 ${
         scrolled 
           ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100 text-slate-900 py-3' 
           : 'bg-white/85 sm:bg-white/70 backdrop-blur-sm border-b border-slate-200/40 text-slate-900 py-4'
       }`}
+      style={reference && !referenceOverlay ? { backgroundColor: reference.background } : undefined}
     >
+      {reference && (
+        <div className="reference-header-frame">
+          {!referenceOverlay && <img className="reference-header-artwork" src={reference.headerArtwork} width={851} height={146} alt="" loading="eager" />}
+          <a href="/" className="reference-hit-target reference-logo-target" aria-label="LiFei Beauty homepage — LIFE LOOKS BETTER WITH LIFEI" onClick={(event) => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            onNavigateSection('hero');
+            setMobileNavOpen(false);
+          }} />
+          <button type="button" className="reference-hit-target reference-search-target" onClick={onOpenSearch} aria-label="Search products" />
+          <button type="button" className="reference-hit-target reference-account-target" onClick={() => onOpenAccount('profile')} aria-label="Open My Profile personal information" />
+          <button type="button" className="reference-hit-target reference-cart-target" onClick={onOpenCart} aria-label={`Shopping Cart, ${cartCount} items`} />
+          <button type="button" className="reference-hit-target reference-menu-target" onClick={() => setMobileNavOpen(previous => !previous)} aria-label="Toggle menu" aria-expanded={mobileNavOpen} aria-controls={navigationId} />
+        </div>
+      )}
+      {!reference && (
       <div className="max-w-7xl mx-auto px-3 max-[360px]:px-1 sm:px-8 flex items-center justify-between">
         {/* Left: Brand Mark */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -276,10 +300,11 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
       </div>
+      )}
 
       {/* Mobile Navigation Drawer */}
       {mobileNavOpen && (
-        <div className="lg:hidden border-t border-slate-100 bg-white px-5 py-4 flex flex-col gap-3 animate-in slide-in-from-top-2 duration-200">
+        <div id={navigationId} className={reference ? 'reference-navigation bg-white px-5 py-4 flex flex-col gap-3' : 'lg:hidden border-t border-slate-100 bg-white px-5 py-4 flex flex-col gap-3 animate-in slide-in-from-top-2 duration-200'}>
           <div className="flex flex-col gap-2">
             <button
               onClick={() => {

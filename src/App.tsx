@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
-import { Hero3D } from './components/Hero3D';
+import { StaticHero } from './components/StaticHero';
+import { REFERENCE_HEROES, referenceHeroForPath, referenceHeroForProduct, type ReferenceHero } from './data/referenceHeroes';
 import { TrustBar } from './components/TrustBar';
 import { BestSellers } from './components/BestSellers';
 import { MyFavoritesSection } from './components/MyFavoritesSection';
@@ -169,6 +170,17 @@ export function App() {
 
   // Modals state
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [heroReference, setHeroReference] = useState<ReferenceHero>(REFERENCE_HEROES[0]);
+  const [heroVisible, setHeroVisible] = useState(true);
+  const [routePath, setRoutePath] = useState(() => window.location.pathname.replace(/\/$/, '') || '/');
+
+  useEffect(() => {
+    const hero = document.getElementById('hero');
+    if (!hero) return;
+    const observer = new IntersectionObserver(([entry]) => setHeroVisible(entry.isIntersecting));
+    observer.observe(hero);
+    return () => observer.disconnect();
+  }, []);
   const [searchOpen, setSearchOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [accountTab, setAccountTab] = useState<'points' | 'orders' | 'tracking' | 'profile' | 'wishlist' | 'favorites'>('points');
@@ -190,6 +202,7 @@ export function App() {
   useEffect(() => {
     const syncRoute = () => {
       const path = window.location.pathname.replace(/\/$/, '');
+      setRoutePath(path || '/');
       const policies: Record<string, 'shipping' | 'returns' | 'privacy' | 'terms'> = { '/policies/shipping-policy': 'shipping', '/policies/refund-policy': 'returns', '/policies/privacy-policy': 'privacy', '/policies/terms-of-service': 'terms' };
       if (policies[path]) setPolicyType(policies[path]);
       if (path === '/pages/about-us') setAboutContactMode('about');
@@ -198,6 +211,7 @@ export function App() {
       let handle = '';
       try { handle = path.startsWith('/products/') ? decodeURIComponent(path.slice('/products/'.length)) : ''; }
       catch { showToast('This product link is invalid. Please choose an item from the catalog.'); }
+      if (!handle) setQuickViewProduct(null);
       if (handle && products.length) {
         const product = products.find(product => product.handle === handle);
         if (product) setQuickViewProduct(product);
@@ -471,6 +485,7 @@ export function App() {
 
   const closeRoutedView = () => {
     if (/^\/(products|policies|pages)\//.test(window.location.pathname)) window.history.replaceState({}, '', '/');
+    setRoutePath(window.location.pathname.replace(/\/$/, '') || '/');
   };
 
   const handleClearCart = () => {
@@ -478,11 +493,14 @@ export function App() {
   };
 
   const scrollToSection = (sectionId: string) => {
+    setQuickViewProduct(null);
+    closeRoutedView();
+    const behavior = sectionId === 'hero' || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
     const el = document.getElementById(sectionId);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+      el.scrollIntoView({ behavior });
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior });
     }
   };
 
@@ -494,43 +512,44 @@ export function App() {
     .slice(0, kojicAcidProduct ? 2 : 3);
   if (kojicAcidProduct) quickAddProducts.push(kojicAcidProduct);
 
+  const productReference = referenceHeroForProduct(quickViewProduct);
+  const headerProps = {
+    cartCount: totalCartCount,
+    wishlistCount: wishlistIds.length,
+    profileIncomplete,
+    onOpenCart: () => setCartOpen(true),
+    onOpenSearch: () => setSearchOpen(true),
+    onOpenAccount: (tab?: typeof accountTab) => {
+      setAccountTab(tab || (profileIncomplete ? 'profile' : 'points'));
+      setAccountOpen(true);
+    },
+    onSelectCategory: (category: string) => setSelectedCategory(category),
+    onNavigateSection: scrollToSection,
+    onOpenAbout: () => setAboutContactMode('about'),
+    onOpenContact: () => setAboutContactMode('contact'),
+    onOpenShopifyConnect: () => setShopifyConnectOpen(true),
+    isShopifyConnected,
+    onOpenAdmin: isAdminAuthenticated ? () => setAdminOpen(true) : undefined,
+    onOpenTrackOrder: () => handleOpenTrackOrder(),
+  };
+
   return (
     <div className="min-h-screen bg-white text-slate-900 font-inter selection:bg-[#FFCDF2] selection:text-[#4A0818]">
       {/* 2. Main Navigation Header */}
       <Header
-        cartCount={totalCartCount}
-        wishlistCount={wishlistIds.length}
-        profileIncomplete={profileIncomplete}
-        onOpenCart={() => setCartOpen(true)}
-        onOpenSearch={() => setSearchOpen(true)}
-        onOpenAccount={(tab) => {
-          if (tab) setAccountTab(tab);
-          else if (profileIncomplete) setAccountTab('profile');
-          else setAccountTab('points');
-          setAccountOpen(true);
-        }}
-        onSelectCategory={(catId) => setSelectedCategory(catId)}
-        onNavigateSection={scrollToSection}
-        onOpenAbout={() => setAboutContactMode('about')}
-        onOpenContact={() => setAboutContactMode('contact')}
-        onOpenShopifyConnect={() => setShopifyConnectOpen(true)}
-        isShopifyConnected={isShopifyConnected}
-        onOpenAdmin={isAdminAuthenticated ? () => setAdminOpen(true) : undefined}
-        onOpenTrackOrder={() => handleOpenTrackOrder()}
+        {...headerProps}
+        reference={routePath === '/' ? heroReference : referenceHeroForPath(routePath)}
+        referenceOverlay={routePath === '/'}
       />
 
-      {/* 3. Hero Section (3D animated with 3 pictures filling the page & covering GLOW) */}
-      <Hero3D
-        products={quickAddProducts}
-        autoSlide={false}
-        onAddToCart={(p) => {
-          handleAddToCart(p);
-          setCartOpen(true);
+      <StaticHero
+        reference={heroReference}
+        products={products}
+        onSelectReference={setHeroReference}
+        onOpenProduct={(handle) => {
+          window.history.pushState({}, '', `/products/${encodeURIComponent(handle)}`);
+          window.dispatchEvent(new PopStateEvent('popstate'));
         }}
-        onQuickView={(p) => setQuickViewProduct(p)}
-        onExploreCatalog={() => scrollToSection('bestsellers')}
-        wishlistIds={wishlistIds}
-        onToggleWishlist={handleToggleWishlist}
       />
 
       {/* 4. Authenticity & Trust Bar */}
@@ -627,6 +646,7 @@ export function App() {
       {/* Modals & Drawers */}
       {/* Product Detail Modal (PDP with full structure: Product → Rating → Price → Benefits → Add → Buy → Ingredients → How to Use → Results → Reviews → Recommended) */}
       <ProductDetailModal
+        brandHeader={productReference ? <Header {...headerProps} reference={productReference} /> : undefined}
         product={quickViewProduct ? products.find(product => product.id === quickViewProduct.id) || null : null}
         allProducts={products}
         onClose={() => { setQuickViewProduct(null); closeRoutedView(); }}
@@ -720,7 +740,7 @@ export function App() {
       />
 
       {/* Floating Quick Add Mini-Widget (Top 3 Best Sellers for returning visitors) */}
-      <QuickAddWidget
+      {!heroVisible && <QuickAddWidget
         products={quickAddProducts}
         onAddToCart={(p) => handleAddToCart(p)}
         onQuickView={(p) => setQuickViewProduct(p)}
@@ -730,7 +750,7 @@ export function App() {
         wishlistNotification={wishlistNotification}
         onDismissNotification={handleDismissCartNotification}
         onDismissWishlistNotification={handleDismissWishlistNotification}
-      />
+      />}
 
       {/* Floating Store Admin Trigger - Completely hidden unless authenticated as admin */}
       {isAdminAuthenticated && (
