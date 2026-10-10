@@ -1,7 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { Search, X, Sparkles, ArrowRight, Loader2, Scale, Clock } from 'lucide-react';
 import { Product } from '../types';
 import { searchShopifyProducts, getShopifyConfig } from '../services/shopify';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
+import { trackShoppingEvent } from '../services/analytics';
 
 const RECENT_SEARCHES_KEY = 'lifei_recent_searches';
 const MAX_RECENT_SEARCHES = 8;
@@ -38,6 +41,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   comparisonIds = [],
   onToggleComparison,
 }) => {
+  const modal = useModalAccessibility(isOpen, onClose);
   const [query, setQuery] = useState('');
   const [isSearchingShopify, setIsSearchingShopify] = useState(false);
   const [shopifyResults, setShopifyResults] = useState<Product[] | null>(null);
@@ -101,37 +105,17 @@ export const SearchModal: React.FC<SearchModalProps> = ({
         p.name.toLowerCase().includes(q) ||
         p.subtitle.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q) ||
+        (p.description || '').toLowerCase().includes(q) ||
         p.keyIngredients.some((ing) => ing.toLowerCase().includes(q)) ||
         p.clinicalClaim.toLowerCase().includes(q)
     );
   }, [query, activeCatalog]);
 
-  // Live Shopify Storefront API search when connected
   useEffect(() => {
-    setShopifyResults(null);
-    setIsSearchingShopify(false);
-    if (!isOpen || !config.isConnected || !query.trim() || query.length < 2) {
-      return;
-    }
-
-    let cancelled = false;
-    const timer = setTimeout(async () => {
-      setIsSearchingShopify(true);
-      try {
-        const res = await searchShopifyProducts(query.trim(), 8);
-        if (!cancelled) setShopifyResults(res || []);
-      } catch (err) {
-        console.warn('Shopify live search error:', err);
-      } finally {
-        if (!cancelled) setIsSearchingShopify(false);
-      }
-    }, 300);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [query, config.isConnected, isOpen]);
+    if (!isOpen || !query.trim()) return;
+    const timer = setTimeout(() => trackShoppingEvent('search', [], localResults.length), 500);
+    return () => clearTimeout(timer);
+  }, [query, isOpen]);
 
   const results = shopifyResults ?? localResults;
 
@@ -143,6 +127,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
       onClick={onClose}
     >
       <div 
+        ref={modal}
         className="w-full max-w-2xl bg-white text-slate-900 rounded-3xl overflow-hidden shadow-2xl relative mt-8 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
@@ -269,7 +254,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center" style={{ backgroundColor: prod.panel }}>
-                        <img src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center" />
+                        <ResponsiveProductImage src={prod.src} alt={prod.name} className="w-full h-full object-contain object-center" />
                       </div>
                       <div>
                         <h4 className="text-xs font-bold uppercase text-slate-900">{prod.name}</h4>
@@ -317,7 +302,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   >
                     <div className="flex items-center gap-3.5">
                       <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center" style={{ backgroundColor: prod.panel }}>
-                        <img src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform" />
+                        <ResponsiveProductImage src={prod.src} alt={prod.name} className="w-full h-full object-contain object-center transition-transform" />
                       </div>
                       <div>
                         <h4 className="text-xs font-bold uppercase text-slate-900 group-hover:text-rose-600 transition-colors">

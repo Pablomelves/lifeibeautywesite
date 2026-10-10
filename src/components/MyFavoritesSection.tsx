@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { 
   Heart, 
   ShoppingBag, 
@@ -18,7 +19,7 @@ interface MyFavoritesSectionProps {
   products: Product[];
   wishlistIds: number[];
   onToggleWishlist: (productId: number) => void;
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: Product) => boolean | void;
   onBuyNow?: (product: Product) => void;
   onQuickView: (product: Product) => void;
   onNavigateSection?: (sectionId: string) => void;
@@ -59,7 +60,7 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
 
   const handleAddSingle = (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
-    onAddToCart(product);
+    if (onAddToCart(product) === false) return;
     setAddedIds((prev) => ({ ...prev, [product.id]: true }));
     setTimeout(() => {
       setAddedIds((prev) => ({ ...prev, [product.id]: false }));
@@ -184,7 +185,7 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                           className="w-full h-full shrink-0 snap-center flex items-center justify-center relative cursor-pointer"
                           onClick={() => onQuickView(product)}
                         >
-                          <img
+                          <ResponsiveProductImage
                             src={img}
                             alt={`${product.name} view ${idx + 1}`}
                             referrerPolicy="no-referrer"
@@ -253,10 +254,6 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                     <div>
                       {/* Rating & Stock */}
                       <div className="flex items-center justify-between text-xs mb-1 sm:mb-1.5">
-                        <div className="flex items-center gap-1 text-amber-400">
-                          <Star size={isMobile ? 10 : 13} fill="currentColor" />
-                          <span className="text-slate-900 font-bold text-[10px] sm:text-xs">{product.rating}</span>
-                        </div>
                         <span className="hidden xs:inline text-[9px] sm:text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
                           {product.stockStatus}
                         </span>
@@ -329,7 +326,7 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                             if (onBuyNow) {
                               onBuyNow(product);
                             } else {
-                              onAddToCart(product);
+                              if (onAddToCart(product) === false) return;
                             }
                           }}
                           className="flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 bg-[#EC3460] hover:bg-[#D8224F] text-white rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-raspberry flex items-center justify-center gap-1"

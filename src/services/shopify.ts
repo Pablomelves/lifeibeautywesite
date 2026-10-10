@@ -1,5 +1,5 @@
-import type { Product, ShopifyVariant, CartItem, ShopifyConfig } from '../types';
-import { collectionFamily } from './collectionRules';
+import type { Product, ShopifyVariant, CartItem, ShopifyConfig } from '../types.js';
+import { collectionFamily } from './collectionRules.js';
 
 const DEFAULT_DOMAIN = 'maison-co-store1.myshopify.com';
 const DEFAULT_API_VERSION = '2026-10';
@@ -17,7 +17,7 @@ export function getShopifyConfig(): ShopifyConfig {
  * Execute a GraphQL query against Shopify Storefront API
  * Uses the server-managed connection exclusively.
  */
-async function shopifyFetch<T>(query: string, variables: Record<string, unknown> = {}): Promise<T | null> {
+async function shopifyFetch<T>(query: string, variables: Record<string, unknown> = {}): Promise<T> {
   try {
     const res = await fetch('/api/shopify/graphql', {
       method: 'POST',
@@ -52,7 +52,7 @@ async function shopifyFetch<T>(query: string, variables: Record<string, unknown>
 ===================================================================== */
 
 const PRODUCTS_QUERY = `
-  query GetProducts($first: Int!, $after: String) {
+  query GetProducts($first: Int!, $after: String) @inContext(country: US) {
     products(first: $first, after: $after) {
       pageInfo { hasNextPage endCursor }
       edges {
@@ -118,7 +118,7 @@ const PRODUCTS_QUERY = `
 `;
 
 const SEARCH_QUERY = `
-  query SearchProducts($query: String!, $first: Int!) {
+  query SearchProducts($query: String!, $first: Int!) @inContext(country: US) {
     products(query: $query, first: $first) {
       edges {
         node {
@@ -208,6 +208,7 @@ const CART_CREATE_MUTATION = `
         id
         checkoutUrl
         totalQuantity
+        discountCodes { code applicable }
         cost {
           totalAmount {
             amount
@@ -223,6 +224,7 @@ const CART_CREATE_MUTATION = `
         field
         message
       }
+      warnings { code }
     }
   }
 `;
@@ -308,7 +310,7 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     id: v.node.id,
     title: v.node.title,
     price: `${currency}${parseFloat(v.node.price?.amount || '0').toFixed(2)}`,
-    numericPrice: parseFloat(v.node.price?.amount || '0') || numericPrice,
+    numericPrice: parseFloat(v.node.price?.amount || '0'),
     compareAtPrice: v.node.compareAtPrice ? `${currency}${parseFloat(v.node.compareAtPrice.amount).toFixed(2)}` : undefined,
     availableForSale: v.node.availableForSale,
     selectedOptions: v.node.selectedOptions,
@@ -342,10 +344,10 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     panel: aesthetic.panel,
     themeColor: aesthetic.themeColor,
     darkTone: aesthetic.darkTone,
-    price,
-    numericPrice,
+    price: defaultVariant?.price || price,
+    numericPrice: defaultVariant?.numericPrice ?? numericPrice,
     currencyCode: node.priceRange.minVariantPrice.currencyCode,
-    originalPrice,
+    originalPrice: defaultVariant?.compareAtPrice && Number(defaultVariant.compareAtPrice.replace(/[^\d.]/g, '')) > (defaultVariant.numericPrice ?? numericPrice) ? defaultVariant.compareAtPrice : undefined,
     volume: defaultVariant?.title && defaultVariant.title !== 'Default Title' ? defaultVariant.title : '',
     category,
     collections,
@@ -361,6 +363,7 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     skinType: '',
     fullDescription: node.description || '',
     description: node.description || '',
+    descriptionHtml: node.descriptionHtml || '',
     stockStatus: node.availableForSale ? 'In Stock' : 'Out of Stock',
     shopifyId: node.id,
     handle: node.handle,
@@ -391,7 +394,7 @@ export async function getShopifyProducts(first = 24): Promise<Product[]> {
   const nodes: ShopifyProductNode[] = [];
   let after: string | null = null;
   do {
-    const data = await shopifyFetch<ProductsResponse>(PRODUCTS_QUERY, { first: Math.min(250, Math.max(1, first)), after });
+    const data: ProductsResponse = await shopifyFetch<ProductsResponse>(PRODUCTS_QUERY, { first: Math.min(250, Math.max(1, first)), after });
     if (!data?.products?.edges || !data.products.pageInfo) {
       throw new Error('Shopify returned an invalid product response. Please verify Storefront product permissions.');
     }
@@ -530,8 +533,11 @@ export async function createShopifyCheckout(cartItems: CartItem[], discountCode?
       cart?: {
         id: string;
         checkoutUrl: string;
+        totalQuantity: number;
+        discountCodes?: Array<{ code: string; applicable: boolean }>;
       };
       userErrors: Array<{ field: string[]; message: string }>;
+      warnings?: Array<{ code: string }>;
     };
   }
 
@@ -542,9 +548,21 @@ export async function createShopifyCheckout(cartItems: CartItem[], discountCode?
   if (data?.cartCreate?.userErrors?.length) {
     throw new Error(data.cartCreate.userErrors.map(error => error.message).join(' '));
   }
+  const cart = data?.cartCreate?.cart;
+  if (!cart) throw new Error('Shopify did not create a cart. Please check your bag and try again.');
+  if (cart.totalQuantity !== cartItems.reduce((sum, item) => sum + item.quantity, 0) || data.cartCreate.warnings?.length) {
+    throw new Error('Shopify could not checkout all selected items at these quantities. Please check your bag and try again.');
+  }
+  if (discountCode && !cart.discountCodes?.some(code => code.code.toUpperCase() === discountCode.toUpperCase() && code.applicable)) {
+    throw new Error('This discount code is not applicable to your bag. Remove it or use another code.');
+  }
   if (data?.cartCreate?.cart?.checkoutUrl) {
     return data.cartCreate.cart.checkoutUrl;
   }
 
   throw new Error('Shopify did not return a checkout URL. Please try again.');
+}
+
+export async function validateShopifyDiscount(items: CartItem[], code: string) {
+  await createShopifyCheckout(items, code);
 }

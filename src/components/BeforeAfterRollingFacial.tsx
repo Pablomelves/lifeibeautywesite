@@ -23,7 +23,6 @@ import {
   ZoomIn
 } from 'lucide-react';
 import { Product, Review } from '../types';
-import { ROLLING_FACIAL_REVIEWS } from '../data/storeData';
 
 interface BeforeAfterRollingFacialProps {
   onQuickView?: (product: Product) => void;
@@ -46,7 +45,7 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
   const [added, setAdded] = useState<boolean>(false);
 
   // Reviews State
-  const [reviewsList, setReviewsList] = useState<Review[]>(ROLLING_FACIAL_REVIEWS);
+  const [reviewsList, setReviewsList] = useState<Review[]>([]);
   const [reviewFilter, setReviewFilter] = useState<'all' | 'depuff' | 'vline' | 'absorption'>('all');
   const [likesMap, setLikesMap] = useState<Record<number, boolean>>({});
   const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
@@ -201,6 +200,8 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
+
+  if (!reviewsList.length) return <section id="rolling-facial" className="py-20 sm:py-28 bg-[#FFF5FA] font-inter border-b border-[#FFCDF2]/60 overflow-hidden"><div className="max-w-7xl mx-auto px-4 sm:px-8"><h2 className="font-anton text-3xl sm:text-5xl uppercase tracking-tight text-slate-900 mb-6">BEFORE & AFTER INFORMATION</h2><div className="rounded-3xl bg-white border border-[#FFCDF2]/60 p-6 sm:p-8 text-sm text-slate-600">Authenticated customer photographs and supplier-supported trial results are not available. Before-and-after comparisons and clinical statistics are not shown without a verified source.</div></div></section>;
 
   return (
     <section id="rolling-facial" className="py-20 sm:py-28 bg-[#FFF5FA] font-inter border-b border-[#FFCDF2]/60 overflow-hidden">

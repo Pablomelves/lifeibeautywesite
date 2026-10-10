@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { 
   X, 
   ShoppingBag, 
@@ -15,8 +16,9 @@ import {
   Loader2
 } from 'lucide-react';
 import { CartItem } from '../types';
-import { createShopifyCheckout, getShopifyConfig } from '../services/shopify';
-import { validateCoupon } from '../services/adminService';
+import { createShopifyCheckout, getShopifyConfig, validateShopifyDiscount } from '../services/shopify';
+import { useModalAccessibility } from '../hooks/useModalAccessibility';
+import { trackShoppingEvent } from '../services/analytics';
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -27,6 +29,10 @@ interface CartDrawerProps {
   onClearCart?: () => void;
   onOpenShopifyConnect?: () => void;
   onTrackOrder?: (orderNumber: string, email: string) => void;
+  isLoading?: boolean;
+  persistenceError?: string | null;
+  onRetryPersistence?: () => void;
+  onBeforeCheckout?: () => Promise<void>;
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
@@ -38,7 +44,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   onClearCart,
   onOpenShopifyConnect,
   onTrackOrder,
+  isLoading = false,
+  persistenceError,
+  onRetryPersistence,
+  onBeforeCheckout,
 }) => {
+  const modal = useModalAccessibility(isOpen, onClose);
   const [promoCode, setPromoCode] = useState('');
   const [appliedDiscount, setAppliedDiscount] = useState<number>(0);
   const [fixedDiscountAmount, setFixedDiscountAmount] = useState<number>(0);
@@ -49,6 +60,9 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const [createdOrderNumber, setCreatedOrderNumber] = useState<string>('');
   const [checkingOut, setCheckingOut] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const checkoutPending = useRef(false);
+  const promoPending = useRef(false);
+  const [checkingPromo, setCheckingPromo] = useState(false);
 
   if (!isOpen) return null;
 
@@ -61,51 +75,56 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     : rawSubtotal * appliedDiscount;
   const finalTotal = Math.max(0, rawSubtotal - discountAmount);
 
-  const freeShippingThreshold = 50;
-  const amountNeeded = Math.max(0, freeShippingThreshold - rawSubtotal);
-  const progressPercent = Math.min(100, (rawSubtotal / freeShippingThreshold) * 100);
-
-  const handleApplyPromo = (e: React.FormEvent) => {
+  const handleApplyPromo = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!promoCode.trim()) return;
-
-    const result = validateCoupon(promoCode, rawSubtotal);
-    if (result.valid) {
-      setFixedDiscountAmount(result.discountAmount);
-      setActiveDiscountCode(promoCode.trim().toUpperCase());
-      setPromoSuccessMsg(result.message);
+    if (!promoCode.trim() || promoPending.current) return;
+    promoPending.current = true;
+    setCheckingPromo(true);
+    setPromoError(null);
+    try {
+      await validateShopifyDiscount(items, promoCode.trim());
+      setActiveDiscountCode(promoCode.trim());
+      setPromoSuccessMsg('Shopify accepted this code. Its final discount is confirmed at checkout.');
       setPromoError(null);
-    } else {
-      setPromoError(result.message);
+    } catch (error) {
+      setActiveDiscountCode('');
+      setPromoError(error instanceof Error ? error.message : 'Unable to check this discount code. Please try again.');
       setPromoSuccessMsg(null);
-    }
+    } finally { promoPending.current = false; setCheckingPromo(false); }
   };
 
   const handleCheckout = async () => {
+    if (checkoutPending.current || isLoading) return;
+    checkoutPending.current = true;
     setCheckingOut(true);
     setCheckoutError(null);
 
     // If Shopify is connected, initiate real Shopify Checkout
     if (shopifyConfig.isConnected) {
       try {
+        await onBeforeCheckout?.();
         const checkoutUrl = await createShopifyCheckout(items, activeDiscountCode || undefined);
         if (checkoutUrl) {
+          trackShoppingEvent('begin_checkout', items);
           window.location.href = checkoutUrl;
           return;
         } else {
           setCheckoutError('Could not reach Shopify Checkout. Please verify your Storefront API credentials.');
           setCheckingOut(false);
+          checkoutPending.current = false;
           return;
         }
       } catch (err) {
-        console.warn('Shopify checkout error:', err);
+        trackShoppingEvent('shopping_error');
         setCheckoutError(err instanceof Error ? err.message : 'Network error connecting to Shopify Checkout.');
         setCheckingOut(false);
+        checkoutPending.current = false;
         return;
       }
     }
 
     setCheckingOut(false);
+    checkoutPending.current = false;
     setCheckoutError('Shopify checkout is unavailable. Your shopping bag has not been cleared.');
   };
 
@@ -115,6 +134,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       onClick={onClose}
     >
       <div 
+        ref={modal}
         className="w-full max-w-md bg-white text-slate-900 h-full flex flex-col shadow-2xl relative"
         onClick={(e) => e.stopPropagation()}
       >
@@ -137,37 +157,22 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           </button>
         </div>
 
-        {/* Free Shipping Progress Meter */}
-        <div className="bg-[#FFF5FA] p-4 border-b border-[#FFCDF2]/60 text-xs">
-          <div className="flex items-center justify-between mb-1.5 font-medium">
-            <span className="flex items-center gap-1.5 text-slate-700">
-              <Truck size={14} className="text-[#EC3460]" />
-              {amountNeeded > 0 ? (
-                <>Add <strong className="text-[#EC3460] font-mono">${amountNeeded.toFixed(2)}</strong> for Free Express</>
-              ) : (
-                <span className="text-[#B31940] font-bold">🎉 You qualify for Free Seoul Express!</span>
-              )}
-            </span>
-            <span className="font-mono text-[11px] text-[#EC3460] font-bold">{Math.round(progressPercent)}%</span>
-          </div>
-          <div className="w-full h-2 bg-white border border-[#FFCDF2] rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-[#EC3460] rounded-full transition-all duration-300 shadow-xs"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
+        <div className="bg-[#FFF5FA] p-4 border-b border-[#FFCDF2]/60 text-xs text-slate-700 flex items-center gap-2">
+          <Truck size={14} className="text-[#EC3460] shrink-0" />
+          Shipping is calculated at checkout after you enter your delivery details.
         </div>
 
         {/* Cart Item List */}
-        <div className="flex-1 overflow-y-auto p-5 divide-y divide-slate-100">
-          {items.length === 0 ? (
+        <div className="flex-1 min-h-0 overflow-y-auto p-5 divide-y divide-slate-100">
+          {persistenceError && <div role="alert" className="mb-4 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-[#B31940]"><p>{persistenceError}</p><button type="button" onClick={onRetryPersistence} className="mt-2 underline cursor-pointer">Retry saving bag</button></div>}
+          {isLoading ? <p role="status" className="py-8 text-center text-xs text-slate-600">Loading your saved shopping bag…</p> : items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center p-8 gap-3">
               <div className="w-16 h-16 rounded-full bg-[#FFF0F9] border border-[#FFCDF2] flex items-center justify-center text-[#EC3460]">
                 <ShoppingBag size={28} />
               </div>
-              <h4 className="font-bold text-slate-900 uppercase">Your bag is empty</h4>
+              <h4 className="font-bold text-slate-900 uppercase">{persistenceError ? 'Your saved bag is unavailable' : 'Your bag is empty'}</h4>
               <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
-                Explore our curated clinical Korean skincare serums, masks, and barrier repair creams.
+                Explore the current Li Fei Beauty catalog and product descriptions.
               </p>
               <button
                 onClick={onClose}
@@ -187,10 +192,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-200/50"
                     style={{ backgroundColor: item.product.panel }}
                   >
-                    <img 
+                    <ResponsiveProductImage 
                       src={item.product.src} 
                       alt={item.product.name}
-                      className="w-full h-full object-cover object-center"
+                      className="w-full h-full object-contain object-center"
                     />
                   </div>
 
@@ -203,6 +208,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         <p className="text-[11px] text-slate-500 truncate">
                           {item.selectedSize || item.product.volume}
                         </p>
+                        {item.product.availableForSale === false && <p className="text-[11px] text-[#B31940] font-semibold">Sold out — remove this item before checkout.</p>}
                       </div>
                       <span className="text-xs font-bold font-mono tabular-nums text-slate-900">
                         ${(item.product.numericPrice * item.quantity).toFixed(2)}
@@ -225,6 +231,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                           onClick={() => onUpdateQuantity(item.product.id, 1, itemVariantId)}
                           className="p-1 text-slate-500 hover:text-[#EC3460] cursor-pointer"
                           aria-label="Increase quantity"
+                          disabled={item.product.availableForSale === false || item.quantity >= 999}
                         >
                           <Plus size={13} />
                         </button>
@@ -252,16 +259,17 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <form onSubmit={handleApplyPromo} className="flex gap-2">
               <input
                 type="text"
-                placeholder="Discount Code (e.g. GLOW15)"
+                placeholder="Discount code"
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value)}
                 className="flex-1 min-w-0 bg-white border border-[#FFCDF2] rounded-xl px-3 py-2 text-xs uppercase placeholder:normal-case focus:outline-none focus:border-[#EC3460] font-mono"
               />
               <button
                 type="submit"
+                disabled={checkingPromo}
                 className="bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors cursor-pointer shadow-xs"
               >
-                Apply
+                {checkingPromo ? 'Checking…' : 'Apply'}
               </button>
             </form>
             {promoError && (
@@ -283,16 +291,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <span>Subtotal</span>
                 <span className="font-mono tabular-nums text-slate-800">${rawSubtotal.toFixed(2)}</span>
               </div>
-              <div className="flex items-center justify-between text-slate-500">
-                <span>Seoul Direct Shipping</span>
-                <span className="font-semibold text-emerald-700">
-                  {rawSubtotal >= freeShippingThreshold ? 'Free' : '$4.99'}
-                </span>
-              </div>
               <div className="flex items-center justify-between text-sm font-bold text-slate-950 pt-2 border-t border-slate-200/80">
-                <span>Estimated Total</span>
+                <span>Item Total</span>
                 <span className="font-mono text-base tabular-nums">${finalTotal.toFixed(2)}</span>
               </div>
+              <p className="text-[11px] text-slate-500">Shipping and taxes are calculated at checkout after you enter your delivery details.</p>
             </div>
 
             {checkoutError && (
@@ -310,51 +313,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <Loader2 size={18} className="animate-spin" />
                 <span>Redirecting to Checkout...</span>
               </button>
-            ) : orderSuccess ? (
-              <div className="bg-[#FFF0F9] border border-[#FFCDF2] p-5 rounded-3xl text-center space-y-3 animate-in zoom-in-95 shadow-md">
-                <div className="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto shadow-sm">
-                  <Check size={22} strokeWidth={3} />
-                </div>
-                <div>
-                  <h4 className="font-anton text-lg uppercase tracking-tight text-slate-900">
-                    Order Confirmed!
-                  </h4>
-                  <p className="text-xs text-slate-600 mt-0.5">
-                    Order <span className="font-mono font-bold text-slate-950">{createdOrderNumber || '#LF-NEW'}</span> placed successfully.
-                  </p>
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Direct Seoul laboratory sourcing & temperature-controlled packing initiated.
-                  </p>
-                </div>
-
-                <div className="flex flex-col gap-2 pt-1">
-                  {onTrackOrder && (
-                    <button
-                      onClick={() => {
-                        onClose();
-                        setOrderSuccess(false);
-                        onTrackOrder(createdOrderNumber, 'customer@lifeibeauty.com');
-                      }}
-                      className="w-full bg-[#EC3460] hover:bg-[#D8224F] text-white font-bold text-xs uppercase tracking-wider py-3 rounded-2xl shadow-raspberry transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      <Truck size={14} />
-                      <span>Track Order Status</span>
-                    </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      setOrderSuccess(false);
-                      onClose();
-                    }}
-                    className="w-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold text-xs py-2.5 rounded-2xl transition-colors cursor-pointer"
-                  >
-                    Continue Shopping
-                  </button>
-                </div>
-              </div>
             ) : (
               <button
                 onClick={handleCheckout}
+                disabled={isLoading || items.some(item => item.product.availableForSale === false)}
                 className="w-full bg-[#EC3460] hover:bg-[#D8224F] text-white font-semibold text-xs uppercase tracking-wider py-4 rounded-2xl shadow-raspberry transition-all cursor-pointer flex items-center justify-center gap-2 mt-1"
               >
                 <ShieldCheck size={18} />
@@ -364,7 +326,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
             <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400">
               <ShieldCheck size={12} className="text-[#EC3460]" />
-              <span>256-Bit SSL Encrypted Checkout · 30-Day Guarantee</span>
+              <span>Final payment options and totals are shown in Shopify checkout</span>
             </div>
           </div>
         )}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { X, Check, ShoppingBag, Sparkles, Scale } from 'lucide-react';
 import { Product } from '../types';
 
@@ -94,7 +95,7 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                       className="w-32 h-32 rounded-2xl mb-4 flex items-center justify-center p-2 border border-[#FFCDF2]/40"
                       style={{ backgroundColor: product.panel }}
                     >
-                      <img src={product.src} alt={product.name} className="w-full h-full object-contain drop-shadow-md" />
+                      <ResponsiveProductImage src={product.src} alt={product.name} className="w-full h-full object-contain drop-shadow-md" />
                     </div>
                     <h3 className="font-anton text-base uppercase leading-tight line-clamp-2 text-slate-900">{product.name}</h3>
                     <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider mt-1">{product.category}</p>

@@ -33,15 +33,15 @@ export const Footer: React.FC<FooterProps> = ({
               Life looks better with lifei
             </span>
             <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60 block mb-4">
-              SEOUL · AUTHENTIC KOREAN SKINCARE
+              LI FEI BEAUTY · SKINCARE
             </span>
             <p className="text-xs text-white/70 max-w-sm leading-relaxed mb-6">
-              Curated clinical skincare from certified Seoul laboratories. Engineered for authentic glass-skin radiance, barrier integrity, and cellular rejuvenation.
+              Explore the current Li Fei Beauty catalog, read product details, and complete your order through Shopify checkout.
             </p>
 
             <div className="flex items-center gap-2 text-xs text-[#FFCDF2] font-semibold bg-white/5 border border-white/10 px-3.5 py-2 rounded-xl inline-flex">
               <ShieldCheck size={16} className="text-[#EC3460]" />
-              <span>100% Seoul Direct Batch Authenticity</span>
+              <span>Shopify checkout</span>
             </div>
           </div>
 
@@ -112,24 +112,24 @@ export const Footer: React.FC<FooterProps> = ({
                 </li>
               )}
               <li>
-                <button 
-                  onClick={() => onOpenPolicy?.('shipping')}
+                  <a href="/policies/shipping-policy" 
+                  onClick={event => { if (onOpenPolicy) { event.preventDefault(); onOpenPolicy('shipping'); } }}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Shipping & Delivery
-                </button>
+                </a>
               </li>
               <li>
-                <button 
-                  onClick={() => onOpenPolicy?.('returns')}
+                  <a href="/policies/refund-policy" 
+                  onClick={event => { if (onOpenPolicy) { event.preventDefault(); onOpenPolicy('returns'); } }}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
-                  Returns & Refunds (30 Days)
-                </button>
+                  Returns & Refunds
+                </a>
               </li>
               <li>
                 <button 
-                  onClick={() => onNavigateSection?.('faq')}
+                  onClick={() => onNavigateSection?.('faq-section')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   FAQ & Sourcing Guide
@@ -161,24 +161,24 @@ export const Footer: React.FC<FooterProps> = ({
                 </button>
               </li>
               <li>
-                <button 
-                  onClick={() => onOpenPolicy?.('privacy')}
+                  <a href="/policies/privacy-policy" 
+                  onClick={event => { if (onOpenPolicy) { event.preventDefault(); onOpenPolicy('privacy'); } }}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Privacy Policy
-                </button>
+                </a>
               </li>
               <li>
-                <button 
-                  onClick={() => onOpenPolicy?.('terms')}
+                  <a href="/policies/terms-of-service" 
+                  onClick={event => { if (onOpenPolicy) { event.preventDefault(); onOpenPolicy('terms'); } }}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
                   Terms of Service
-                </button>
+                </a>
               </li>
               <li>
                 <span className="text-white/40 block">
-                  Seoul Office: Gangnam-gu, Teheran-ro 152
+                  Store information is available through Contact.
                 </span>
               </li>
             </ul>
@@ -188,16 +188,12 @@ export const Footer: React.FC<FooterProps> = ({
         {/* Bottom Strip */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/50">
           <div>
-            © {new Date().getFullYear()} LI FEI BEAUTY CO., LTD. All rights reserved.
+            © {new Date().getFullYear()} LI FEI BEAUTY. All rights reserved.
           </div>
 
           {/* Payment Badges Simulator */}
           <div className="flex flex-wrap items-center gap-3 text-[11px] font-semibold tracking-wider text-white/60">
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Apple Pay</span>
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Visa</span>
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Mastercard</span>
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Shop Pay</span>
-            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">PayPal</span>
+            <span className="border border-white/10 px-2 py-1 rounded bg-white/5">Payment methods are shown at checkout</span>
           </div>
 
           <button

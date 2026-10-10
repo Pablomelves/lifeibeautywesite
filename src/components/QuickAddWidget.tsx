@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
+import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { ShoppingBag, Check, Zap, X, ChevronUp, ChevronDown, ArrowRight, Heart, Plus, Scale } from 'lucide-react';
 import { Product, CartNotificationData, WishlistNotificationData } from '../types';
 
 interface QuickAddWidgetProps {
   products: Product[];
-  onAddToCart: (product: Product) => void;
+  onAddToCart: (product: Product) => boolean | void;
   onQuickView: (product: Product) => void;
   onOpenCart: () => void;
   cartCount: number;
@@ -37,7 +38,7 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({
 
   const handleAdd = (e: React.MouseEvent, product: Product) => {
     e.stopPropagation();
-    onAddToCart(product);
+    if (onAddToCart(product) === false) return;
     setAddedProductId(product.id);
     setTimeout(() => {
       setAddedProductId(null);
@@ -87,11 +88,11 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({
           {/* Product info row */}
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0 shadow-xs">
-              <img
+              <ResponsiveProductImage
                 src={cartNotification.product.src}
                 alt={cartNotification.product.name}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-contain object-center"
               />
             </div>
 
@@ -167,11 +168,11 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({
           {/* Product info row */}
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 rounded-2xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0 shadow-xs">
-              <img
+              <ResponsiveProductImage
                 src={wishlistNotification.product.src}
                 alt={wishlistNotification.product.name}
                 referrerPolicy="no-referrer"
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-contain object-center"
               />
             </div>
 
@@ -267,10 +268,10 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({
                   onClick={() => onQuickView(product)}
                   className="flex items-center gap-3 p-2 rounded-2xl hover:bg-[#FFF0F9]/40 border border-slate-100 hover:border-[#FFCDF2]/60 transition-all cursor-pointer group"
                 >
-                  <img
+                  <ResponsiveProductImage
                     src={product.src}
                     alt={product.name}
-                    className="w-12 h-12 rounded-xl object-cover object-center bg-slate-50 border border-slate-100 shrink-0 group-hover:scale-105 transition-transform"
+                    className="w-12 h-12 rounded-xl object-contain object-center bg-slate-50 border border-slate-100 shrink-0 transition-transform"
                     loading="lazy"
                   />
 

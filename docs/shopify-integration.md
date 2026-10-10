@@ -26,6 +26,14 @@ The checkout subdomain must remain connected to Shopify with active HTTPS. On Oc
 
 Earlier browser verification reached a Shopify-hosted checkout page on the myshopify domain with HTTP 200 and a visible contact email field. Verification of the branded-domain update on October 10, 2026 successfully loaded the real catalog and created a cart with a checkout.lifeibeauty.com checkout URL. The automated request to that checkout page returned HTTP 403, so the complete branded checkout flow still requires browser verification after deployment. No customer information or payment details were submitted, and no paid order was placed. Failed cart creation or unavailable products do not trigger a simulated order or clear the customer's shopping bag.
 
+## Shipping at checkout
+
+Shipping calculation takes place in Shopify checkout after customers enter their delivery details. Product details and the shopping bag do not collect delivery addresses, show shipping calculators, or make shipping-estimate requests. They display a short notice explaining when shipping is calculated, and the bag's item total excludes shipping and taxes.
+
+The existing checkout handoff sends the selected Shopify variants, quantities, and any applied bag discount code to Shopify. Shopify determines shipping methods, combined shipping costs, applicable shipping rules, and final totals using the customer's checkout information. No hardcoded shipping price or free-shipping threshold is displayed in the affected product and bag views.
+
+The existing Storefront connection and branded checkout domain remain unchanged. No new credentials, DNS settings, address storage, or migrations are required. Verify product and bag notices and the shipping step in Shopify checkout as part of post-deployment desktop/mobile checks.
+
 ## Production release prerequisite
 
 Allow the platform's normal validation to build the updated source, then publish the validated deployment. Do not publish the workspace's preexisting `dist` artifacts. Verify the Shopify endpoint and real catalog on lifeibeauty.com, desktop/mobile product details, variant prices and availability, cart add/remove/quantity changes, search, and the final Shopify checkout page before declaring production complete.

@@ -9,12 +9,14 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "test:shopify": "tsx --test tests/shopify-*.test.ts",
+    "test:storefront": "tsx --test tests/storefront-*.test.ts",
     "check:shopify": "tsc -p tsconfig.shopify.json",
     "shopify:collections": "tsx scripts/shopify-collections.mts"
   },
   "dependencies": {
     "@netlify/database": "^2.0.1",
     "@netlify/functions": "^6.0.2",
+    "@netlify/identity": "^2.0.0",
     "drizzle-orm": "^1.0.0-beta.22",
     "firebase": "^13.0.0",
     "lucide-react": "^0.546.0",

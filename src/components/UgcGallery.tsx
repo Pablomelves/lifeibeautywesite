@@ -6,48 +6,7 @@ interface UgcGalleryProps {
 }
 
 export const UgcGallery: React.FC<UgcGalleryProps> = ({ onExploreProduct }) => {
-  const ugcPosts = [
-    {
-      id: 1,
-      user: '@jenny_glows',
-      platform: 'TikTok',
-      title: 'PDRN Pink Glow check after 10 days',
-      likes: '14.2k',
-      productId: 1,
-      productName: 'Medicube PDRN Pink',
-      tag: '#GlassSkinRoutine'
-    },
-    {
-      id: 2,
-      user: '@minji_skincare',
-      platform: 'Instagram',
-      title: 'Overnight Bio-Collagen peel result',
-      likes: '28.9k',
-      productId: 4,
-      productName: 'Biodance Collagen',
-      tag: '#SeoulBeauty'
-    },
-    {
-      id: 3,
-      user: '@elena_esthetics',
-      platform: 'Instagram',
-      title: 'NAD+ EGF firming serum morning prep',
-      likes: '9.4k',
-      productId: 2,
-      productName: 'Medicube EGF NAD',
-      tag: '#LongevitySkincare'
-    },
-    {
-      id: 4,
-      user: '@charlotte_dew',
-      platform: 'TikTok',
-      title: 'Fading summer sun spots with Kojic Acid',
-      likes: '18.1k',
-      productId: 3,
-      productName: 'Medicube Kojic Acid',
-      tag: '#DarkSpotCorrection'
-    }
-  ];
+  const ugcPosts: Array<{ id: number; user: string; platform: string; title: string; likes: string; productId: number; productName: string; tag: string }> = [];
 
   return (
     <section className="py-20 bg-white font-inter border-b border-slate-100">
@@ -70,6 +29,7 @@ export const UgcGallery: React.FC<UgcGalleryProps> = ({ onExploreProduct }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {!ugcPosts.length && <p className="text-sm text-slate-600 col-span-full">No authenticated customer photos or social posts are available yet.</p>}
           {ugcPosts.map((post) => (
             <div
               key={post.id}

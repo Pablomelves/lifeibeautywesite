@@ -36,6 +36,7 @@ export interface Product {
   skinType: string;
   fullDescription: string;
   description?: string;
+  descriptionHtml?: string;
   stockStatus: 'In Stock' | 'Low Stock' | 'Out of Stock' | string;
   beforeAfterSummary?: string;
   faqs?: { q: string; a: string }[];
@@ -215,6 +216,39 @@ export interface Discount {
   active: boolean;
   expiresAt?: string;
   description?: string;
+}
+
+export interface ProductReview {
+  id: number;
+  productId: string;
+  productName: string;
+  author: string;
+  rating: number;
+  title: string;
+  comment: string;
+  createdAt: string;
+}
+
+export interface ModeratedProductReview extends ProductReview {
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+export interface ProductReviewPage {
+  reviews: ProductReview[];
+  total: number;
+  averageRating: number | null;
+  nextCursor: number | null;
+}
+
+export interface ProductReviewSubmission {
+  submissionId: string;
+  productId: string;
+  author: string;
+  rating: number;
+  title: string;
+  comment: string;
+  consent: boolean;
+  website: string;
 }
 
 export interface ReviewModeration extends Partial<Pick<Review, 'email' | 'location' | 'skinType' | 'photos'>> {
