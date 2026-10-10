@@ -402,7 +402,11 @@ export const Hero3D: React.FC<Hero3DProps> = ({
       onTouchEnd={handleTouchEnd}
       className="relative w-full overflow-hidden flex flex-col justify-between perspective-1200 preserve-3d aspect-[9/16] sm:aspect-[4/3] lg:aspect-[16/9]"
       style={{
-        backgroundColor: activeProduct.bg,
+        backgroundColor: activeProduct.shopifyId === 'gid://shopify/Product/10679311106188'
+          ? '#CF3556'
+          : activeProduct.shopifyId === 'gid://shopify/Product/10705876779148'
+            ? '#E69201'
+            : activeProduct.panel,
         transition: 'background-color 650ms cubic-bezier(0.4, 0, 0.2, 1)',
       }}
     >
