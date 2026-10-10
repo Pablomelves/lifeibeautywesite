@@ -552,7 +552,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   ) : (
                     <>
                       <Sparkles size={16} />
-                      <span>Instant Buy with Free Express Shipping</span>
+                      <span>Buy Now</span>
                     </>
                   )}
                 </button>
