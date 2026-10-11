@@ -51,6 +51,8 @@ export interface Product {
   sku?: string;
   stockQuantity?: number;
   status?: 'active' | 'draft' | string;
+  tags?: string[];
+  vendor?: string;
 }
 
 export interface Review {
@@ -71,6 +73,8 @@ export interface Review {
   measuredMetric?: string;
   beforeImg?: string;
   afterImg?: string;
+  photoUrl?: string;
+  videoUrl?: string;
   routineUsed?: string;
   likes?: number;
   status?: 'approved' | 'pending' | 'rejected' | string;

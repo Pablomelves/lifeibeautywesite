@@ -3,6 +3,7 @@ import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { Star, ShoppingBag, Eye, Sparkles, Check, Heart, Scale } from 'lucide-react';
 import { Product } from '../types';
 import { belongsToCollection } from '../services/collectionRules';
+import { isProductOfBrand } from '../services/brandService';
 
 interface BestSellersProps {
   onQuickView: (product: Product) => void;
@@ -66,37 +67,18 @@ const ProductCard: React.FC<{
     }
   }, [isWishlisted]);
 
-  useEffect(() => {
+  // Manual gallery only — automatic slideshows disabled per storefront specifications
+  const handleScrollPrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
     const el = galleryRef.current;
-    if (!el || !product.images || product.images.length <= 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (el) el.scrollBy({ left: -el.offsetWidth, behavior: 'smooth' });
+  };
 
-    let index = 0;
-    const count = product.images.length;
-    let interval: ReturnType<typeof setInterval>;
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          interval = setInterval(() => {
-            if (isHovered || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-            index = (index + 1) % count;
-            if (el) {
-              el.scrollTo({ left: index * el.offsetWidth, behavior: 'smooth' });
-            }
-          }, 3500);
-        } else {
-          clearInterval(interval);
-        }
-      });
-    }, { threshold: 0.5 });
-
-    observer.observe(el);
-
-    return () => {
-      clearInterval(interval);
-      observer.disconnect();
-    };
-  }, [product.images, isHovered]);
+  const handleScrollNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const el = galleryRef.current;
+    if (el) el.scrollBy({ left: el.offsetWidth, behavior: 'smooth' });
+  };
 
   return (
     <div
@@ -106,7 +88,7 @@ const ProductCard: React.FC<{
       {/* Image Stage: Horizontal Scrollable Gallery */}
       <div 
         ref={galleryRef}
-        className="relative w-full aspect-4/3 sm:aspect-square flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth group/gallery"
+        className="relative w-full aspect-square flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth group/gallery"
         style={{ backgroundColor: product.panel }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -173,15 +155,17 @@ const ProductCard: React.FC<{
         </div>
 
         {/* Product Visuals / Slides */}
-        {(product.images && product.images.length > 0 ? product.images : [product.src]).map((img, idx) => (
+        {(product.images && product.images.length > 0 ? product.images : [product.src])
+          .filter((img): img is string => typeof img === 'string' && img.trim().length > 0)
+          .map((img, idx) => (
           <div 
             key={idx} 
-            className="w-full h-full shrink-0 snap-center flex items-center justify-center relative"
+            className="w-full h-full shrink-0 snap-center flex items-center justify-center relative overflow-hidden"
           >
             <ResponsiveProductImage
               src={img}
               alt={`${product.name} view ${idx + 1}`}
-              className="w-full h-full object-contain object-center transform transition-transform duration-500 ease-out drop-shadow-sm"
+              className="w-full h-full object-cover object-center transform transition-transform duration-500 ease-out drop-shadow-sm group-hover:scale-105"
             />
           </div>
         ))}
@@ -309,8 +293,12 @@ export const BestSellers: React.FC<BestSellersProps> = ({
   const currentProducts = products || [];
 
   const filteredProducts = currentProducts.filter((product) => {
-    // If selectedCategory from menu/category grid is active and not 'all'
+    // If selectedCategory from menu/category grid/brand is active and not 'all'
     if (selectedCategory && selectedCategory !== 'all') {
+      const lower = selectedCategory.toLowerCase();
+      if (['medicube', 'biodance', 'cerave'].includes(lower)) {
+        return isProductOfBrand(product, lower);
+      }
       if (!belongsToCollection(product, selectedCategory)) {
         return false;
       }
@@ -464,9 +452,9 @@ export const BestSellers: React.FC<BestSellersProps> = ({
                 </button>
               </div>
             ) : (
-              filteredProducts.map((product) => (
+              filteredProducts.map((product, idx) => (
                 <ProductCard
-                  key={product.id}
+                  key={`${product.id}-${idx}`}
                   product={product}
                   isAdded={addedId === product.id}
                   wishlistIds={wishlistIds}

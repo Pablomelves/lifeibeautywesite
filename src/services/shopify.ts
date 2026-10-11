@@ -63,6 +63,7 @@ const PRODUCTS_QUERY = `
           description
           descriptionHtml
           productType
+          vendor
           tags
           collections(first: 100) {
             pageInfo { hasNextPage endCursor }
@@ -128,6 +129,7 @@ const SEARCH_QUERY = `
           description
           descriptionHtml
           productType
+          vendor
           tags
           collections(first: 100) {
             pageInfo { hasNextPage endCursor }
@@ -240,6 +242,7 @@ export interface ShopifyProductNode {
   description: string;
   descriptionHtml?: string;
   productType: string;
+  vendor?: string;
   tags: string[];
   collections?: {
     nodes: { id: string; title: string; handle: string }[];
@@ -367,6 +370,8 @@ export function transformShopifyProduct(node: ShopifyProductNode, index: number)
     stockStatus: node.availableForSale ? 'In Stock' : 'Out of Stock',
     shopifyId: node.id,
     handle: node.handle,
+    tags: node.tags || [],
+    vendor: node.vendor || '',
     variants,
     selectedVariantId: defaultVariant?.id,
     availableForSale: node.availableForSale,
@@ -402,11 +407,17 @@ export async function getShopifyProducts(first = 24): Promise<Product[]> {
     after = data.products.pageInfo.hasNextPage ? data.products.pageInfo.endCursor : null;
     if (data.products.pageInfo.hasNextPage && !after) throw new Error('Shopify returned an invalid product cursor.');
   } while (after);
-  await Promise.all(nodes.map(async node => {
+  const seenIds = new Set<string>();
+  const uniqueNodes = nodes.filter(node => {
+    if (seenIds.has(node.id)) return false;
+    seenIds.add(node.id);
+    return true;
+  });
+  await Promise.all(uniqueNodes.map(async node => {
     await loadRemainingVariants(node);
     await loadRemainingCollections(node);
   }));
-  return nodes.map(transformShopifyProduct);
+  return uniqueNodes.map(transformShopifyProduct);
 }
 
 async function loadRemainingVariants(node: ShopifyProductNode): Promise<void> {

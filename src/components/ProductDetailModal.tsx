@@ -16,7 +16,8 @@ import {
   Share2,
   Loader2,
   Heart,
-  Scale
+  Scale,
+  ArrowLeft
 } from 'lucide-react';
 import { Product } from '../types';
 import { ProductReviews } from './ProductReviews';
@@ -77,7 +78,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const checkoutPending = React.useRef(false);
   const [activeImage, setActiveImage] = useState<string>(product?.src || '');
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
 
   useEffect(() => { setQuantity(1); setAdded(false); }, [product?.id]);
   useEffect(() => { if (product) trackShoppingEvent('view_item', [{ product, quantity: 1 }]); }, [product?.id]);
@@ -89,9 +89,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   useEffect(() => {
     if (product) {
-      setActiveImage(product.src);
+      setActiveImage(product.src || product.images?.[0] || '');
       setActiveImageIndex(0);
-      setIsAutoPlaying(true);
     }
     if (product?.variants && product.variants.length > 0) {
       setSelectedVariant(previous => product.variants.find(variant => variant.id === previous?.id) || product.variants.find(variant => variant.id === product.selectedVariantId) || product.variants.find(variant => variant.availableForSale) || product.variants[0]);
@@ -100,19 +99,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     }
   }, [product]);
 
-  // Auto-slide effect
-  useEffect(() => {
-    if (!isAutoPlaying || !product?.images || product.images.length <= 1 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    
-    const interval = setInterval(() => {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-      setActiveImageIndex((prev) => (prev + 1) % product.images!.length);
-    }, 4000);
-    
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, product?.images, product]);
-
-  // Sync activeImage with activeImageIndex
+  // Sync activeImage with activeImageIndex (manual selection only - autoplay disabled)
   useEffect(() => {
     if (product?.images && product.images[activeImageIndex]) {
       setActiveImage(product.images[activeImageIndex]);
@@ -123,13 +110,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   const isRollerProduct = product.name.toLowerCase().includes('roller');
 
-  const galleryImages = (product.images && product.images.length > 0)
-    ? product.images.map((url, i) => ({
-        label: i === 0 ? 'Main' : `View ${i + 1}`,
-        url,
-        tag: i === 0 ? 'Main' : 'Detail'
-      }))
-    : [{ label: 'Product', url: product.src, tag: 'Main' }];
+  const rawImages = (product.images && product.images.length > 0
+    ? product.images
+    : [product.src]).filter((img): img is string => typeof img === 'string' && img.trim().length > 0);
+  const galleryImages = rawImages.map((url, i) => ({
+    label: i === 0 ? 'Main' : `View ${i + 1}`,
+    url,
+    tag: i === 0 ? 'Main' : 'Detail'
+  }));
 
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
   const currentNumericPrice = selectedVariant ? selectedVariant.numericPrice : product.numericPrice;
@@ -241,83 +229,99 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
       </Helmet>
 
       <div 
-        className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-in fade-in duration-200"
+        role="dialog"
+        aria-modal="true"
+        aria-label={`${product.name} Details`}
+        className="fixed inset-0 z-[140] bg-white overflow-y-auto animate-in fade-in duration-200"
         onClick={onClose}
       >
-      <div 
-        ref={modal}
-        className="w-full max-w-4xl bg-white text-slate-900 rounded-3xl overflow-hidden shadow-2xl relative my-auto max-h-[92vh] flex flex-col font-inter"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Top Sticky Bar */}
-        {brandHeader}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-white z-10 shrink-0">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-              LI FEI BEAUTY PRODUCT DETAILS
-            </span>
+        <div 
+          ref={modal}
+          className="w-full min-h-screen bg-white text-slate-900 flex flex-col font-inter"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Top Sticky Header at the top of the viewport */}
+          {brandHeader && (
+            <div className="sticky top-0 z-40 w-full bg-white shadow-xs">
+              {brandHeader}
+            </div>
+          )}
+
+          {/* Product Details Sub-bar */}
+          <div className={`border-b border-slate-100 bg-white/95 backdrop-blur-sm sticky ${brandHeader ? 'top-[72px] sm:top-[80px]' : 'top-0'} z-30`}>
+            <div className="max-w-6xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="hover:text-[#EC3460] text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200/80 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 mr-2"
+                  aria-label="Back"
+                >
+                  <ArrowLeft size={16} />
+                  <span>Back</span>
+                </button>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 hidden xs:inline">
+                  LI FEI BEAUTY PRODUCT DETAILS
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {onToggleWishlist && (
+                  <button
+                    type="button"
+                    onClick={() => onToggleWishlist(product.id)}
+                    className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold border ${
+                      isWishlisted
+                        ? 'bg-[#FFF0F9] text-[#B31940] border-[#FFCDF2] shadow-xs'
+                        : 'bg-white text-slate-600 border-slate-200 hover:text-[#EC3460] hover:border-[#FFCDF2]'
+                    } ${justWishlisted ? 'animate-pop' : ''}`}
+                    title={isWishlisted ? 'Saved to Wishlist' : 'Save to Wishlist'}
+                    aria-label={isWishlisted ? 'Saved to Wishlist' : 'Save to Wishlist'}
+                  >
+                    <Heart
+                      size={15}
+                      fill={isWishlisted ? '#EC3460' : 'none'}
+                      className={isWishlisted ? 'text-[#EC3460]' : ''}
+                    />
+                    <span>{isWishlisted ? 'Wishlisted' : 'Save'}</span>
+                  </button>
+                )}
+
+                {onToggleComparison && (
+                  <button
+                    type="button"
+                    onClick={() => onToggleComparison(product.id)}
+                    className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold border ${
+                      comparisonIds.includes(product.id)
+                        ? 'bg-[#EC3460] text-white border-[#EC3460] shadow-raspberry'
+                        : 'bg-white text-slate-600 border-slate-200 hover:text-[#EC3460] hover:border-[#FFCDF2]'
+                    }`}
+                    title="Add to comparison"
+                  >
+                    <Scale size={15} />
+                    <span>{comparisonIds.includes(product.id) ? 'Comparing' : 'Compare'}</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={onClose}
+                  aria-label="Close dialog"
+                  className="p-1.5 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {onToggleWishlist && (
-              <button
-                type="button"
-                onClick={() => onToggleWishlist(product.id)}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold border ${
-                  isWishlisted
-                    ? 'bg-[#FFF0F9] text-[#B31940] border-[#FFCDF2] shadow-xs'
-                    : 'bg-white text-slate-600 border-slate-200 hover:text-[#EC3460] hover:border-[#FFCDF2]'
-                } ${justWishlisted ? 'animate-pop' : ''}`}
-                title={isWishlisted ? 'Saved to Wishlist' : 'Save to Wishlist'}
-                aria-label={isWishlisted ? 'Saved to Wishlist' : 'Save to Wishlist'}
-              >
-                <Heart
-                  size={15}
-                  fill={isWishlisted ? '#EC3460' : 'none'}
-                  className={isWishlisted ? 'text-[#EC3460]' : ''}
-                />
-                <span>{isWishlisted ? 'Wishlisted' : 'Save'}</span>
-              </button>
-            )}
-
-            {onToggleComparison && (
-              <button
-                type="button"
-                onClick={() => onToggleComparison(product.id)}
-                className={`px-3 py-1.5 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 text-xs font-semibold border ${
-                  comparisonIds.includes(product.id)
-                    ? 'bg-[#EC3460] text-white border-[#EC3460] shadow-raspberry'
-                    : 'bg-white text-slate-600 border-slate-200 hover:text-[#EC3460] hover:border-[#FFCDF2]'
-                }`}
-                title="Add to comparison"
-              >
-                <Scale size={15} />
-                <span>{comparisonIds.includes(product.id) ? 'Comparing' : 'Compare'}</span>
-              </button>
-            )}
-
-            <button
-              onClick={onClose}
-              aria-label="Close dialog"
-              className="p-1.5 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Modal Scrollable Body */}
-        <div className="overflow-y-auto p-6 sm:p-10 divide-y divide-slate-100">
+          {/* Modal Scrollable Body */}
+          <div className="max-w-6xl mx-auto w-full p-6 sm:p-10 divide-y divide-slate-100 flex-1">
           {/* Main Hero & Purchase Module */}
           <div className="flex flex-col lg:flex-row gap-8 lg:gap-12 pb-10">
             {/* Gallery / Product Photo */}
-            <div 
-              className="lg:w-1/2 flex flex-col items-center"
-              onMouseEnter={() => setIsAutoPlaying(false)}
-              onMouseLeave={() => setIsAutoPlaying(true)}
-            >
+            <div className="lg:w-1/2 flex flex-col items-center">
               <div 
-                className="w-full aspect-square sm:aspect-4/3 rounded-3xl p-3 sm:p-5 flex items-center justify-center relative shadow-sm overflow-hidden bg-slate-50 border border-slate-100 group"
+                className="w-full aspect-square rounded-3xl flex items-center justify-center relative shadow-sm overflow-hidden group"
                 style={{ backgroundColor: activeImage === product.src ? product.panel : '#F8FAFC' }}
               >
                 {product.badge && (
@@ -351,12 +355,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 )}
 
                 <ResponsiveProductImage loading="eager" sizes="(max-width: 1024px) 90vw, 448px"
-                  src={activeImage}
+                  src={activeImage || product.src || null}
                   alt={product.name}
                   referrerPolicy="no-referrer"
-                  className={`w-full h-full drop-shadow-xl transition-all duration-300 ${
-                    activeImage === product.src ? 'object-contain sm:scale-105' : 'object-contain rounded-2xl'
-                  }`}
+                  className="w-full h-full object-cover object-center drop-shadow-xl transition-all duration-300"
                 />
 
                 {/* Dots Indicator */}
@@ -383,7 +385,6 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                       type="button"
                       onClick={() => {
                         setActiveImageIndex(idx);
-                        setIsAutoPlaying(false);
                       }}
                       className={`flex-shrink-0 w-16 h-16 rounded-xl border-2 transition-all cursor-pointer overflow-hidden ${
                         activeImageIndex === idx
@@ -391,12 +392,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                           : 'border-slate-100 hover:border-[#FFCDF2]'
                       }`}
                     >
-                      <img
-                        src={imgItem.url}
-                        alt={imgItem.label}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                      />
+                      {imgItem.url && imgItem.url.trim() ? (
+                        <img
+                          src={imgItem.url}
+                          alt={imgItem.label}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : null}
                     </button>
                   ))}
                 </div>
@@ -584,9 +587,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             </div>
           </div>
 
-          <ProductInformationSection key={product.id} product={product} />
+          <ProductInformationSection key={`product-info-${product.id}`} product={product} />
 
-          <ProductReviews key={product.id} product={product} />
+          <ProductReviews key={`product-reviews-${product.id}`} product={product} />
 
           {/* Section: Recommended Products */}
           <div className="pt-10">
@@ -604,7 +607,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     className="w-full aspect-square rounded-xl overflow-hidden flex items-center justify-center mb-3 border border-slate-200/50"
                     style={{ backgroundColor: rec.panel }}
                   >
-                    <ResponsiveProductImage src={rec.src} alt={rec.name} className="w-full h-full object-contain object-center" />
+                    <ResponsiveProductImage src={rec.src} alt={rec.name} className="w-full h-full object-cover object-center" />
                   </div>
                   <div>
                     <h4 className="text-xs font-bold uppercase truncate text-slate-900">{rec.name}</h4>

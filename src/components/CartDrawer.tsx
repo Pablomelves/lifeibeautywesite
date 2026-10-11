@@ -195,7 +195,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     <ResponsiveProductImage 
                       src={item.product.src} 
                       alt={item.product.name}
-                      className="w-full h-full object-contain object-center"
+                      className="w-full h-full object-cover object-center"
                     />
                   </div>
 

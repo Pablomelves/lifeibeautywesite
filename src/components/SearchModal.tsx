@@ -243,9 +243,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                 POPULAR FORMULAS
               </span>
               <div className="space-y-3">
-                {activeCatalog.slice(0, 3).map((prod) => (
+                {activeCatalog.slice(0, 3).map((prod, idx) => (
                   <div
-                    key={prod.id}
+                    key={`${prod.id}-${idx}`}
                     onClick={() => {
                       onSelectProduct(prod);
                       onClose();
@@ -254,7 +254,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center" style={{ backgroundColor: prod.panel }}>
-                        <ResponsiveProductImage src={prod.src} alt={prod.name} className="w-full h-full object-contain object-center" />
+                        <ResponsiveProductImage src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center" />
                       </div>
                       <div>
                         <h4 className="text-xs font-bold uppercase text-slate-900">{prod.name}</h4>
@@ -290,9 +290,9 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                 )}
               </div>
               <div className="space-y-3">
-                {results.map((prod) => (
+                {results.map((prod, idx) => (
                   <div
-                    key={prod.id}
+                    key={`${prod.id}-${idx}`}
                     onClick={() => {
                       if (query.trim()) saveRecentSearch(query);
                       onSelectProduct(prod);
@@ -302,7 +302,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   >
                     <div className="flex items-center gap-3.5">
                       <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center" style={{ backgroundColor: prod.panel }}>
-                        <ResponsiveProductImage src={prod.src} alt={prod.name} className="w-full h-full object-contain object-center transition-transform" />
+                        <ResponsiveProductImage src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center transition-transform" />
                       </div>
                       <div>
                         <h4 className="text-xs font-bold uppercase text-slate-900 group-hover:text-rose-600 transition-colors">

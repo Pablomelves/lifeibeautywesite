@@ -13,7 +13,7 @@ export default async (req: Request, context: Context) => {
     .replace(/^https?:\/\//, '')
     .split('/')[0]
     .trim();
-  const token = (process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || '').trim();
+  const token = (process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || process.env.VITE_SHOPIFY_STOREFRONT_ACCESS_TOKEN || '').trim();
   const privateToken = (process.env.SHOPIFY_STOREFRONT_PRIVATE_TOKEN || '').trim();
   const apiVersion = (process.env.SHOPIFY_API_VERSION || '2026-10').trim();
 

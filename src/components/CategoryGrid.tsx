@@ -1,83 +1,55 @@
 import React from 'react';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import { CATEGORIES } from '../data/storeData';
+import { ArrowRight } from 'lucide-react';
 import { Product } from '../types';
-import { belongsToCollection } from '../services/collectionRules';
+import { BRANDS, getProductsForBrand, BrandInfo } from '../services/brandService';
 
 interface CategoryGridProps {
+  onSelectBrand?: (brandId: 'medicube' | 'biodance' | 'cerave') => void;
   onSelectCategory: (catId: string) => void;
   onNavigateSection: (sectionId: string) => void;
   products?: Product[];
 }
 
 export const CategoryGrid: React.FC<CategoryGridProps> = ({
+  onSelectBrand,
   onSelectCategory,
   onNavigateSection,
-  products,
+  products = [],
 }) => {
-  const getCategoryCount = (id: string) => {
-    const count = (products || []).filter(product => belongsToCollection(product, id)).length;
+  const getBrandCount = (id: string) => {
+    const count = getProductsForBrand(products, id).length;
     return `${count} ${count === 1 ? 'Product' : 'Products'}`;
   };
 
-  const visualCategories = [
-    {
-      id: 'serums',
-      title: 'Targeted Serums',
-      korean: '세럼 & 앰플',
-      desc: 'PDRN salmon DNA, EGF longevity peptides & kojic acid',
-      count: getCategoryCount('serums'),
-      bgGradient: 'from-[#FFF0F9] to-[#FFE6F6]',
-      tagColor: 'text-[#EC3460] bg-white border border-[#FFCDF2]'
-    },
-    {
-      id: 'masks',
-      title: 'Bio-Collagen Masks',
-      korean: '콜라겐 팩',
-      desc: 'Viral low-molecular hydrogel treatments for poreless glass skin',
-      count: getCategoryCount('masks'),
-      bgGradient: 'from-[#F5F3FF] to-[#EDE9FE]',
-      tagColor: 'text-[#8B5CF6] bg-white border border-[#DDD6FE]'
-    },
-    {
-      id: 'cleansers',
-      title: 'Pore Cleansers & Toners',
-      korean: '클렌징 & 토너 패드',
-      desc: 'AHA/BHA dual-textured exfoliating pads and green tea infusions',
-      count: getCategoryCount('cleansers'),
-      bgGradient: 'from-[#F0FDF4] to-[#DCFCE7]',
-      tagColor: 'text-[#16A34A] bg-white border border-[#BBF7D0]'
-    },
-    {
-      id: 'moisturizers',
-      title: 'Barrier Cushion Creams',
-      korean: '수분 보습 크림',
-      desc: '5-Ceramide lipid cushions that seal in active serum nutrients',
-      count: getCategoryCount('moisturizers'),
-      bgGradient: 'from-[#FFF7ED] to-[#FFEDD5]',
-      tagColor: 'text-[#EA580C] bg-white border border-[#FED7AA]'
+  const handleClick = (brand: BrandInfo) => {
+    if (onSelectBrand) {
+      onSelectBrand(brand.id);
+    } else {
+      onSelectCategory(brand.id);
+      onNavigateSection('bestsellers');
     }
-  ];
+  };
 
-  const handleClick = (id: string) => {
-    onSelectCategory(id);
+  const handleExploreAll = () => {
+    onSelectCategory('all');
     onNavigateSection('bestsellers');
   };
 
   return (
-    <section className="py-20 bg-white font-inter border-b border-slate-100">
+    <section id="shop-by-brand" className="py-20 bg-white font-inter border-b border-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-4">
           <div>
             <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#EC3460] block mb-1">
-              CURATED COLLECTIONS
+              CURATED BRANDS
             </span>
             <h2 className="font-anton text-3xl sm:text-4xl uppercase tracking-tight text-slate-900">
-              SHOP BY K-BEAUTY CATEGORY
+              SHOP BY BRAND
             </h2>
           </div>
           <button
-            onClick={() => handleClick('all')}
+            type="button"
+            onClick={handleExploreAll}
             className="text-xs font-bold uppercase tracking-wider text-slate-900 hover:text-[#EC3460] transition-colors flex items-center gap-1 cursor-pointer"
           >
             <span>Explore All {products.length > 0 ? `${products.length} Formulas` : 'Formulas'}</span>
@@ -85,41 +57,42 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
           </button>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          {visualCategories.map((cat) => (
-            <div
-              key={cat.id}
-              onClick={() => handleClick(cat.id)}
-              className={`group p-6 rounded-3xl bg-gradient-to-br ${cat.bgGradient} border border-[#FFCDF2]/40 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between cursor-pointer hover:border-[#EC3460]/40`}
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${cat.tagColor}`}>
-                    {cat.count}
-                  </span>
-                  <span className="text-xs font-semibold text-slate-400">
-                    {cat.korean}
-                  </span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+          {BRANDS.map((brand) => {
+            const countLabel = getBrandCount(brand.id);
+
+            return (
+              <div
+                key={brand.id}
+                onClick={() => handleClick(brand)}
+                className={`group p-6 rounded-3xl bg-gradient-to-br ${brand.bgGradient} border border-[#FFCDF2]/40 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between cursor-pointer hover:border-[#EC3460]/40`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${brand.tagColor}`}>
+                      {countLabel}
+                    </span>
+                  </div>
+
+                  <h3 className="font-anton text-2xl uppercase tracking-tight text-slate-900 group-hover:text-[#EC3460] transition-colors">
+                    {brand.name}
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+                    {brand.description}
+                  </p>
                 </div>
 
-                <h3 className="font-anton text-2xl uppercase tracking-tight text-slate-900 group-hover:text-[#EC3460] transition-colors">
-                  {cat.title}
-                </h3>
-                <p className="text-xs text-slate-600 mt-2 leading-relaxed">
-                  {cat.desc}
-                </p>
-              </div>
-
-              <div className="pt-6 mt-4 border-t border-slate-200/60 flex items-center justify-between">
-                <span className="text-xs font-semibold text-slate-900 group-hover:text-[#EC3460] group-hover:translate-x-1 transition-all">
-                  Shop Collection
-                </span>
-                <div className="w-8 h-8 rounded-full bg-white shadow-xs flex items-center justify-center text-slate-900 group-hover:bg-[#EC3460] group-hover:text-white transition-colors">
-                  <ArrowRight size={14} />
+                <div className="pt-6 mt-4 border-t border-slate-200/60 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-900 group-hover:text-[#EC3460] group-hover:translate-x-1 transition-all">
+                    Shop {brand.name}
+                  </span>
+                  <div className="w-8 h-8 rounded-full bg-white shadow-xs flex items-center justify-center text-slate-900 group-hover:bg-[#EC3460] group-hover:text-white transition-colors">
+                    <ArrowRight size={14} />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

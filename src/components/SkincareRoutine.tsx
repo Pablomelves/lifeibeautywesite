@@ -103,9 +103,9 @@ export const SkincareRoutine: React.FC<SkincareRoutineProps> = ({
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {stepProducts.map((product) => (
+              {stepProducts.map((product, idx) => (
                 <div
-                  key={product.id}
+                  key={`${product.id}-${idx}`}
                   onClick={() => onQuickView?.(product)}
                   className="bg-white rounded-2xl p-4 border border-[#FFCDF2]/50 shadow-xs hover:shadow-md transition-all flex gap-4 items-center cursor-pointer group hover:border-[#EC3460]/40"
                 >
@@ -116,7 +116,7 @@ export const SkincareRoutine: React.FC<SkincareRoutineProps> = ({
                     <ResponsiveProductImage
                       src={product.src}
                       alt={product.name}
-                      className="w-full h-full object-contain object-center transition-transform"
+                      className="w-full h-full object-cover object-center transition-transform"
                     />
                   </div>
 

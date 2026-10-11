@@ -92,10 +92,10 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                   {/* Header Visual */}
                   <div className="h-[280px] p-6 border-b border-slate-100 flex flex-col items-center text-center">
                     <div 
-                      className="w-32 h-32 rounded-2xl mb-4 flex items-center justify-center p-2 border border-[#FFCDF2]/40"
+                      className="w-32 h-32 rounded-2xl mb-4 flex items-center justify-center border border-[#FFCDF2]/40 overflow-hidden"
                       style={{ backgroundColor: product.panel }}
                     >
-                      <ResponsiveProductImage src={product.src} alt={product.name} className="w-full h-full object-contain drop-shadow-md" />
+                      <ResponsiveProductImage src={product.src} alt={product.name} className="w-full h-full object-cover object-center drop-shadow-md" />
                     </div>
                     <h3 className="font-anton text-base uppercase leading-tight line-clamp-2 text-slate-900">{product.name}</h3>
                     <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider mt-1">{product.category}</p>

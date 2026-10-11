@@ -1,9 +1,10 @@
 import type { ImgHTMLAttributes } from 'react';
 
 export function ResponsiveProductImage({ src, sizes = '(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px', loading = 'lazy', ...props }: ImgHTMLAttributes<HTMLImageElement>) {
+  if (!src || (typeof src === 'string' && !src.trim())) return null;
   const supported = typeof src === 'string' && /^https:\/\/cdn\.shopify\.com\//.test(src);
   const image = (width: number) => {
-    const url = new URL(src || 'https://cdn.shopify.com/');
+    const url = new URL(src);
     url.searchParams.set('width', String(width));
     url.searchParams.set('quality', '85');
     return url.toString();

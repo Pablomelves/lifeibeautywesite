@@ -249,8 +249,12 @@ export const AdminDashboardTab: React.FC<AdminDashboardTabProps> = ({
                     <span className="w-5 text-xs font-anton text-slate-400 text-center">
                       #{idx + 1}
                     </span>
-                    <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200/60 bg-slate-50">
-                      <img src={p.image} alt={p.name} className="w-full h-full object-cover object-center" />
+                    <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200/60 bg-slate-50 flex items-center justify-center">
+                      {p.image ? (
+                        <img src={p.image} alt={p.name} className="w-full h-full object-cover object-center" />
+                      ) : (
+                        <div className="w-full h-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 font-bold">LF</div>
+                      )}
                     </div>
                     <div className="min-w-0">
                       <h4 className="text-xs font-bold uppercase tracking-wide text-slate-900 truncate">

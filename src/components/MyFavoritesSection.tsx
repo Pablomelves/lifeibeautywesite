@@ -41,9 +41,10 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
   const [addedIds, setAddedIds] = useState<Record<number, boolean>>({});
   const [addedAll, setAddedAll] = useState(false);
   const [popId, setPopId] = useState<number | null>(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 640 : false);
 
   React.useEffect(() => {
+    if (typeof window === 'undefined') return;
     const handleResize = () => setIsMobile(window.innerWidth < 640);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -164,32 +165,33 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
         ) : (
           /* Favorites Grid */
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8 items-stretch">
-            {favoriteProducts.map((product) => {
+            {favoriteProducts.map((product, pIdx) => {
               const isAdded = !!addedIds[product.id];
 
               return (
                 <div
-                  key={product.id}
-                  className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 border border-[#FFCDF2]/80 hover:border-[#EC3460] transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between group relative"
+                  key={`${product.id}-${pIdx}`}
+                  className="bg-white rounded-2xl sm:rounded-3xl border border-[#FFCDF2]/80 hover:border-[#EC3460] transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between group relative overflow-hidden"
                 >
-                  {/* Image Backdrop & Thumbnail: Horizontal Scrollable Gallery */}
-                  <div className="relative mb-4">
+                  {/* Image Backdrop & Thumbnail: Edge-to-Edge Horizontal Scrollable Gallery */}
+                  <div className="relative w-full aspect-square overflow-hidden" style={{ backgroundColor: product.panel }}>
                     <div
-                      className="w-full aspect-square rounded-2xl flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth group/gallery"
-                      style={{ backgroundColor: product.panel }}
+                      className="w-full h-full flex overflow-x-auto snap-x snap-mandatory no-scrollbar scroll-smooth group/gallery"
                     >
                       {/* Product Visuals / Slides */}
-                      {(product.images && product.images.length > 0 ? product.images : [product.src]).map((img, idx) => (
+                      {(product.images && product.images.length > 0 ? product.images : [product.src])
+                        .filter((img): img is string => typeof img === 'string' && img.trim().length > 0)
+                        .map((img, idx) => (
                         <div 
                           key={idx} 
-                          className="w-full h-full shrink-0 snap-center flex items-center justify-center relative cursor-pointer"
+                          className="w-full h-full shrink-0 snap-center flex items-center justify-center relative cursor-pointer overflow-hidden"
                           onClick={() => onQuickView(product)}
                         >
                           <ResponsiveProductImage
                             src={img}
                             alt={`${product.name} view ${idx + 1}`}
                             referrerPolicy="no-referrer"
-                            className="w-full h-full object-contain drop-shadow-md transition-transform duration-300 group-hover/gallery:scale-[1.02]"
+                            className="w-full h-full object-cover object-center drop-shadow-md transition-transform duration-300 group-hover/gallery:scale-[1.02]"
                           />
                         </div>
                       ))}
@@ -198,14 +200,14 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                       {product.images && product.images.length > 1 && (
                         <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1 z-20 pointer-events-none">
                           {product.images.map((_, i) => (
-                            <div key={i} className="w-1 h-1 rounded-full bg-slate-900/20" />
+                            <div key={i} className="w-1 h-1 rounded-full bg-white/70" />
                           ))}
                         </div>
                       )}
                     </div>
 
                     {/* Unfavorite / Remove Button (Top Right) */}
-                    <div className="absolute top-3 right-3 flex flex-col gap-2">
+                    <div className="absolute top-3 right-3 z-10 flex flex-col gap-2">
                       <button
                         type="button"
                         onClick={() => handleToggleWithAnim(product.id)}
@@ -236,7 +238,7 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                     </div>
 
                     {/* Badge or Category (Top Left) */}
-                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1">
+                    <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1">
                       {product.badge ? (
                         <span className="bg-slate-950/80 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-white/20">
                           {product.badge}
@@ -250,7 +252,7 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                   </div>
 
                   {/* Product Details */}
-                  <div className="flex-1 flex flex-col justify-between">
+                  <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between">
                     <div>
                       {/* Rating & Stock */}
                       <div className="flex items-center justify-between text-xs mb-1 sm:mb-1.5">

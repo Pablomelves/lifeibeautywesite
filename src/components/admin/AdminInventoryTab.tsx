@@ -106,11 +106,11 @@ export const AdminInventoryTab: React.FC<AdminInventoryTabProps> = ({
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-10 h-10 rounded-lg p-1 flex items-center justify-center shrink-0 border border-stone-200"
+                          className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center shrink-0 border border-stone-200"
                           style={{ backgroundColor: product.panel || '#FAF5F7' }}
                         >
                           {product.src ? (
-                            <img src={product.src} alt={product.name} className="max-h-full w-auto object-contain" />
+                            <img src={product.src} alt={product.name} className="w-full h-full object-cover object-center" />
                           ) : (
                             <Package className="w-4 h-4 text-stone-400" />
                           )}

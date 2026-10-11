@@ -355,8 +355,12 @@ export const TrackOrderModal: React.FC<TrackOrderModalProps> = ({
                   {matchedOrder.items.map((item, idx) => (
                     <div key={idx} className="p-3.5 flex items-center justify-between gap-3 bg-slate-50/40">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 bg-white shrink-0">
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover object-center" />
+                        <div className="w-12 h-12 rounded-xl overflow-hidden border border-slate-200 bg-white shrink-0 flex items-center justify-center">
+                          {item.image ? (
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover object-center" />
+                          ) : (
+                            <div className="w-full h-full bg-slate-100 flex items-center justify-center text-[10px] text-slate-400 font-bold">LF</div>
+                          )}
                         </div>
                         <div>
                           <h5 className="font-bold uppercase text-slate-900 text-xs">{item.name}</h5>

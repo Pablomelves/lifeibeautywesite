@@ -1,1 +1,3 @@
-/*    /index.html   200
+/api/shopify/graphql    /.netlify/functions/shopify    200
+/api/shopify/*          /.netlify/functions/shopify    200
+/*                      /index.html                    200

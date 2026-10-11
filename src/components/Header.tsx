@@ -58,15 +58,26 @@ export const Header: React.FC<HeaderProps> = ({
   const navigationId = useId();
 
   useEffect(() => {
-    if (!pageHeader) return;
-    const updateScrolled = () => setScrolled(window.scrollY > 8);
+    const updateScrolled = () => {
+      const scrollParent = headerRef.current?.closest('.overflow-y-auto') as HTMLElement | null;
+      if (scrollParent) {
+        setScrolled(scrollParent.scrollTop > 8);
+      } else {
+        setScrolled(window.scrollY > 8);
+      }
+    };
     updateScrolled();
     window.addEventListener('scroll', updateScrolled, { passive: true });
-    return () => window.removeEventListener('scroll', updateScrolled);
+    const scrollParent = headerRef.current?.closest('.overflow-y-auto');
+    scrollParent?.addEventListener('scroll', updateScrolled, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', updateScrolled);
+      scrollParent?.removeEventListener('scroll', updateScrolled);
+    };
   }, [pageHeader]);
 
   useEffect(() => {
-    if (!pageHeader || !headerRef.current) return;
+    if (!headerRef.current) return;
     const element = headerRef.current;
     const updateHeight = () => {
       document.documentElement.style.setProperty('--storefront-header-height', `${element.getBoundingClientRect().height}px`);
@@ -81,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
       window.removeEventListener('resize', updateHeight);
       window.removeEventListener('orientationchange', updateHeight);
     };
-  }, [pageHeader]);
+  }, []);
 
   const handleCategoryClick = (catId: string) => {
     setShopMenuOpen(false);
@@ -93,7 +104,7 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header 
       ref={headerRef}
-      className={reference ? `reference-header ${referenceOverlay ? 'reference-header-overlay' : ''} ${scrolled ? 'reference-header-scrolled' : ''}` : 'site-header sticky top-0 z-[65] bg-white border-b border-slate-200/40 text-slate-900 py-4'}
+      className={reference ? `reference-header ${referenceOverlay ? 'reference-header-overlay' : ''} ${scrolled ? 'reference-header-scrolled' : ''}` : `site-header sticky top-0 z-[65] bg-white transition-all duration-200 border-b ${scrolled ? 'border-slate-200 shadow-xs' : 'border-slate-200/40'} text-slate-900 py-4`}
       style={reference ? { backgroundColor: scrolled ? '#ffffff' : reference.background } : undefined}
       onKeyDown={event => {
         if (event.key !== 'Escape') return;
@@ -234,7 +245,10 @@ export const Header: React.FC<HeaderProps> = ({
               <Heart size={13} className="text-[#EC3460] group-hover:scale-110 transition-transform" />
               <span>Wishlist</span>
               {wishlistCount > 0 && (
-                <span className="absolute -top-1.5 -right-2.5 w-4 h-4 bg-[#EC3460] text-white rounded-full text-[9px] font-bold flex items-center justify-center shadow-xs animate-pop">
+                <span 
+                  key={wishlistCount}
+                  className="absolute -top-1.5 -right-2.5 min-w-4 h-4 px-1 bg-[#EC3460] text-white rounded-full text-[9px] font-bold flex items-center justify-center shadow-xs animate-pop"
+                >
                   {wishlistCount}
                 </span>
               )}
@@ -297,6 +311,29 @@ export const Header: React.FC<HeaderProps> = ({
               <User size={18} strokeWidth={2} />
               {profileIncomplete && (
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EC3460] rounded-full border border-white animate-pulse" />
+              )}
+            </button>
+
+            {/* Wishlist Icon Button with Real-Time Counter Badge */}
+            <button
+              onClick={() => onOpenAccount('favorites')}
+              aria-label={`Wishlist, ${wishlistCount} saved ${wishlistCount === 1 ? 'item' : 'items'}`}
+              className="relative p-1.5 sm:p-2 text-slate-700 hover:text-[#EC3460] hover:bg-[#FFF0F9] rounded-full transition-colors cursor-pointer group"
+              title="View Wishlist"
+            >
+              <Heart 
+                size={18} 
+                strokeWidth={2} 
+                className={`transition-all duration-200 ${wishlistCount > 0 ? 'text-[#EC3460]' : 'text-slate-700 group-hover:text-[#EC3460]'}`}
+                fill={wishlistCount > 0 ? '#EC3460' : 'none'}
+              />
+              {wishlistCount > 0 && (
+                <span 
+                  key={wishlistCount}
+                  className="absolute -top-0.5 -right-0.5 min-w-4 h-4 px-1 bg-[#EC3460] text-white rounded-full text-[10px] font-bold flex items-center justify-center shadow-xs animate-pop"
+                >
+                  {wishlistCount}
+                </span>
               )}
             </button>
 

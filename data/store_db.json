@@ -1,0 +1,1595 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Medicube PDRN Pink Peptide Serum",
+      "subtitle": "Rose PDRN Salmon DNA Ampoule",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Pink_Rose_Serum_Splash_Advertisement.png?v=1791440553",
+      "bg": "#EFA6B7",
+      "panel": "#FDF0F3",
+      "themeColor": "#EC3460",
+      "darkTone": false,
+      "price": "$39.99",
+      "numericPrice": 39.99,
+      "originalPrice": "$59.00",
+      "compareAtPrice": "$59.00",
+      "volume": "30 ml / 1.01 fl. oz.",
+      "category": "Serums",
+      "rating": 4.85,
+      "reviewsCount": 180,
+      "badge": "Bestseller",
+      "clinicalClaim": "+192% Collagen Synthesis & Instant Plump",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This advanced facial serum is a breakthrough in skincare designed to rejuvenate and repair your skin at the deepest level. Enriched with the exceptional properties of Salmon DNA and PDRN (Polydeoxyribonucleotide), it works at a cellular level to promote skin regeneration, helping to restore your skin’s youthful vitality. Its lightweight, smooth liquid texture absorbs effortlessly into the skin, making it suitable for daily use and compatibility with your favorite moisturizers or makeup. Ideal for those who want to combat early signs of aging, dullness, and loss of firmness, this serum is perfect for busy individuals who desire visible results without exposing their skin to harsh chemicals. If your goal is a smoother, more lifted, and resilient complexion that radiates health, this formula addresses multiple concerns—such as fine lines, sagging, uneven texture, and dehydration—all in one nourishing treatment. Key features include a powerful blend of reparative ingredients that boost skin’s elasticity and hydration while promoting cell repair. Its nourishing components stimulate the skin’s natural processes, leading to a softer, plumper, and more radiant appearance. The serum is gentle enough for sensitive skin and free from high-concern chemicals, making it a safe choice for those with sensitivities. Embrace the emotional benefit of seeing your skin transform—feeling confident with a luminous, youthful glow that enhances your natural beauty. With consistent use, you can expect a visibly firmer, more resilient complexion that ages gracefully, restoring your self-esteem and empowering you to face each day with a fresh, radiant look. What sets this serum apart is its innovative use of PDRN derived from salmon DNA, a hallmark of premium Korean skincare that is renowned for its ability to repair and renew skin at a cellular level. Paired with peptides and other nourishing ingredients, it offers a luxurious, scientifically advanced treatment that delivers faster, safer, and more noticeable results compared to traditional options. Experience the power of Korean skincare excellence and transform your skin into a radiant, youthful masterpiece.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 01 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This advanced facial serum is a breakthrough in skincare designed to rejuvenate and repair your skin at the deepest level. Enriched with the exceptional properties of Salmon DNA and PDRN (Polydeoxyribonucleotide), it works at a cellular level to promote skin regeneration, helping to restore your skin’s youthful vitality. Its lightweight, smooth liquid texture absorbs effortlessly into the skin, making it suitable for daily use and compatibility with your favorite moisturizers or makeup. Ideal for those who want to combat early signs of aging, dullness, and loss of firmness, this serum is perfect for busy individuals who desire visible results without exposing their skin to harsh chemicals. If your goal is a smoother, more lifted, and resilient complexion that radiates health, this formula addresses multiple concerns—such as fine lines, sagging, uneven texture, and dehydration—all in one nourishing treatment. Key features include a powerful blend of reparative ingredients that boost skin’s elasticity and hydration while promoting cell repair. Its nourishing components stimulate the skin’s natural processes, leading to a softer, plumper, and more radiant appearance. The serum is gentle enough for sensitive skin and free from high-concern chemicals, making it a safe choice for those with sensitivities. Embrace the emotional benefit of seeing your skin transform—feeling confident with a luminous, youthful glow that enhances your natural beauty. With consistent use, you can expect a visibly firmer, more resilient complexion that ages gracefully, restoring your self-esteem and empowering you to face each day with a fresh, radiant look. What sets this serum apart is its innovative use of PDRN derived from salmon DNA, a hallmark of premium Korean skincare that is renowned for its ability to repair and renew skin at a cellular level. Paired with peptides and other nourishing ingredients, it offers a luxurious, scientifically advanced treatment that delivers faster, safer, and more noticeable results compared to traditional options. Experience the power of Korean skincare excellence and transform your skin into a radiant, youthful masterpiece.",
+      "stockStatus": "In Stock",
+      "sku": "LF-SER-101",
+      "stockQuantity": 30,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10679311106188",
+      "handle": "revitalizing-salmon-dna-lifting-serum",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62149124227212",
+          "title": "Pink Peptide Serum",
+          "price": "$39.99",
+          "numericPrice": 39.99,
+          "compareAtPrice": "$59.00",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "NET WT",
+              "value": "Pink Peptide Serum"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62149124227212",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Pink_Rose_Serum_Splash_Advertisement.png?v=1791440553",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Sdf54a867346842a590cac011bbd31ce3G.webp?v=1791131757",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Sf4a14a6e16e94b079ed17c1b5d756c4fi.webp?v=1791131756",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/IMG-5646.jpg?v=1791133968",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/IMG-5647.jpg?v=1791133968",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/S58b255c116094244a3a6a64c9fe2329bQ.webp?v=1791131757",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/S8033233d8b0746809dc8eadafee0f984A.webp?v=1791131756",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Sc11b7b797e384d44a4bb97b556d73a34V.webp?v=1791131756",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/IMG-5645.jpg?v=1791133968"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Medicube EGF Nad Firming Serum",
+      "subtitle": "EGF & NAD+ Cellular Tightening Serum",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Crimson_Fruit_Serum_Splash.png?v=1791439980",
+      "bg": "#5E101D",
+      "panel": "#3F0811",
+      "themeColor": "#EC3460",
+      "darkTone": true,
+      "price": "$39.99",
+      "numericPrice": 39.99,
+      "originalPrice": "$53.99",
+      "compareAtPrice": "$53.99",
+      "volume": "30 ml / 1.01 fl. oz.",
+      "category": "Serums",
+      "rating": 4.86,
+      "reviewsCount": 215,
+      "badge": "Staff Pick",
+      "clinicalClaim": "+84% Elasticity & Micro-Contour Firming",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This serum is a scientifically advanced skincare solution designed to revitalize and rejuvenate your skin on both the face and body. Crafted with cutting-edge ingredients such as NAD+ and EGF, it works deep within the skin’s layers to tackle the core signs of aging. NAD+ (Nicotinamide Adenine Dinucleotide) is a powerful antioxidant that supports cellular repair and energy production, helping your skin restore its youthful vibrancy. Meanwhile, EGF (Epidermal Growth Factor) stimulates your skin’s natural regeneration processes, promoting faster cell turnover and healthier tissue development. This multi-faceted formula is perfect for individuals who notice their skin losing firmness, developing fine lines, experiencing dullness, or feeling less elastic over time. Whether you're concerned about wrinkles around the eyes, forehead, mouth, or neck, or simply want to enhance your overall skin resilience, this serum acts as a potent support to your anti-aging routine. It’s ideal for those seeking visible improvements without heaviness or irritation, including sensitive or troubled skin types. Key features include a sophisticated Collagen Firming Complex that works synergistically with EGF peptides and NAD+ to hydrate, tighten, and restore skin elasticity. These ingredients help reduce the appearance of fine lines and wrinkles, while boosting firmness and resilience for a smoother, more youthful look. Additionally, the serum targets rough skin textures and uneven tone, revealing a brighter, healthier, and more radiant skin surface. Its lightweight, fast-absorbing texture ensures the serum penetrates quickly, delivering concentrated benefits without leaving a greasy or sticky residue. It's suitable for daily use across all skin types and is non-comedogenic and dermatologist-tested, providing peace of mind for sensitive skin. Beyond its visible benefits, this serum can boost your confidence by helping you look and feel more vibrant, youthful, and radiant. As your skin becomes increasingly firm, plump, and luminous, you’ll experience a renewed sense of assurance in your natural beauty. It empowers you to take control of aging naturally and effectively, making skincare an inspiring act of self-care. What sets this formula apart from other anti-aging products is its innovative blend of next-generation ingredients combined with proven, rapid results. It’s designed to deliver visible firming, plumping, and smoothing effects efficiently, so you can enjoy the benefits of youthful-looking skin without the heaviness, irritation, or long wait times associated with many other treatments. This is more than skincare — it’s a step toward feeling confident, energized, and ready to face the world with a radiant, revitalized complexion.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 02 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This serum is a scientifically advanced skincare solution designed to revitalize and rejuvenate your skin on both the face and body. Crafted with cutting-edge ingredients such as NAD+ and EGF, it works deep within the skin’s layers to tackle the core signs of aging. NAD+ (Nicotinamide Adenine Dinucleotide) is a powerful antioxidant that supports cellular repair and energy production, helping your skin restore its youthful vibrancy. Meanwhile, EGF (Epidermal Growth Factor) stimulates your skin’s natural regeneration processes, promoting faster cell turnover and healthier tissue development. This multi-faceted formula is perfect for individuals who notice their skin losing firmness, developing fine lines, experiencing dullness, or feeling less elastic over time. Whether you're concerned about wrinkles around the eyes, forehead, mouth, or neck, or simply want to enhance your overall skin resilience, this serum acts as a potent support to your anti-aging routine. It’s ideal for those seeking visible improvements without heaviness or irritation, including sensitive or troubled skin types. Key features include a sophisticated Collagen Firming Complex that works synergistically with EGF peptides and NAD+ to hydrate, tighten, and restore skin elasticity. These ingredients help reduce the appearance of fine lines and wrinkles, while boosting firmness and resilience for a smoother, more youthful look. Additionally, the serum targets rough skin textures and uneven tone, revealing a brighter, healthier, and more radiant skin surface. Its lightweight, fast-absorbing texture ensures the serum penetrates quickly, delivering concentrated benefits without leaving a greasy or sticky residue. It's suitable for daily use across all skin types and is non-comedogenic and dermatologist-tested, providing peace of mind for sensitive skin. Beyond its visible benefits, this serum can boost your confidence by helping you look and feel more vibrant, youthful, and radiant. As your skin becomes increasingly firm, plump, and luminous, you’ll experience a renewed sense of assurance in your natural beauty. It empowers you to take control of aging naturally and effectively, making skincare an inspiring act of self-care. What sets this formula apart from other anti-aging products is its innovative blend of next-generation ingredients combined with proven, rapid results. It’s designed to deliver visible firming, plumping, and smoothing effects efficiently, so you can enjoy the benefits of youthful-looking skin without the heaviness, irritation, or long wait times associated with many other treatments. This is more than skincare — it’s a step toward feeling confident, energized, and ready to face the world with a radiant, revitalized complexion.",
+      "stockStatus": "In Stock",
+      "sku": "LF-SER-102",
+      "stockQuantity": 35,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10682294960268",
+      "handle": "age-defying-firming-serum",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62177406550156",
+          "title": "Default Title",
+          "price": "$39.99",
+          "numericPrice": 39.99,
+          "compareAtPrice": "$53.99",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62177406550156",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Crimson_Fruit_Serum_Splash.png?v=1791439980",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61cVc9aspcL._SL1500.jpg?v=1791175105",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71ul2ubOAsL._SL1500.jpg?v=1791175105",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71SbhkLeQ9L._SL1500.jpg?v=1791175105",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/710tqu6cARL._SL1500.jpg?v=1791175105",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71APG5mO3AL._SL1500.jpg?v=1791175105",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/719UIAx9bjL._SL1500.jpg?v=1791175105",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71vqLOZFIML._SL1500.jpg?v=1791175105",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71BL7RFpCrL._SL1500.jpg?v=1791175105",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/810ehR54rsL._SL1500.jpg?v=1791175105"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Revitalize Eye Therapy Patches",
+      "subtitle": "Hydrogel Cooling Peptide Eye Patches",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61uiYF9sttL._SL1500.jpg?v=1791303424",
+      "bg": "#E4980E",
+      "panel": "#FCF2DC",
+      "themeColor": "#D97706",
+      "darkTone": false,
+      "price": "$34.99",
+      "numericPrice": 34.99,
+      "originalPrice": "$50.70",
+      "compareAtPrice": "$50.70",
+      "volume": "60 Patches (30 Pairs)",
+      "category": "Eye Care",
+      "rating": 4.87,
+      "reviewsCount": 250,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "These hydrogel eye patches are a powerful skincare solution designed to revitalize tired, dull, or puffy under-eye areas. Crafted with innovative hydrogel material, they comfortably conform to the delicate skin beneath your eyes, ensuring maximum contact for optimal absorption of potent ingredients. This allows the patches to work effectively while you rest, unwind, or even during those quick moments between busy tasks. Perfect for women who lead active, demanding lives and want to maintain a fresh, youthful appearance without lengthy routines, these patches are your go-to for rapid results. Whether you're dealing with early signs of aging, persistent dark circles, or morning puffiness, they deliver targeted care precisely where you need it most. The hero ingredients include PDRN, Caffeine, and Collagen. PDRN supports skin regeneration, encouraging natural repair and renewal to combat signs of fatigue and aging. Caffeine helps reduce swelling and puffiness, promoting a more alert, awake look in minutes. Collagen boosts elasticity and firmness, smoothing fine lines and sagging skin for a visibly more radiant appearance. Together, these ingredients deliver noticeable improvements—eyes that seem more vibrant, smoother, and refreshed after just 10 minutes. The soothing cooling sensation during application not only enhances comfort but also contributes to immediate relaxation, turning your skincare moment into a mini spa experience. These patches aren’t just for the under-eye area—they can also be applied to smile lines, forehead, or neck zones that need hydration and firmness, making them a versatile addition to your skincare routine. What makes these patches truly stand out is their blend of cutting-edge hydrogel technology with high-performance ingredients, giving you faster, more visible results than many traditional remedies. In a busy world where time is precious, they provide an effortless way to restore and protect your skin’s youthful glow. With consistent use, you can expect smoother skin, reduced puffiness, deeper hydration, and a brighter overall complexion. They empower you to face each day feeling confident, energized, and ready to take on whatever comes your way—all with a simple, effective skincare step that fits seamlessly into your busy lifestyle.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 03 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "These hydrogel eye patches are a powerful skincare solution designed to revitalize tired, dull, or puffy under-eye areas. Crafted with innovative hydrogel material, they comfortably conform to the delicate skin beneath your eyes, ensuring maximum contact for optimal absorption of potent ingredients. This allows the patches to work effectively while you rest, unwind, or even during those quick moments between busy tasks. Perfect for women who lead active, demanding lives and want to maintain a fresh, youthful appearance without lengthy routines, these patches are your go-to for rapid results. Whether you're dealing with early signs of aging, persistent dark circles, or morning puffiness, they deliver targeted care precisely where you need it most. The hero ingredients include PDRN, Caffeine, and Collagen. PDRN supports skin regeneration, encouraging natural repair and renewal to combat signs of fatigue and aging. Caffeine helps reduce swelling and puffiness, promoting a more alert, awake look in minutes. Collagen boosts elasticity and firmness, smoothing fine lines and sagging skin for a visibly more radiant appearance. Together, these ingredients deliver noticeable improvements—eyes that seem more vibrant, smoother, and refreshed after just 10 minutes. The soothing cooling sensation during application not only enhances comfort but also contributes to immediate relaxation, turning your skincare moment into a mini spa experience. These patches aren’t just for the under-eye area—they can also be applied to smile lines, forehead, or neck zones that need hydration and firmness, making them a versatile addition to your skincare routine. What makes these patches truly stand out is their blend of cutting-edge hydrogel technology with high-performance ingredients, giving you faster, more visible results than many traditional remedies. In a busy world where time is precious, they provide an effortless way to restore and protect your skin’s youthful glow. With consistent use, you can expect smoother skin, reduced puffiness, deeper hydration, and a brighter overall complexion. They empower you to face each day feeling confident, energized, and ready to take on whatever comes your way—all with a simple, effective skincare step that fits seamlessly into your busy lifestyle.",
+      "stockStatus": "In Stock",
+      "sku": "LF-EYE-103",
+      "stockQuantity": 40,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691183050892",
+      "handle": "revitalize-eye-therapy-patches",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260657127564",
+          "title": "Default Title",
+          "price": "$34.99",
+          "numericPrice": 34.99,
+          "compareAtPrice": "$50.70",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260657127564",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61uiYF9sttL._SL1500.jpg?v=1791303424",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71TB_8ze3bL._SL1500.jpg?v=1791303424",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71sDU5uYnTL._SL1500.jpg?v=1791303424",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81Ku1Mnjf9L._SL1500.jpg?v=1791303424",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/713RcOHtprL._SL1500.jpg?v=1791303424",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71Ed84FCmbL._SL1500.jpg?v=1791303424",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71UmlTydHQL._SL1500.jpg?v=1791303424",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81maGP30cHL._SL1500.jpg?v=1791303424",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71zBKdQUjxL._SL1500.jpg?v=1791303424"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Refined Pore & Oil Control Pads",
+      "subtitle": "Dual-Sided Gentle Exfoliating Toner Pads",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71Mcspt-6AL._SL1500.jpg?v=1791303428",
+      "bg": "#CBD5E1",
+      "panel": "#F1F5F9",
+      "themeColor": "#475569",
+      "darkTone": false,
+      "price": "$34.99",
+      "numericPrice": 34.99,
+      "originalPrice": "$44.70",
+      "compareAtPrice": "$44.70",
+      "volume": "70 Pads / 140 ml",
+      "category": "Cleansers",
+      "rating": 4.88,
+      "reviewsCount": 285,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This innovative pore-refining treatment is designed to help you achieve smoother, healthier-looking skin by targeting the common concerns of enlarged pores, excess oil, and uneven texture. Carefully formulated with natural ingredients, these exfoliating pads work every day to transform your skincare routine into a calming, effective ritual, leaving your skin feeling refreshed and radiant. Crafted for those who desire a clearer, more balanced complexion, this treatment addresses the frustrations of greasy, congested skin and dull appearance. If you struggle with visible pores or oiliness that makes you self-conscious and disrupts your confidence, this solution is tailored for you. It’s perfect for anyone seeking a gentle yet effective way to refine the skin’s surface without harsh scrubs or irritating chemicals. At the heart of this formula is White Willow Bark, a gentle natural BHA that dissolves excess sebum and unclogs pores, helping reduce their appearance over time. Paired with Citric Acid, an AHA that gently exfoliates dead skin cells, this treatment brightens your complexion and promotes a smoother, more luminous glow. Enriched with calming botanical extracts like lavender, these pads not only improve your skin’s clarity but also create a relaxing sensory experience, turning skincare into a soothing ritual. The dual-sided design maximizes results: the embossed side polishes away buildup and excess oil without irritation, while the silky side smooths and preps your skin for better absorption of serums or moisturizers. Regular use can lead to a significant reduction in sebum production—up to 47.1%—and a dramatic decrease in pore congestion—up to 87.3%. Expect to wake up with visibly refined pores, reduced shine, and skin that feels calmer and more balanced every day. Unlike harsh scrubs or chemically aggressive treatments, this gentle yet powerful approach works harmoniously with your skin’s natural balance. It’s a smart, science-backed choice for those committed to achieving a matte, luminous complexion through a simple, nourishing routine. By improving skin clarity and decreasing oiliness, this treatment empowers you with the confidence to face each day with skin that looks and feels its best.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 04 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This innovative pore-refining treatment is designed to help you achieve smoother, healthier-looking skin by targeting the common concerns of enlarged pores, excess oil, and uneven texture. Carefully formulated with natural ingredients, these exfoliating pads work every day to transform your skincare routine into a calming, effective ritual, leaving your skin feeling refreshed and radiant. Crafted for those who desire a clearer, more balanced complexion, this treatment addresses the frustrations of greasy, congested skin and dull appearance. If you struggle with visible pores or oiliness that makes you self-conscious and disrupts your confidence, this solution is tailored for you. It’s perfect for anyone seeking a gentle yet effective way to refine the skin’s surface without harsh scrubs or irritating chemicals. At the heart of this formula is White Willow Bark, a gentle natural BHA that dissolves excess sebum and unclogs pores, helping reduce their appearance over time. Paired with Citric Acid, an AHA that gently exfoliates dead skin cells, this treatment brightens your complexion and promotes a smoother, more luminous glow. Enriched with calming botanical extracts like lavender, these pads not only improve your skin’s clarity but also create a relaxing sensory experience, turning skincare into a soothing ritual. The dual-sided design maximizes results: the embossed side polishes away buildup and excess oil without irritation, while the silky side smooths and preps your skin for better absorption of serums or moisturizers. Regular use can lead to a significant reduction in sebum production—up to 47.1%—and a dramatic decrease in pore congestion—up to 87.3%. Expect to wake up with visibly refined pores, reduced shine, and skin that feels calmer and more balanced every day. Unlike harsh scrubs or chemically aggressive treatments, this gentle yet powerful approach works harmoniously with your skin’s natural balance. It’s a smart, science-backed choice for those committed to achieving a matte, luminous complexion through a simple, nourishing routine. By improving skin clarity and decreasing oiliness, this treatment empowers you with the confidence to face each day with skin that looks and feels its best.",
+      "stockStatus": "In Stock",
+      "sku": "LF-CLE-104",
+      "stockQuantity": 45,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691183149196",
+      "handle": "refined-pore-oil-control-pads",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260657488012",
+          "title": "Default Title",
+          "price": "$34.99",
+          "numericPrice": 34.99,
+          "compareAtPrice": "$44.70",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260657488012",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71Mcspt-6AL._SL1500.jpg?v=1791303428",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71bHxR-yQ3L._SL1500.jpg?v=1791303428",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71FQw3xtADL._SL1500.jpg?v=1791303428",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71mfhcjpM5L._SL1500.jpg?v=1791303428",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/717cIqziH6L._SL1500.jpg?v=1791303428",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/717dKVSvLVL._SL1500.jpg?v=1791303428",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71DVik65DTL._SL1500.jpg?v=1791303428",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81fbJaFl9xL._SL1500.jpg?v=1791303428",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61T5B6CGd_L._SL1500.jpg?v=1791303428"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Youthful Glow Multi-Balm Stick",
+      "subtitle": "Pocket Hydration & Barrier Glow Balm",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/613iSS1QL9L._SL1500.jpg?v=1791303432",
+      "bg": "#EFA6B7",
+      "panel": "#FDF0F3",
+      "themeColor": "#EC3460",
+      "darkTone": false,
+      "price": "$29.99",
+      "numericPrice": 29.99,
+      "originalPrice": "$45.00",
+      "compareAtPrice": "$45.00",
+      "volume": "9g / 0.31 oz.",
+      "category": "Moisturizers",
+      "rating": 4.89,
+      "reviewsCount": 320,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This multi-purpose balm stick is a powerful skincare solution designed to rejuvenate and enhance your face and body with minimal effort. Crafted in a convenient, hygienic stick format, it offers targeted application that easily fits into your busy lifestyle. Whether you're dealing with hollow cheeks, fine lines, dark circles, dullness, or loss of firmness, this all-in-one balm works to restore a more youthful, radiant appearance. Ideal for women juggling careers, family, and self-care, this product addresses common signs of aging and skin fatigue. It aims to boost confidence by delivering quick, visible improvements, helping you look refreshed and vibrant throughout the day. No more complicated routines or multiple products—just one effective solution to achieve that glow. At the heart of this balm is a blend of advanced ingredients. Volufiline visibly increases fullness in hollow areas like under the eyes and cheeks, resulting in a plumper, more youthful look. Enriched with PDRN—a regenerative ingredient—plus Collagen, NAD, Peptides, and Retinol, it deeply supports skin elasticity, hydration, and resilience, promoting a firm and smooth surface. The inclusion of caffeine and vitamin E works against dark circles, puffiness, and uneven skin tone, leaving your complexion brighter and more balanced. The balm’s rich, melting texture glides effortlessly onto the skin, delivering a comfortable, non-sticky feel that doesn’t interfere with your daily activities. Its stick format makes precise, mess-free application simple—perfect for quick touch-ups throughout the day, whether at home, at work, or on the go. Free from artificial colors and fragrances, it’s gentle enough to use around sensitive areas like the under-eye and lips, making it suitable for all skin types, including sensitive skin. Imagine starting each day with skin that feels as good as it looks—more radiant, plump, and resilient. This balm empowers you to maintain a natural, youthful glow effortlessly, boosting your confidence and helping you face every day with renewed vibrancy. It’s not just skincare; it’s a daily boost of self-esteem wrapped up in an easy, effective stick.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 05 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This multi-purpose balm stick is a powerful skincare solution designed to rejuvenate and enhance your face and body with minimal effort. Crafted in a convenient, hygienic stick format, it offers targeted application that easily fits into your busy lifestyle. Whether you're dealing with hollow cheeks, fine lines, dark circles, dullness, or loss of firmness, this all-in-one balm works to restore a more youthful, radiant appearance. Ideal for women juggling careers, family, and self-care, this product addresses common signs of aging and skin fatigue. It aims to boost confidence by delivering quick, visible improvements, helping you look refreshed and vibrant throughout the day. No more complicated routines or multiple products—just one effective solution to achieve that glow. At the heart of this balm is a blend of advanced ingredients. Volufiline visibly increases fullness in hollow areas like under the eyes and cheeks, resulting in a plumper, more youthful look. Enriched with PDRN—a regenerative ingredient—plus Collagen, NAD, Peptides, and Retinol, it deeply supports skin elasticity, hydration, and resilience, promoting a firm and smooth surface. The inclusion of caffeine and vitamin E works against dark circles, puffiness, and uneven skin tone, leaving your complexion brighter and more balanced. The balm’s rich, melting texture glides effortlessly onto the skin, delivering a comfortable, non-sticky feel that doesn’t interfere with your daily activities. Its stick format makes precise, mess-free application simple—perfect for quick touch-ups throughout the day, whether at home, at work, or on the go. Free from artificial colors and fragrances, it’s gentle enough to use around sensitive areas like the under-eye and lips, making it suitable for all skin types, including sensitive skin. Imagine starting each day with skin that feels as good as it looks—more radiant, plump, and resilient. This balm empowers you to maintain a natural, youthful glow effortlessly, boosting your confidence and helping you face every day with renewed vibrancy. It’s not just skincare; it’s a daily boost of self-esteem wrapped up in an easy, effective stick.",
+      "stockStatus": "In Stock",
+      "sku": "LF-MOI-105",
+      "stockQuantity": 50,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691183181964",
+      "handle": "youthful-glow-multi-balm-stick",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260657553548",
+          "title": "Default Title",
+          "price": "$29.99",
+          "numericPrice": 29.99,
+          "compareAtPrice": "$45.00",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260657553548",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/613iSS1QL9L._SL1500.jpg?v=1791303432",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71k3yJgTJXL._SL1500.jpg?v=1791303432",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71nURDQsFDL._SL1500.jpg?v=1791303431",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71f1w1hsbvL._SL1500.jpg?v=1791303432",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81ytL1CRXdL._SL1500.jpg?v=1791303432",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/711cFSczGlL._SL1500.jpg?v=1791303432",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71S7clKP7nL._SL1500.jpg?v=1791303432",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/811k4lMk_oL._SL1500.jpg?v=1791303432"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Radiance & Resilience Collagen Cream",
+      "subtitle": "Firming Low-Molecular Collagen Cushion Cream",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61qcv-tUtDL._SL1500.jpg?v=1791303436",
+      "bg": "#5E101D",
+      "panel": "#3F0811",
+      "themeColor": "#EC3460",
+      "darkTone": true,
+      "price": "$34.99",
+      "numericPrice": 34.99,
+      "originalPrice": "$47.52",
+      "compareAtPrice": "$47.52",
+      "volume": "50 ml / 1.69 fl. oz.",
+      "category": "Moisturizers",
+      "rating": 4.9,
+      "reviewsCount": 355,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This luxurious cream is specially crafted to dramatically improve your skin’s appearance, leaving it deeply hydrated, firmer, and more resilient. Its unique formulation works by infusing your skin with a potent blend of science-backed actives, including collagen, niacinamide, and carefully chosen nourishing oils. These ingredients work together to restore your skin’s youthful vitality, strengthening its natural barrier and visibly reducing the signs of aging. Designed for women who want to maintain a vibrant, youthful glow, this product tackles common skin concerns like loss of elasticity, dullness, uneven tone, enlarged pores, and dark spots. Whether you're seeking to slow down the visible effects of aging or simply want smoother, more radiant skin, this cream is your perfect daily ally. It’s especially ideal for mature or sensitive skin types looking for a gentle yet effective solution. One of its standout features is the powerful combination of up to 16 patented ingredients, which ensure rapid and noticeable results—sometimes within just two weeks. Watch as your skin becomes visibly plumper, more elastic, and beautifully refined. This lightweight formula provides intense hydration that lasts all day without feeling greasy or heavy, making it suitable for even the most sensitive skin. Enjoy peace of mind knowing it’s dermatologically tested and free from 15 harmful ingredients, emphasizing both safety and effectiveness. It acts as a shield against environmental stressors while delivering essential nutrients to keep your skin resilient and healthy. Regular use of this cream empowers you with increased confidence, helping you wake up to skin that looks and feels more youthful, vibrant, and radiant each morning. Its scientifically advanced, natural oils, and patented ingredients elevate your self-care routine to a luxurious, results-driven experience. Plus, its versatility allows you to blend it with other products for a personalized skincare regime that fits your unique needs. This is more than just a moisturizer — it’s a transformative skincare solution that delivers rapid, visible results, restores your skin’s natural beauty, and boosts your confidence at any age.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 01 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This luxurious cream is specially crafted to dramatically improve your skin’s appearance, leaving it deeply hydrated, firmer, and more resilient. Its unique formulation works by infusing your skin with a potent blend of science-backed actives, including collagen, niacinamide, and carefully chosen nourishing oils. These ingredients work together to restore your skin’s youthful vitality, strengthening its natural barrier and visibly reducing the signs of aging. Designed for women who want to maintain a vibrant, youthful glow, this product tackles common skin concerns like loss of elasticity, dullness, uneven tone, enlarged pores, and dark spots. Whether you're seeking to slow down the visible effects of aging or simply want smoother, more radiant skin, this cream is your perfect daily ally. It’s especially ideal for mature or sensitive skin types looking for a gentle yet effective solution. One of its standout features is the powerful combination of up to 16 patented ingredients, which ensure rapid and noticeable results—sometimes within just two weeks. Watch as your skin becomes visibly plumper, more elastic, and beautifully refined. This lightweight formula provides intense hydration that lasts all day without feeling greasy or heavy, making it suitable for even the most sensitive skin. Enjoy peace of mind knowing it’s dermatologically tested and free from 15 harmful ingredients, emphasizing both safety and effectiveness. It acts as a shield against environmental stressors while delivering essential nutrients to keep your skin resilient and healthy. Regular use of this cream empowers you with increased confidence, helping you wake up to skin that looks and feels more youthful, vibrant, and radiant each morning. Its scientifically advanced, natural oils, and patented ingredients elevate your self-care routine to a luxurious, results-driven experience. Plus, its versatility allows you to blend it with other products for a personalized skincare regime that fits your unique needs. This is more than just a moisturizer — it’s a transformative skincare solution that delivers rapid, visible results, restores your skin’s natural beauty, and boosts your confidence at any age.",
+      "stockStatus": "In Stock",
+      "sku": "LF-MOI-106",
+      "stockQuantity": 55,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691183247500",
+      "handle": "radiance-resilience-collagen-cream",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260659617932",
+          "title": "Default Title",
+          "price": "$34.99",
+          "numericPrice": 34.99,
+          "compareAtPrice": "$47.52",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260659617932",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61qcv-tUtDL._SL1500.jpg?v=1791303436",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71jQzTsRJvL._SL1500.jpg?v=1791303435",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71ou2jmH3lL._SL1500.jpg?v=1791303436",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71EmME5GGJL._SL1500.jpg?v=1791303436",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/711zCF4YWBL._SL1500.jpg?v=1791303436",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71a92GjktcL._SL1500.jpg?v=1791303436",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/811i-wMYjAL._SL1500.jpg?v=1791303436",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61kKhNWZ28L._SL1500.jpg?v=1791303436"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Radiance Boost Capsules",
+      "subtitle": "Micro-Encapsulated Bio-Active Night Concentrate",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71m8aGBgXqL._SL1500.jpg?v=1791303439",
+      "bg": "#E4980E",
+      "panel": "#FCF2DC",
+      "themeColor": "#D97706",
+      "darkTone": false,
+      "price": "$39.99",
+      "numericPrice": 39.99,
+      "originalPrice": "$59.00",
+      "compareAtPrice": "$59.00",
+      "volume": "30 Capsules",
+      "category": "Serums",
+      "rating": 4.91,
+      "reviewsCount": 390,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This innovative skincare solution is expertly designed to deliver a luminous, youthful glow that transforms dull, lackluster skin into a radiant canvas. Each capsule contains a concentrated blend of powerful ingredients that work deeply within your skin’s layers, targeting uneven tone, fine lines, and early signs of aging. When you use it daily, you’re giving your skin the nourishment and protection needed to reveal its natural brilliance and youthful vitality. Ideal for busy women who want quick, effective results without complicated routines, this product addresses the common desire for brighter, more vibrant skin—whether battling fatigue, environmental stressors, or early aging signs. It’s perfect for those who seek a safe, gentle, yet highly effective solution that fits seamlessly into their busy lives. What sets this apart is its innovative stabilized liposome capsule technology, which safely locks in the potency of potent ingredients—freshness and effectiveness until each use. Rich in antioxidants, the standouts include 50% Sea Buckthorn Extract, known for rejuvenating and protecting skin from environmental damage; 5% Niacinamide, celebrated for evening out skin tone and fading dark spots; and pure vitamin C, a proven star for boosting radiance and collagen synthesis. This customizable capsule system allows you to control the ratio of ingredients, ensuring a soothing, easily absorbed application tailored to your unique skin needs. Beyond its immediate brightening effect—delivering noticeable radiance within minutes—this treatment supports long-term improvements, with skin radiance increasing by nearly 35% within hours, and ongoing refinement over time. It’s dermatologist-tested for safety and gentle enough for sensitive skin, boasting a zero irritation index. Plus, it’s free from artificial colors and housed in eco-friendly packaging, reflecting a commitment to both your skin and the planet. Imagine waking up each day with skin that feels more luminous, refreshed, and healthy—confidence effortlessly radiating from your glow. This isn’t just a skincare product; it’s a daily ritual of renewal that reveals your most radiant, beautiful self—bright, confident, and ready to face the day.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 02 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This innovative skincare solution is expertly designed to deliver a luminous, youthful glow that transforms dull, lackluster skin into a radiant canvas. Each capsule contains a concentrated blend of powerful ingredients that work deeply within your skin’s layers, targeting uneven tone, fine lines, and early signs of aging. When you use it daily, you’re giving your skin the nourishment and protection needed to reveal its natural brilliance and youthful vitality. Ideal for busy women who want quick, effective results without complicated routines, this product addresses the common desire for brighter, more vibrant skin—whether battling fatigue, environmental stressors, or early aging signs. It’s perfect for those who seek a safe, gentle, yet highly effective solution that fits seamlessly into their busy lives. What sets this apart is its innovative stabilized liposome capsule technology, which safely locks in the potency of potent ingredients—freshness and effectiveness until each use. Rich in antioxidants, the standouts include 50% Sea Buckthorn Extract, known for rejuvenating and protecting skin from environmental damage; 5% Niacinamide, celebrated for evening out skin tone and fading dark spots; and pure vitamin C, a proven star for boosting radiance and collagen synthesis. This customizable capsule system allows you to control the ratio of ingredients, ensuring a soothing, easily absorbed application tailored to your unique skin needs. Beyond its immediate brightening effect—delivering noticeable radiance within minutes—this treatment supports long-term improvements, with skin radiance increasing by nearly 35% within hours, and ongoing refinement over time. It’s dermatologist-tested for safety and gentle enough for sensitive skin, boasting a zero irritation index. Plus, it’s free from artificial colors and housed in eco-friendly packaging, reflecting a commitment to both your skin and the planet. Imagine waking up each day with skin that feels more luminous, refreshed, and healthy—confidence effortlessly radiating from your glow. This isn’t just a skincare product; it’s a daily ritual of renewal that reveals your most radiant, beautiful self—bright, confident, and ready to face the day.",
+      "stockStatus": "In Stock",
+      "sku": "LF-SER-107",
+      "stockQuantity": 60,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691183280268",
+      "handle": "radiance-boost-capsules",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260659683468",
+          "title": "Default Title",
+          "price": "$39.99",
+          "numericPrice": 39.99,
+          "compareAtPrice": "$59.00",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260659683468",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71m8aGBgXqL._SL1500.jpg?v=1791303439",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/713mB5-MXRL._SL1500.jpg?v=1791303439",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81ln-pTW01L._SL1500.jpg?v=1791303440",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71-6BgQ92BL._SL1500.jpg?v=1791303439",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71Yp78-9oNL._SL1500.jpg?v=1791303439",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71rtc0hz5xL._SL1500.jpg?v=1791303439",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71WtclKCuaL._SL1500.jpg?v=1791303439",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71fgp_J_7GL._SL1500.jpg?v=1791303440"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Revitalize Eye Treatment Patches",
+      "subtitle": "Intensive Dark Circle & Puffiness Hydrogel Mask",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61uiYF9sttL._SL1500_8ef6a56d-4829-4aef-92fd-14a7984681bf.jpg?v=1791303698",
+      "bg": "#CBD5E1",
+      "panel": "#F1F5F9",
+      "themeColor": "#475569",
+      "darkTone": false,
+      "price": "$34.99",
+      "numericPrice": 34.99,
+      "originalPrice": "$50.70",
+      "compareAtPrice": "$50.70",
+      "volume": "60 Patches (30 Pairs)",
+      "category": "Eye Care",
+      "rating": 4.92,
+      "reviewsCount": 425,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This innovative hydrogel eye patch treatment is designed toREVITALIZE and REFRESH tired, dull under-eye skin quickly and effectively. Each set contains 60 patches, meticulously formulated with powerful ingredients to deliver concentrated skin-loving nourishment directly to the delicate eye area while you rest. This convenient solution effortlessly fits into your nightly routine, working overnight to target the root causes of common concerns like puffiness, dark circles, fine lines, and loss of elasticity. Designed for busy, beauty-conscious individuals who want to wake up looking energized and youthful, this treatment addresses the visible signs of fatigue and aging. Whether caused by sleepless nights, stress, or natural aging processes, these patches help diminish puffiness and under-eye bags, smooth fine lines, and restore a vibrant glow, leaving you feeling more confident and radiant every morning. Key features include premium moisturizing and firming agents like collagen and PDRN, which support skin elasticity and promote a smoother, more resilient appearance. The caffeine-infused formula stimulates circulation, visibly reducing swelling and dark circles, giving you an alert, bright-eyed look. The advanced hydrogel technology ensures the patches adhere comfortably to the contours of your face, preventing slippage during sleep and maximizing ingredient absorption. In just 10 minutes, you can enjoy noticeable improvements that make your skin feel plumper, firmer, and more nourished. These patches don’t just address aging—they deliver emotional benefits by helping you feel more confident and energized. The visible results—brighter, smoother, more youthful eyes—can significantly boost your self-esteem and overall appearance. Over time, you’ll see your skin become more resilient and vibrant, radiating health and vitality. What sets this treatment apart from alternatives is its combination of cutting-edge hydrogel technology and targeted ingredients designed for quick, visible results. Unlike many eye creams that require lengthy, ongoing use with minimal impact, these patches provide an immediate boost that fits seamlessly into a demanding lifestyle. Plus, their versatility allows you to use them on other areas like smile lines, forehead, or neck, giving you multiple options to enhance your skin’s appearance. Add these revitalizing patches to your routine and enjoy waking up with eyes that look rested, youthful, and glowing—ready to face the day with renewed confidence and natural beauty.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 03 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This innovative hydrogel eye patch treatment is designed toREVITALIZE and REFRESH tired, dull under-eye skin quickly and effectively. Each set contains 60 patches, meticulously formulated with powerful ingredients to deliver concentrated skin-loving nourishment directly to the delicate eye area while you rest. This convenient solution effortlessly fits into your nightly routine, working overnight to target the root causes of common concerns like puffiness, dark circles, fine lines, and loss of elasticity. Designed for busy, beauty-conscious individuals who want to wake up looking energized and youthful, this treatment addresses the visible signs of fatigue and aging. Whether caused by sleepless nights, stress, or natural aging processes, these patches help diminish puffiness and under-eye bags, smooth fine lines, and restore a vibrant glow, leaving you feeling more confident and radiant every morning. Key features include premium moisturizing and firming agents like collagen and PDRN, which support skin elasticity and promote a smoother, more resilient appearance. The caffeine-infused formula stimulates circulation, visibly reducing swelling and dark circles, giving you an alert, bright-eyed look. The advanced hydrogel technology ensures the patches adhere comfortably to the contours of your face, preventing slippage during sleep and maximizing ingredient absorption. In just 10 minutes, you can enjoy noticeable improvements that make your skin feel plumper, firmer, and more nourished. These patches don’t just address aging—they deliver emotional benefits by helping you feel more confident and energized. The visible results—brighter, smoother, more youthful eyes—can significantly boost your self-esteem and overall appearance. Over time, you’ll see your skin become more resilient and vibrant, radiating health and vitality. What sets this treatment apart from alternatives is its combination of cutting-edge hydrogel technology and targeted ingredients designed for quick, visible results. Unlike many eye creams that require lengthy, ongoing use with minimal impact, these patches provide an immediate boost that fits seamlessly into a demanding lifestyle. Plus, their versatility allows you to use them on other areas like smile lines, forehead, or neck, giving you multiple options to enhance your skin’s appearance. Add these revitalizing patches to your routine and enjoy waking up with eyes that look rested, youthful, and glowing—ready to face the day with renewed confidence and natural beauty.",
+      "stockStatus": "In Stock",
+      "sku": "LF-EYE-108",
+      "stockQuantity": 65,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691188588684",
+      "handle": "revitalize-eye-treatment-patches",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260717158540",
+          "title": "Default Title",
+          "price": "$34.99",
+          "numericPrice": 34.99,
+          "compareAtPrice": "$50.70",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260717158540",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61uiYF9sttL._SL1500_8ef6a56d-4829-4aef-92fd-14a7984681bf.jpg?v=1791303698",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71TB_8ze3bL._SL1500_3930b5d4-b654-4a13-9e39-7d8b03c80d71.jpg?v=1791303698",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71sDU5uYnTL._SL1500_cb1a00b9-0b69-467a-b1f5-75c3a6c6fc81.jpg?v=1791303698",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81Ku1Mnjf9L._SL1500_72996819-5f48-4f0f-91e4-cb5c6c7f7f3a.jpg?v=1791303698",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/713RcOHtprL._SL1500_b405f9f8-e544-407f-b1cb-69f749410200.jpg?v=1791303698",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71Ed84FCmbL._SL1500_6c76bb4e-3c9b-4df9-b7c8-647b5f3e940d.jpg?v=1791303698",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71UmlTydHQL._SL1500_3afd72ab-3419-4c31-9ff7-d57eaceb25b2.jpg?v=1791303698",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81maGP30cHL._SL1500_28021df6-49ad-4e2a-a71f-f1dfe4050f77.jpg?v=1791303698",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71zBKdQUjxL._SL1500_e39c7132-4c3a-448b-a6d8-f34369f10203.jpg?v=1791303698"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Radiance & Pore Refinement Pads",
+      "subtitle": "AHA/BHA Daily Glow Renewal Pads",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71Mcspt-6AL._SL1500_d7bf710b-fdc9-4151-8688-8f37b91fc196.jpg?v=1791303702",
+      "bg": "#EFA6B7",
+      "panel": "#FDF0F3",
+      "themeColor": "#EC3460",
+      "darkTone": false,
+      "price": "$34.99",
+      "numericPrice": 34.99,
+      "originalPrice": "$44.70",
+      "compareAtPrice": "$44.70",
+      "volume": "70 Pads / 140 ml",
+      "category": "Cleansers",
+      "rating": 4.93,
+      "reviewsCount": 460,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This innovative skin treatment is designed to deliver deep cleansing, gentle exfoliation, and pore refinement in one easy-to-use pad. Crafted with the purest natural ingredients, it harnesses the potent power of White Willow Bark—nature’s own BHA—known for its ability to penetrate pores and dissolve excess oil and dead skin cells without irritation. Complemented by Citric Acid (AHA), this formula gently resurfaces skin, revealing a brighter, smoother, and more even complexion with each use. Ideal for those who struggle with enlarged pores, persistent oiliness, and uneven skin texture, this treatment is a game-changer for anyone seeking a clear, matte, and flawless look. It perfectly fits into a busy lifestyle, providing quick, effective results that keep skin looking fresh and radiant without harshness or downtime. Each pad offers a dual-action experience: the embossed side efficiently exfoliates by removing impurities and excess oil, while the silky side leaves your skin feeling ultra-smooth and prepared for the next step in your skincare routine. Infused with calming botanical extracts and aromatic lavender, every application becomes a soothing ritual, transforming skincare from a chore into a moment of relaxation and self-care. The benefits extend beyond just cleansing—this treatment significantly reduces pore waste by up to 87.3% and sebum/oil production by 47.1%, boosting your confidence with visibly clearer, healthier skin that radiates calm and vitality. Because it combines scientific efficacy with natural soothing ingredients, it outperforms conventional toners and exfoliants—delivering quicker, reliable results that help you achieve your skincare goals faster. Experience smoother, clearer, more balanced skin that feels as good as it looks—confident, refreshed, and ready to take on any day with a youthful glow.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 04 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This innovative skin treatment is designed to deliver deep cleansing, gentle exfoliation, and pore refinement in one easy-to-use pad. Crafted with the purest natural ingredients, it harnesses the potent power of White Willow Bark—nature’s own BHA—known for its ability to penetrate pores and dissolve excess oil and dead skin cells without irritation. Complemented by Citric Acid (AHA), this formula gently resurfaces skin, revealing a brighter, smoother, and more even complexion with each use. Ideal for those who struggle with enlarged pores, persistent oiliness, and uneven skin texture, this treatment is a game-changer for anyone seeking a clear, matte, and flawless look. It perfectly fits into a busy lifestyle, providing quick, effective results that keep skin looking fresh and radiant without harshness or downtime. Each pad offers a dual-action experience: the embossed side efficiently exfoliates by removing impurities and excess oil, while the silky side leaves your skin feeling ultra-smooth and prepared for the next step in your skincare routine. Infused with calming botanical extracts and aromatic lavender, every application becomes a soothing ritual, transforming skincare from a chore into a moment of relaxation and self-care. The benefits extend beyond just cleansing—this treatment significantly reduces pore waste by up to 87.3% and sebum/oil production by 47.1%, boosting your confidence with visibly clearer, healthier skin that radiates calm and vitality. Because it combines scientific efficacy with natural soothing ingredients, it outperforms conventional toners and exfoliants—delivering quicker, reliable results that help you achieve your skincare goals faster. Experience smoother, clearer, more balanced skin that feels as good as it looks—confident, refreshed, and ready to take on any day with a youthful glow.",
+      "stockStatus": "In Stock",
+      "sku": "LF-CLE-109",
+      "stockQuantity": 70,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691188621452",
+      "handle": "radiance-pore-refinement-pads",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260717224076",
+          "title": "Default Title",
+          "price": "$34.99",
+          "numericPrice": 34.99,
+          "compareAtPrice": "$44.70",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260717224076",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71Mcspt-6AL._SL1500_d7bf710b-fdc9-4151-8688-8f37b91fc196.jpg?v=1791303702",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71bHxR-yQ3L._SL1500_288a7d70-6fe3-4c32-8b13-9f13cef2f8ef.jpg?v=1791303702",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71FQw3xtADL._SL1500_a72976fe-0afa-486e-9f1f-04380853b2fb.jpg?v=1791303702",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71mfhcjpM5L._SL1500_660f06dc-503a-40c0-8241-64549f1cd563.jpg?v=1791303702",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/717cIqziH6L._SL1500_06b67bfc-212d-49f7-bd26-6f0e33018976.jpg?v=1791303702",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/717dKVSvLVL._SL1500_20258aba-4209-451e-a472-cab8e92b8ea4.jpg?v=1791303702",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71DVik65DTL._SL1500_0d8f3882-128c-4067-a631-e617c3659871.jpg?v=1791303702",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81fbJaFl9xL._SL1500_031d9b7e-bac0-4d61-b49a-75bb7ea46c32.jpg?v=1791303702",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61T5B6CGd_L._SL1500_0edc6f5b-0bd3-4251-8809-a570a61490eb.jpg?v=1791303702"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Youthful Glow Rejuvenation Balm",
+      "subtitle": "Wrinkle Bounce Moisture Core Balm",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/613iSS1QL9L._SL1500_e7e047ab-6c6a-421c-9650-8fc034b743e4.jpg?v=1791303706",
+      "bg": "#5E101D",
+      "panel": "#3F0811",
+      "themeColor": "#EC3460",
+      "darkTone": true,
+      "price": "$29.99",
+      "numericPrice": 29.99,
+      "originalPrice": "$44.99",
+      "compareAtPrice": "$44.99",
+      "volume": "9g / 0.31 oz.",
+      "category": "Moisturizers",
+      "rating": 4.94,
+      "reviewsCount": 495,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This innovative multi-purpose balm is designed to deliver instant and long-lasting facial and body rejuvenation. Its rich, advanced formula works by deeply nourishing your skin, helping restore lost volume and promote a youthful glow. Whether targeting fine lines, hollow cheeks, or tired, dull skin, this balm provides a quick, effective solution for achieving a smoother, plumper, and more radiant appearance. Ideal for busy women who want to look their best at any moment, it addresses common skin concerns such as loss of firmness, uneven tone, and dullness—delivering noticeable improvements with minimal effort. You’ll love how it seamlessly fits into your busy routine, offering a versatile, all-in-one treatment you can apply anytime, anywhere. Key features include powerful ingredients like PDRN, Collagen, NAD complex, Peptides, and Retinol, which work synergistically to boost skin elasticity, promote firmness, and replenish hydration. The inclusion of Volufiline targets hollow zones, making areas like cheeks and hollows appear fuller and more youthful, restoring volume and dimension. Caffeine and vitamin E work to reduce dark circles, puffiness, and uneven skin tone, while diminishing fine lines for a smoother, more luminous skin surface. The balm’s luxurious, melting texture glides effortlessly over the skin without feeling sticky or greasy, providing a comfortable, mess-free application. Its hygienic stick format makes it perfect for quick touch-ups throughout the day, whether you need a boost under your eyes, on your lips, or across body areas that need a gentle lift. It’s gentle enough for sensitive skin and free from artificial colors and fragrances, making it suitable for even the most delicate areas. This powerful, multi-dimensional treatment not only enhances your natural beauty but also boosts your confidence, giving you skin that looks more resilient, luminous, and youthful. With consistent use, expect to see a noticeable transformation—skin that feels firmer, looks brighter, and radiates vitality. Perfect for those who want immediate results and long-term improvements, this balm is your essential companion for maintaining a vibrant, youthful appearance in today’s fast-paced world.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 05 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This innovative multi-purpose balm is designed to deliver instant and long-lasting facial and body rejuvenation. Its rich, advanced formula works by deeply nourishing your skin, helping restore lost volume and promote a youthful glow. Whether targeting fine lines, hollow cheeks, or tired, dull skin, this balm provides a quick, effective solution for achieving a smoother, plumper, and more radiant appearance. Ideal for busy women who want to look their best at any moment, it addresses common skin concerns such as loss of firmness, uneven tone, and dullness—delivering noticeable improvements with minimal effort. You’ll love how it seamlessly fits into your busy routine, offering a versatile, all-in-one treatment you can apply anytime, anywhere. Key features include powerful ingredients like PDRN, Collagen, NAD complex, Peptides, and Retinol, which work synergistically to boost skin elasticity, promote firmness, and replenish hydration. The inclusion of Volufiline targets hollow zones, making areas like cheeks and hollows appear fuller and more youthful, restoring volume and dimension. Caffeine and vitamin E work to reduce dark circles, puffiness, and uneven skin tone, while diminishing fine lines for a smoother, more luminous skin surface. The balm’s luxurious, melting texture glides effortlessly over the skin without feeling sticky or greasy, providing a comfortable, mess-free application. Its hygienic stick format makes it perfect for quick touch-ups throughout the day, whether you need a boost under your eyes, on your lips, or across body areas that need a gentle lift. It’s gentle enough for sensitive skin and free from artificial colors and fragrances, making it suitable for even the most delicate areas. This powerful, multi-dimensional treatment not only enhances your natural beauty but also boosts your confidence, giving you skin that looks more resilient, luminous, and youthful. With consistent use, expect to see a noticeable transformation—skin that feels firmer, looks brighter, and radiates vitality. Perfect for those who want immediate results and long-term improvements, this balm is your essential companion for maintaining a vibrant, youthful appearance in today’s fast-paced world.",
+      "stockStatus": "In Stock",
+      "sku": "LF-MOI-110",
+      "stockQuantity": 75,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691188686988",
+      "handle": "youthful-glow-rejuvenation-balm",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260717322380",
+          "title": "Default Title",
+          "price": "$29.99",
+          "numericPrice": 29.99,
+          "compareAtPrice": "$44.99",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260717322380",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/613iSS1QL9L._SL1500_e7e047ab-6c6a-421c-9650-8fc034b743e4.jpg?v=1791303706",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71k3yJgTJXL._SL1500_d6cb01e1-2adc-48e2-a071-2405af49049f.jpg?v=1791303705",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71nURDQsFDL._SL1500_58fb22dc-9c1f-40b5-9a7d-d01a49828bff.jpg?v=1791303705",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71f1w1hsbvL._SL1500_309cf38c-ed50-4602-9eb2-49920f673c07.jpg?v=1791303706",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81ytL1CRXdL._SL1500_5fec236f-38eb-4822-8acf-409e5a21203a.jpg?v=1791303705",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/711cFSczGlL._SL1500_19c29389-3826-45a8-8420-bcb59ec65232.jpg?v=1791303706",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71S7clKP7nL._SL1500_2cec4041-44a9-40e9-874c-e6ab0940a795.jpg?v=1791303706",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/811k4lMk_oL._SL1500_c5130406-a11e-447f-a981-1d47dd25e36f.jpg?v=1791303706"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Revitalizing Collagen & Hydration Cream",
+      "subtitle": "Deep Barrier Repair Peptide Cream",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61qcv-tUtDL._SL1500_9fb4c176-71e9-49b4-8dc3-41b2fbc18bf0.jpg?v=1791303709",
+      "bg": "#E4980E",
+      "panel": "#FCF2DC",
+      "themeColor": "#D97706",
+      "darkTone": false,
+      "price": "$39.99",
+      "numericPrice": 39.99,
+      "originalPrice": "$47.52",
+      "compareAtPrice": "$47.52",
+      "volume": "50 ml / 1.69 fl. oz.",
+      "category": "Moisturizers",
+      "rating": 4.85,
+      "reviewsCount": 530,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This advanced skincare formula is designed to deeply hydrate and firm your skin, helping you achieve a more youthful, radiant complexion. Its rich, luxurious texture combines potent ingredients and cutting-edge technology to deliver visible results quickly and safely. Crafted to work from within, this all-in-one cream targets common signs of aging—such as dullness, loss of firmness, enlarged pores, and dark spots—making it an essential component of your daily skincare routine. Ideal for those noticing early signs of aging or seeking to slow down skin decline, this product is suited for women who want to restore their skin’s vitality, resilience, and glow without harsh or irritating ingredients. Whether your goal is to combat fine lines, improve elasticity, or refine your pores, this cream offers a comprehensive solution tailored to your needs. At the heart of this formula are powerful ingredients like collagen, niacinamide, and nourishing oils. Collagen boosts skin’s elasticity and bounce, while niacinamide helps brighten dark spots and improve uneven tone. Nourishing oils hydrate deeply, restoring moisture and reinforcing your skin’s natural barrier against environmental stressors. Up to 16 patented ingredients work synergistically to fight against aging signs, supporting a firmer, plumper, and more resilient skin surface. Expect to see noticeable improvements in just two weeks—more elastic skin, refined pores, and a luminous complexion that radiates health. This cream is thoughtfully formulated to be safe for sensitive skin, free from 15 harmful ingredients, and dermatologically tested. Its versatility makes it suitable for all skin types and ages, seamlessly fitting into any skincare routine. Its gentle yet effective approach allows you to care for your skin with confidence, knowing you're using a high-quality, science-backed product. To enhance your results, it can be combined with a collagen niacinamide jelly for a personalized treatment suited exactly to your skin's unique needs. Use it morning and night on your face and neck after serum application to optimize absorption and benefits. Regular use helps you build stronger, more resilient skin, revealing a luminous, youthful glow and a confidence that lasts. This is more than just a moisturizer—it's a daily investment in your skin’s health and beauty, empowering you to look and feel your best at any age.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 01 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This advanced skincare formula is designed to deeply hydrate and firm your skin, helping you achieve a more youthful, radiant complexion. Its rich, luxurious texture combines potent ingredients and cutting-edge technology to deliver visible results quickly and safely. Crafted to work from within, this all-in-one cream targets common signs of aging—such as dullness, loss of firmness, enlarged pores, and dark spots—making it an essential component of your daily skincare routine. Ideal for those noticing early signs of aging or seeking to slow down skin decline, this product is suited for women who want to restore their skin’s vitality, resilience, and glow without harsh or irritating ingredients. Whether your goal is to combat fine lines, improve elasticity, or refine your pores, this cream offers a comprehensive solution tailored to your needs. At the heart of this formula are powerful ingredients like collagen, niacinamide, and nourishing oils. Collagen boosts skin’s elasticity and bounce, while niacinamide helps brighten dark spots and improve uneven tone. Nourishing oils hydrate deeply, restoring moisture and reinforcing your skin’s natural barrier against environmental stressors. Up to 16 patented ingredients work synergistically to fight against aging signs, supporting a firmer, plumper, and more resilient skin surface. Expect to see noticeable improvements in just two weeks—more elastic skin, refined pores, and a luminous complexion that radiates health. This cream is thoughtfully formulated to be safe for sensitive skin, free from 15 harmful ingredients, and dermatologically tested. Its versatility makes it suitable for all skin types and ages, seamlessly fitting into any skincare routine. Its gentle yet effective approach allows you to care for your skin with confidence, knowing you're using a high-quality, science-backed product. To enhance your results, it can be combined with a collagen niacinamide jelly for a personalized treatment suited exactly to your skin's unique needs. Use it morning and night on your face and neck after serum application to optimize absorption and benefits. Regular use helps you build stronger, more resilient skin, revealing a luminous, youthful glow and a confidence that lasts. This is more than just a moisturizer—it's a daily investment in your skin’s health and beauty, empowering you to look and feel your best at any age.",
+      "stockStatus": "In Stock",
+      "sku": "LF-MOI-111",
+      "stockQuantity": 80,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691188752524",
+      "handle": "revitalizing-collagen-hydration-cream",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260717682828",
+          "title": "Default Title",
+          "price": "$39.99",
+          "numericPrice": 39.99,
+          "compareAtPrice": "$47.52",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260717682828",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61qcv-tUtDL._SL1500_9fb4c176-71e9-49b4-8dc3-41b2fbc18bf0.jpg?v=1791303709",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71jQzTsRJvL._SL1500_5a76f7d7-109e-489a-9c03-f1d65a5e873d.jpg?v=1791303710",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71ou2jmH3lL._SL1500_91507a63-8bba-420a-b232-c32f8cfd0f6d.jpg?v=1791303709",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71EmME5GGJL._SL1500_34c75ac6-e2e7-40f4-9dd9-13f824ca0fe4.jpg?v=1791303709",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/711zCF4YWBL._SL1500_9c2d284d-d7b2-4e5b-8ce7-7624a30f1b7a.jpg?v=1791303710",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71a92GjktcL._SL1500_43058c52-33ff-49f4-babe-0f2cdf53fc75.jpg?v=1791303710",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/811i-wMYjAL._SL1500_5026d1f5-f94d-4242-8584-2ce0599a5e7b.jpg?v=1791303709",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61kKhNWZ28L._SL1500_42486d03-9bd8-4007-bbe5-1bafdd84ce65.jpg?v=1791303710"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Radiance Boost Vitamin C Capsules",
+      "subtitle": "Fresh Potency Stabilized Vitamin C Capsules",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71m8aGBgXqL._SL1500_285cd14b-3461-4ca5-8306-41328e0d161d.jpg?v=1791303714",
+      "bg": "#CBD5E1",
+      "panel": "#F1F5F9",
+      "themeColor": "#475569",
+      "darkTone": false,
+      "price": "$34.99",
+      "numericPrice": 34.99,
+      "originalPrice": "$47.70",
+      "compareAtPrice": "$47.70",
+      "volume": "30 Capsules",
+      "category": "Serums",
+      "rating": 4.86,
+      "reviewsCount": 565,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "This innovative skincare solution is designed to deliver radiant, luminous skin by harnessing the power of concentrated vitamin C technology. Each capsule contains a high-dose of pure vitamin C, combined with 50% sea buckthorn extract and 5% niacinamide, all encapsulated within advanced stabilized liposomes that ensure deep penetration. This carefully engineered delivery system guarantees that potent ingredients reach the skin’s core, providing visible improvements quickly and effectively. Ideal for individuals seeking to brighten their complexion, improve uneven skin tone, and protect against environmental stressors, this product addresses common skin concerns such as dullness, early signs of aging, fine lines, and uneven texture. It’s especially well-suited for those who desire an effective, gentle, daily treatment that fits seamlessly into a busy lifestyle. The capsules can be customized to suit your skin’s needs—whether you prefer a lighter application for soothing hydration or a more nourishing, richer treatment. Applying this formula offers an immediate boost in radiance; studies show a 34.8% increase in skin brightness instantly after use, with lasting effects that keep your glow radiant for hours. Over time, consistent use diminishes dark spots, refines skin texture, and awakens your natural vibrancy, leaving your complexion smooth, energized, and glowing. Formulated with dermatologist-tested, gentle ingredients, it’s suitable even for sensitive skin types. Free from artificial colors and harsh additives, and with a balanced pH between 5.8 and 7.8, this treatment is safe for daily application. Its sustainable packaging underscores a commitment to both your skin and the environment, making it a responsible choice for conscious consumers. This breakthrough product outperforms traditional serums with its innovative delivery system and high concentration of active ingredients. It transforms your skincare routine into a spa-like experience, delivering both immediate and long-term results—helping you feel confident, radiant, and beautiful every day.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 02 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "This innovative skincare solution is designed to deliver radiant, luminous skin by harnessing the power of concentrated vitamin C technology. Each capsule contains a high-dose of pure vitamin C, combined with 50% sea buckthorn extract and 5% niacinamide, all encapsulated within advanced stabilized liposomes that ensure deep penetration. This carefully engineered delivery system guarantees that potent ingredients reach the skin’s core, providing visible improvements quickly and effectively. Ideal for individuals seeking to brighten their complexion, improve uneven skin tone, and protect against environmental stressors, this product addresses common skin concerns such as dullness, early signs of aging, fine lines, and uneven texture. It’s especially well-suited for those who desire an effective, gentle, daily treatment that fits seamlessly into a busy lifestyle. The capsules can be customized to suit your skin’s needs—whether you prefer a lighter application for soothing hydration or a more nourishing, richer treatment. Applying this formula offers an immediate boost in radiance; studies show a 34.8% increase in skin brightness instantly after use, with lasting effects that keep your glow radiant for hours. Over time, consistent use diminishes dark spots, refines skin texture, and awakens your natural vibrancy, leaving your complexion smooth, energized, and glowing. Formulated with dermatologist-tested, gentle ingredients, it’s suitable even for sensitive skin types. Free from artificial colors and harsh additives, and with a balanced pH between 5.8 and 7.8, this treatment is safe for daily application. Its sustainable packaging underscores a commitment to both your skin and the environment, making it a responsible choice for conscious consumers. This breakthrough product outperforms traditional serums with its innovative delivery system and high concentration of active ingredients. It transforms your skincare routine into a spa-like experience, delivering both immediate and long-term results—helping you feel confident, radiant, and beautiful every day.",
+      "stockStatus": "In Stock",
+      "sku": "LF-SER-112",
+      "stockQuantity": 85,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10691188785292",
+      "handle": "radiance-boost-vitamin-c-capsules",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62260717715596",
+          "title": "Default Title",
+          "price": "$34.99",
+          "numericPrice": 34.99,
+          "compareAtPrice": "$47.70",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62260717715596",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71m8aGBgXqL._SL1500_285cd14b-3461-4ca5-8306-41328e0d161d.jpg?v=1791303714",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/713mB5-MXRL._SL1500_0a32d84b-57f7-41aa-b563-da8392f0e736.jpg?v=1791303714",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/81ln-pTW01L._SL1500_ababe010-9ae3-463e-befa-679150686e64.jpg?v=1791303714",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71-6BgQ92BL._SL1500_59caa729-39d0-416a-a86e-959c53dca0d7.jpg?v=1791303714",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71Yp78-9oNL._SL1500_eed6c483-a9bf-4dc3-be1b-e6231a6d1ece.jpg?v=1791303714",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71rtc0hz5xL._SL1500_f90fab7f-5f49-43ba-9c29-b40e00fb6ff5.jpg?v=1791303714",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71WtclKCuaL._SL1500_79604e01-fc0b-44f3-9fc6-910a3ebb5ce3.jpg?v=1791303713",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71fgp_J_7GL._SL1500_2f7d1c37-fac4-4dfb-9502-70df27738bc7.jpg?v=1791303714"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Fabric Shaver, Electric Lint Remover, Lint Shaver, Sweater Defuzzer with LED Display",
+      "subtitle": "Multi-Speed Precision Shaver with LED Display",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/64c8033cdd2b90fad908775aaec32bf5.jpg?v=1791374850",
+      "bg": "#EFA6B7",
+      "panel": "#FDF0F3",
+      "themeColor": "#EC3460",
+      "darkTone": false,
+      "price": "$31.21",
+      "numericPrice": 31.21,
+      "originalPrice": "$42.13",
+      "compareAtPrice": "$42.13",
+      "volume": "Rechargeable Unit",
+      "category": "Tools & Rollers",
+      "rating": 4.87,
+      "reviewsCount": 600,
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "Revitalize your fabrics with Loheer top-of-the-line Electric Fabric Shaver. Featuring precision blades, adjustable speed settings, and an easy-to-read LCD display, it makes removing lint and pilling a breeze. Rechargeable Lint Remover with a powerful rechargeable battery lasting up to 180 minutes, you can keep your clothes and upholstery looking fresh and new without constant recharging. Achieve flawless fabrics effortlessly. Packing includes: 1x lint remover 2x replacement razor blades 1x Type-C charging cable 1x cleaning brush 1x instruction manual Efficient & Powerful: Say goodbye to unsightly lint and pilling with Loheer advanced Electric Lint Remover. Featuring 6 precision stainless steel blades, this fabric shaver effortlessly restores your clothes, upholstery, and textiles to their original smooth and fresh condition. FAST and EFFICIENT: Loheer Electric lint shaver Featuring 3 adjustable speed settings and a thickened stainless steel honeycomb fabric, this device effortlessly adapts to your needs. The adjustable speeds of 7000r/min, 8000r/min, and 9000r/min ensure precise lint, fuzz, and pilling removal from all types of textiles. The robust honeycomb fabric shroud protects your garments while ensuring an even and efficient de-fuzzing process. LCD DIGITAL DISPLAY： Take control of your fabric care routine with the Loheer sweater shaver, equipped with an intuitive LCD digital display. Effortlessly monitor your battery level and speed settings with precision and ease. Whether you're tackling delicate fabrics or heavy-duty de-fuzzing, stay informed every step of the way. SUPER BATTERY with FAST CHARGING： The built-in 2000mAh large-capacity battery, Enjoy fabric care for 120-180 minutes on a single full charge. allowing you to tackle multiple garments or large areas without interruption. Enjoy the convenience of cordless operation and freedom from frequent recharging. WIDELY APPLICATION: This rechargeable clothes shaver can be suitable for a variety of fur balls, winter clothes, sweaters, scarves, gloves, plush toys, blankets, car cushions, sofas, carpets, leggings and bedding. Cut off excess loose threads, wool balls And lint, etc.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 03 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "Revitalize your fabrics with Loheer top-of-the-line Electric Fabric Shaver. Featuring precision blades, adjustable speed settings, and an easy-to-read LCD display, it makes removing lint and pilling a breeze. Rechargeable Lint Remover with a powerful rechargeable battery lasting up to 180 minutes, you can keep your clothes and upholstery looking fresh and new without constant recharging. Achieve flawless fabrics effortlessly. Packing includes: 1x lint remover 2x replacement razor blades 1x Type-C charging cable 1x cleaning brush 1x instruction manual Efficient & Powerful: Say goodbye to unsightly lint and pilling with Loheer advanced Electric Lint Remover. Featuring 6 precision stainless steel blades, this fabric shaver effortlessly restores your clothes, upholstery, and textiles to their original smooth and fresh condition. FAST and EFFICIENT: Loheer Electric lint shaver Featuring 3 adjustable speed settings and a thickened stainless steel honeycomb fabric, this device effortlessly adapts to your needs. The adjustable speeds of 7000r/min, 8000r/min, and 9000r/min ensure precise lint, fuzz, and pilling removal from all types of textiles. The robust honeycomb fabric shroud protects your garments while ensuring an even and efficient de-fuzzing process. LCD DIGITAL DISPLAY： Take control of your fabric care routine with the Loheer sweater shaver, equipped with an intuitive LCD digital display. Effortlessly monitor your battery level and speed settings with precision and ease. Whether you're tackling delicate fabrics or heavy-duty de-fuzzing, stay informed every step of the way. SUPER BATTERY with FAST CHARGING： The built-in 2000mAh large-capacity battery, Enjoy fabric care for 120-180 minutes on a single full charge. allowing you to tackle multiple garments or large areas without interruption. Enjoy the convenience of cordless operation and freedom from frequent recharging. WIDELY APPLICATION: This rechargeable clothes shaver can be suitable for a variety of fur balls, winter clothes, sweaters, scarves, gloves, plush toys, blankets, car cushions, sofas, carpets, leggings and bedding. Cut off excess loose threads, wool balls And lint, etc.",
+      "stockStatus": "In Stock",
+      "sku": "LF-TOO-113",
+      "stockQuantity": 90,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10698165125260",
+      "handle": "fabric-shaver-electric-lint-remover-lint-shaver-sweater-defuzzer-with-led-display",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62311781269644",
+          "title": "Default Title",
+          "price": "$31.21",
+          "numericPrice": 31.21,
+          "compareAtPrice": "$0.00",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62311781269644",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/64c8033cdd2b90fad908775aaec32bf5.jpg?v=1791374850",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/854b4daef534d6e83c14dc32a5b665b9.jpg?v=1791374851",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/b07b850eed54ddd13bdf6b6a3f6413d9.jpg?v=1791374850",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/30535fa0cc676920c0aad98d185f0632.jpg?v=1791374850",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/4b459f6804e48d219a3ddf63bc83e186.jpg?v=1791374850",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/d399d14c27d4af46a8c66519656440c0.jpg?v=1791374850",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/e5e8e02f74e28012a81d90fcd96c31f0.jpg?v=1791374851"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "Bio-Collagen Real Deep Mask, Hydrating Overnight Hydrogel Face Mask, Pore Minimizing, Elasticity, Plumping, Travel Essentials & Self Care Gifts for Women, Korean Skin Care | 1.19Oz(34G) X 4Ea",
+      "subtitle": "Overnight Melt-In Collagen Hydrogel Mask",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/a12784540062bb7f0fa59e72c7b940c8.jpg?v=1791437181",
+      "bg": "#5E101D",
+      "panel": "#3F0811",
+      "themeColor": "#EC3460",
+      "darkTone": true,
+      "price": "$23.81",
+      "numericPrice": 23.81,
+      "originalPrice": "$32.14",
+      "compareAtPrice": "$32.14",
+      "volume": "4 Sheets (34g each)",
+      "category": "Masks",
+      "rating": 4.88,
+      "reviewsCount": 635,
+      "badge": "Viral Favorite",
+      "clinicalClaim": "-41% Pore Perimeter & Overnight Deep Hydration",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "PORE TIGHTENING & FIRMING: Formulated with ultra-low molecular collagen, this mask maximizes penetration and absorption. It refines enlarged pores, improves skin elasticity, and visibly smooths fine lines and wrinkles instantly. DEEP HYDRATION: The oligo-hyaluronic acid in the Biodance Bio-Collagen Real Deep Mask provides superior moisturizing effects compared to regular hyaluronic acid. It quickly hydrates the skin's surface and penetrates deeper layers, leaving the complexion healthy and well-moisturized. BRIGHTENS THE SKIN: Formulated with Galactomyces Ferment Filtrate and Niacinamide, it improves uneven skin tone and texture while offering antioxidant effects, resulting in healthier, more radiant skin. UNIQUE OVERNIGHT ABSORPTION: Each 1.19 oz bottle of essence is solidified into each mask sheet. Unlike regular sheet masks, our signature hydrogel mask becomes transparent as active ingredients melt deep into the skin. Recommended for overnight use or a minimum of 3-4 hours for a flawless glass-skin glow. SAFE FOR SENSITIVE SKIN: Formulated with non-toxic, non-irritant ingredients and completely free from 19 controversial substances. We ensure safe, hypoallergenic care that delivers deep, long-lasting improvements beyond temporary effects.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 04 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "PORE TIGHTENING & FIRMING: Formulated with ultra-low molecular collagen, this mask maximizes penetration and absorption. It refines enlarged pores, improves skin elasticity, and visibly smooths fine lines and wrinkles instantly. DEEP HYDRATION: The oligo-hyaluronic acid in the Biodance Bio-Collagen Real Deep Mask provides superior moisturizing effects compared to regular hyaluronic acid. It quickly hydrates the skin's surface and penetrates deeper layers, leaving the complexion healthy and well-moisturized. BRIGHTENS THE SKIN: Formulated with Galactomyces Ferment Filtrate and Niacinamide, it improves uneven skin tone and texture while offering antioxidant effects, resulting in healthier, more radiant skin. UNIQUE OVERNIGHT ABSORPTION: Each 1.19 oz bottle of essence is solidified into each mask sheet. Unlike regular sheet masks, our signature hydrogel mask becomes transparent as active ingredients melt deep into the skin. Recommended for overnight use or a minimum of 3-4 hours for a flawless glass-skin glow. SAFE FOR SENSITIVE SKIN: Formulated with non-toxic, non-irritant ingredients and completely free from 19 controversial substances. We ensure safe, hypoallergenic care that delivers deep, long-lasting improvements beyond temporary effects.",
+      "stockStatus": "In Stock",
+      "sku": "LF-MAS-114",
+      "stockQuantity": 95,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10705876549772",
+      "handle": "bio-collagen-real-deep-mask-hydrating-overnight-hydrogel-face-mask-pore-minimizing-elasticity-plumping-travel-essentials-self-care-gifts-for-women-korean-skin-care-1-19oz34g-x-4ea",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62377977282700",
+          "title": "Collagen / 4 Count (Pack Of 1)",
+          "price": "$23.81",
+          "numericPrice": 23.81,
+          "compareAtPrice": "$0.00",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Scent",
+              "value": "Collagen"
+            },
+            {
+              "name": "Size",
+              "value": "4 Count (Pack Of 1)"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62377977282700",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/a12784540062bb7f0fa59e72c7b940c8.jpg?v=1791437181",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/03823aa382f56c7e81e8c9f03301591a.jpg?v=1791437181",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/364f878472cb1836e71d7364b3d8ac77.jpg?v=1791437182",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/356eca298aedf6c5ae9057e3934eb35b.jpg?v=1791437181",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/37b078e0872e20d29a88205e6e4c4cb1.jpg?v=1791437182",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/972458ff41f76689e6a74c69e9fa92ce.jpg?v=1791437182",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/215d6a46cf6d0c9d6f3e8fbb39226420.jpg?v=1791437181"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Kojic Acid Turmeric Clarifying Capsule Serum for Troubled Skin",
+      "subtitle": "Targeted Tone Clarifying & Spot Care Serum",
+      "src": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/5AC4A743-2D2E-4710-9B53-62636AC7BDF8.png?v=1791439598",
+      "bg": "#E4980E",
+      "panel": "#FCF2DC",
+      "themeColor": "#D97706",
+      "darkTone": false,
+      "price": "$39.99",
+      "numericPrice": 39.99,
+      "originalPrice": "$53.99",
+      "compareAtPrice": "$53.99",
+      "volume": "30 ml / 1.01 fl. oz.",
+      "category": "Serums",
+      "rating": 4.89,
+      "reviewsCount": 670,
+      "badge": "Trending",
+      "clinicalClaim": "+96% Barrier Radiance & Glass Glow in 14 Days",
+      "benefits": [
+        "Authentic Seoul certified formulation sourced directly from official brand manufacturing",
+        "Noticeable radiance, deep cellular hydration, and reinforced skin barrier resilience",
+        "Dermatologically tested for zero pore-clogging and high biocompatibility",
+        "Lightweight, fast-absorbing texture leaving a silky, glass-skin finish"
+      ],
+      "keyIngredients": [
+        "Targeted Bio-Actives",
+        "Hyaluronic Acid Complex",
+        "Niacinamide",
+        "Botanical Soothing Extract"
+      ],
+      "allIngredients": "[Kojic Acid & Turmeric for Troubled Skin] Kojic Acid helps fade the look of uneven patches and brighten overall tone, while antioxidant-rich Turmeric soothes stressed skin—together supporting a clearer, more balanced-looking complexion. [Hero Ingredients] A targeted blend of Kojic Acid, Turmeric, Niacinamide, and Glow Capsules helps improve uneven skin tone and texture—ideal for use after spot care. [Snowflake-like Capsules for Hydration & Barrier Care] Snowflake-like micro-capsules release Squalane and Thioctic Acid on contact, supporting the skin's moisture barrier and restore a healthy, radiant glow. [Dermatologist-Tested & Gentle] Clinically tested and proven suitable for all skin types, including delicate skin. *Clinical Tested by the Global Institute of Dermatological Sciences/ Results may vary depending on individual skin types.",
+      "howToUse": [
+        "Dispense appropriate amount onto fingertips after cleansing and prepping.",
+        "Gently smooth across face and neck following the natural facial contours.",
+        "Lightly pat until fully absorbed into the skin barrier."
+      ],
+      "ritualStep": "Step 05 · Clinical Glass Skin Ritual",
+      "skinType": "All Skin Types · Sensitive Skin Safe",
+      "fullDescription": "[Kojic Acid & Turmeric for Troubled Skin] Kojic Acid helps fade the look of uneven patches and brighten overall tone, while antioxidant-rich Turmeric soothes stressed skin—together supporting a clearer, more balanced-looking complexion. [Hero Ingredients] A targeted blend of Kojic Acid, Turmeric, Niacinamide, and Glow Capsules helps improve uneven skin tone and texture—ideal for use after spot care. [Snowflake-like Capsules for Hydration & Barrier Care] Snowflake-like micro-capsules release Squalane and Thioctic Acid on contact, supporting the skin's moisture barrier and restore a healthy, radiant glow. [Dermatologist-Tested & Gentle] Clinically tested and proven suitable for all skin types, including delicate skin. *Clinical Tested by the Global Institute of Dermatological Sciences/ Results may vary depending on individual skin types.",
+      "stockStatus": "In Stock",
+      "sku": "LF-SER-115",
+      "stockQuantity": 100,
+      "status": "active",
+      "shopifyId": "gid://shopify/Product/10705876779148",
+      "handle": "kojic-acid-turmeric-clarifying-capsule-serum-for-troubled-skin",
+      "variants": [
+        {
+          "id": "gid://shopify/ProductVariant/62377978134668",
+          "title": "Default Title",
+          "price": "$39.99",
+          "numericPrice": 39.99,
+          "compareAtPrice": "$0.00",
+          "availableForSale": true,
+          "selectedOptions": [
+            {
+              "name": "Title",
+              "value": "Default Title"
+            }
+          ]
+        }
+      ],
+      "selectedVariantId": "gid://shopify/ProductVariant/62377978134668",
+      "availableForSale": true,
+      "images": [
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/5AC4A743-2D2E-4710-9B53-62636AC7BDF8.png?v=1791439598",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/89c367b948e2f926dafc87c34b3947f0.jpg?v=1791437344",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/7b82098de0f7e7764296e1b294cba2be.jpg?v=1791437345",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/d04d7943853ba088b1b9e01c76354188.jpg?v=1791437344",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/7f88f36c32f6e067650c3ad3dde0cb46.jpg?v=1791437344",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/9d342f614db0c839d30c017eed82e53f.jpg?v=1791437344",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/4b6863505986dc5375e2db8a9549d2ff.jpg?v=1791437344",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/63ec9053c1220c8152efab6a31f7b0df.jpg?v=1791437344",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/b38445a7fa66a93c013a3b513b8be2e6.jpg?v=1791437344",
+        "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/d6309d242dedb2cb09511e833480d62a.jpg?v=1791437344"
+      ]
+    }
+  ],
+  "orders": [
+    {
+      "id": "LF-1048",
+      "orderNumber": "#LF-1048",
+      "date": "2026-10-07 10:14 AM",
+      "createdAt": "2026-10-08T11:30:25.390Z",
+      "customer": {
+        "name": "Evelyn Vance",
+        "email": "evelyn.vance@example.com",
+        "phone": "+1 (555) 392-8812",
+        "address": "742 Evergreen Terrace, Apt 4B",
+        "city": "Portland",
+        "state": "OR",
+        "country": "United States",
+        "zip": "97201"
+      },
+      "items": [
+        {
+          "productId": 1,
+          "name": "Medicube PDRN Pink Peptide Serum",
+          "price": 39.99,
+          "quantity": 2,
+          "image": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Pink_Rose_Serum_Splash_Advertisement.png?v=1791440553",
+          "variant": "30 ml / 1.01 fl. oz."
+        },
+        {
+          "productId": 8,
+          "name": "Revitalize Eye Treatment Patches",
+          "price": 34.99,
+          "quantity": 1,
+          "image": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61uiYF9sttL._SL1500_8ef6a56d-4829-4aef-92fd-14a7984681bf.jpg?v=1791303698",
+          "variant": "60 Patches (30 Pairs)"
+        }
+      ],
+      "subtotal": 100,
+      "discountCode": "GLOW15",
+      "discountAmount": 15,
+      "shippingCost": 0,
+      "total": 85,
+      "paymentStatus": "paid",
+      "fulfillmentStatus": "unfulfilled",
+      "trackingNumber": "",
+      "carrier": "USPS Priority",
+      "notes": "Gift packaging requested with personalized Seoul handwritten card."
+    },
+    {
+      "id": "LF-1047",
+      "orderNumber": "#LF-1047",
+      "date": "2026-10-06 04:22 PM",
+      "createdAt": "2026-10-07T11:30:25.391Z",
+      "customer": {
+        "name": "Chloe Takahashi",
+        "email": "chloe.t@example.com",
+        "phone": "+1 (555) 782-9901",
+        "address": "1204 Sunset Blvd, Suite 210",
+        "city": "Los Angeles",
+        "state": "CA",
+        "country": "United States",
+        "zip": "90026"
+      },
+      "items": [
+        {
+          "productId": 2,
+          "name": "Medicube EGF Nad Firming Serum",
+          "price": 39.99,
+          "quantity": 1,
+          "image": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Crimson_Fruit_Serum_Splash.png?v=1791439980",
+          "variant": "30 ml / 1.01 fl. oz."
+        },
+        {
+          "productId": 4,
+          "name": "Refined Pore & Oil Control Pads",
+          "price": 34.99,
+          "quantity": 2,
+          "image": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/71Mcspt-6AL._SL1500.jpg?v=1791303428",
+          "variant": "70 Pads / 140 ml"
+        }
+      ],
+      "subtotal": 80,
+      "discountAmount": 0,
+      "shippingCost": 5,
+      "total": 85,
+      "paymentStatus": "paid",
+      "fulfillmentStatus": "shipped",
+      "trackingNumber": "9400111899223199842109",
+      "carrier": "FedEx Express",
+      "notes": "Customer inquired about NAD+ routine order of application."
+    },
+    {
+      "id": "LF-1046",
+      "orderNumber": "#LF-1046",
+      "date": "2026-10-05 09:30 AM",
+      "createdAt": "2026-10-06T11:30:25.391Z",
+      "customer": {
+        "name": "Marcus Sterling",
+        "email": "marcus.s@luxuryglow.co",
+        "phone": "+1 (555) 234-5519",
+        "address": "55 Wall Street, Penthouse B",
+        "city": "New York",
+        "state": "NY",
+        "country": "United States",
+        "zip": "10005"
+      },
+      "items": [
+        {
+          "productId": 1,
+          "name": "Medicube PDRN Pink Peptide Serum",
+          "price": 39.99,
+          "quantity": 3,
+          "image": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Pink_Rose_Serum_Splash_Advertisement.png?v=1791440553",
+          "variant": "30 ml / 1.01 fl. oz."
+        },
+        {
+          "productId": 3,
+          "name": "Revitalize Eye Therapy Patches",
+          "price": 34.99,
+          "quantity": 2,
+          "image": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/61uiYF9sttL._SL1500.jpg?v=1791303424",
+          "variant": "60 Patches (30 Pairs)"
+        }
+      ],
+      "subtotal": 176,
+      "discountCode": "SEOUL20",
+      "discountAmount": 35.2,
+      "shippingCost": 0,
+      "total": 140.8,
+      "paymentStatus": "paid",
+      "fulfillmentStatus": "delivered",
+      "trackingNumber": "9374889676090123984501",
+      "carrier": "DHL Express",
+      "notes": "VIP repeat purchaser. Send complimentary barrier trial kit."
+    },
+    {
+      "id": "LF-1045",
+      "orderNumber": "#LF-1045",
+      "date": "2026-10-04 02:45 PM",
+      "createdAt": "2026-10-05T11:30:25.391Z",
+      "customer": {
+        "name": "Aria Lin",
+        "email": "aria.lin@gmail.com",
+        "phone": "+1 (555) 890-1284",
+        "address": "450 University Ave",
+        "city": "Palo Alto",
+        "state": "CA",
+        "country": "United States",
+        "zip": "94301"
+      },
+      "items": [
+        {
+          "productId": 5,
+          "name": "Youthful Glow Multi-Balm Stick",
+          "price": 29.99,
+          "quantity": 1,
+          "image": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/613iSS1QL9L._SL1500.jpg?v=1791303432",
+          "variant": "9g / 0.31 oz."
+        }
+      ],
+      "subtotal": 32,
+      "discountAmount": 0,
+      "shippingCost": 5,
+      "total": 37,
+      "paymentStatus": "paid",
+      "fulfillmentStatus": "delivered",
+      "trackingNumber": "9400109205568129034491",
+      "carrier": "USPS Ground Advantage",
+      "notes": ""
+    },
+    {
+      "id": "LF-1044",
+      "orderNumber": "#LF-1044",
+      "date": "2026-10-03 11:10 AM",
+      "createdAt": "2026-10-04T11:30:25.391Z",
+      "customer": {
+        "name": "Sophia Dubois",
+        "email": "sophia.dubois@paris.fr",
+        "phone": "+33 6 12 34 56 78",
+        "address": "18 Rue de la Paix",
+        "city": "Paris",
+        "country": "France",
+        "zip": "75002"
+      },
+      "items": [
+        {
+          "productId": 1,
+          "name": "Medicube PDRN Pink Peptide Serum",
+          "price": 39.99,
+          "quantity": 1,
+          "image": "https://cdn.shopify.com/s/files/1/0795/9570/0364/files/Pink_Rose_Serum_Splash_Advertisement.png?v=1791440553",
+          "variant": "30 ml / 1.01 fl. oz."
+        }
+      ],
+      "subtotal": 36,
+      "discountAmount": 0,
+      "shippingCost": 15,
+      "total": 51,
+      "paymentStatus": "refunded",
+      "fulfillmentStatus": "unfulfilled",
+      "trackingNumber": "",
+      "carrier": "DHL Global Mail",
+      "notes": "Order cancelled and refunded upon customer address modification request."
+    }
+  ],
+  "customers": [
+    {
+      "id": "CUST-01",
+      "name": "Evelyn Vance",
+      "email": "evelyn.vance@example.com",
+      "phone": "+1 (555) 392-8812",
+      "ordersCount": 4,
+      "totalSpent": 348.5,
+      "lastOrderDate": "2026-10-07",
+      "tags": [
+        "VIP",
+        "Repeat Buyer",
+        "Damask Rose Club"
+      ],
+      "notes": "Prefers peptide and rose formulas. Highly engaged with Seoul skincare routine guides.",
+      "joinedDate": "2026-02-14",
+      "shippingAddress": {
+        "address": "742 Evergreen Terrace, Apt 4B",
+        "city": "Portland, OR",
+        "country": "United States",
+        "zip": "97201"
+      }
+    },
+    {
+      "id": "CUST-02",
+      "name": "Chloe Takahashi",
+      "email": "chloe.t@example.com",
+      "phone": "+1 (555) 782-9901",
+      "ordersCount": 3,
+      "totalSpent": 265,
+      "lastOrderDate": "2026-10-06",
+      "tags": [
+        "EGF Devotee",
+        "Verified Reviewer"
+      ],
+      "notes": "Sensitive barrier skin profile. Loves the cooling feel of Biodance night masks.",
+      "joinedDate": "2026-04-18",
+      "shippingAddress": {
+        "address": "1204 Sunset Blvd, Suite 210",
+        "city": "Los Angeles, CA",
+        "country": "United States",
+        "zip": "90026"
+      }
+    },
+    {
+      "id": "CUST-03",
+      "name": "Marcus Sterling",
+      "email": "marcus.s@luxuryglow.co",
+      "phone": "+1 (555) 234-5519",
+      "ordersCount": 7,
+      "totalSpent": 890,
+      "lastOrderDate": "2026-10-05",
+      "tags": [
+        "Top Tier VIP",
+        "Bulk Buyer"
+      ],
+      "notes": "Orders multiple bottles of Medicube serums per order. Corporate skincare gifts.",
+      "joinedDate": "2025-11-09",
+      "shippingAddress": {
+        "address": "55 Wall Street, Penthouse B",
+        "city": "New York, NY",
+        "country": "United States",
+        "zip": "10005"
+      }
+    },
+    {
+      "id": "CUST-04",
+      "name": "Aria Lin",
+      "email": "aria.lin@gmail.com",
+      "phone": "+1 (555) 890-1284",
+      "ordersCount": 2,
+      "totalSpent": 84,
+      "lastOrderDate": "2026-10-04",
+      "tags": [
+        "Glass Skin Routine"
+      ],
+      "notes": "Discovered Li Fei Beauty via TikTok routine reel.",
+      "joinedDate": "2026-07-22"
+    },
+    {
+      "id": "CUST-05",
+      "name": "Sophia Dubois",
+      "email": "sophia.dubois@paris.fr",
+      "phone": "+33 6 12 34 56 78",
+      "ordersCount": 1,
+      "totalSpent": 0,
+      "lastOrderDate": "2026-10-03",
+      "tags": [
+        "International"
+      ],
+      "notes": "Requested French customs clearance receipt.",
+      "joinedDate": "2026-10-01"
+    }
+  ],
+  "discounts": [
+    {
+      "id": "DISC-01",
+      "code": "GLOW15",
+      "type": "percentage",
+      "value": 15,
+      "minPurchase": 40,
+      "usageCount": 148,
+      "usageLimit": 500,
+      "active": true,
+      "expiresAt": "2026-12-31",
+      "description": "15% Off storewide on orders over $40 (Site Banner Code)"
+    },
+    {
+      "id": "DISC-02",
+      "code": "WELCOME10",
+      "type": "fixed",
+      "value": 10,
+      "minPurchase": 50,
+      "usageCount": 89,
+      "usageLimit": 1000,
+      "active": true,
+      "expiresAt": "2026-12-31",
+      "description": "$10 Off your first order over $50"
+    },
+    {
+      "id": "DISC-03",
+      "code": "SEOUL20",
+      "type": "percentage",
+      "value": 20,
+      "minPurchase": 75,
+      "usageCount": 43,
+      "usageLimit": 200,
+      "active": true,
+      "expiresAt": "2026-11-15",
+      "description": "20% VIP Autumn hydration discount on orders over $75"
+    },
+    {
+      "id": "DISC-04",
+      "code": "FREESHIP",
+      "type": "fixed",
+      "value": 5,
+      "minPurchase": 35,
+      "usageCount": 215,
+      "active": true,
+      "description": "Free standard domestic courier shipping"
+    }
+  ],
+  "reviews": [
+    {
+      "id": 1,
+      "productId": 1,
+      "productName": "MEDICUBE PDRN PINK",
+      "author": "Min-ji Song",
+      "rating": 5,
+      "title": "The salmon DNA ampoule is an authentic miracle",
+      "comment": "Within 4 days of morning and evening application, cheek tightness returned. The Damask rose dewy scent is delicate and non-sensitizing.",
+      "date": "Yesterday",
+      "status": "approved",
+      "featured": true,
+      "verified": true,
+      "skinConcern": "Loss of Firmness & Dullness"
+    },
+    {
+      "id": 2,
+      "productId": 1,
+      "productName": "MEDICUBE PDRN PINK",
+      "author": "Elena Rostova",
+      "rating": 5,
+      "title": "Glass skin without greasy residue",
+      "comment": "Obsessed with the texture. It sinks right in and leaves a reflective mirror glow that lasts through a 10-hour flight.",
+      "date": "3 days ago",
+      "status": "approved",
+      "featured": true,
+      "verified": true,
+      "skinConcern": "Dehydration"
+    },
+    {
+      "id": 3,
+      "productId": 2,
+      "productName": "MEDICUBE EGF NAD",
+      "author": "Clara Beaumont",
+      "rating": 5,
+      "title": "Noticeably smoothed fine lines around eye contour",
+      "comment": "The NAD+ peptide science actually delivers. My skin density feels completely restored and bounce has returned.",
+      "date": "5 days ago",
+      "status": "approved",
+      "featured": true,
+      "verified": true,
+      "skinConcern": "Deep Expression Lines"
+    },
+    {
+      "id": 4,
+      "productId": 3,
+      "productName": "MEDICUBE KOJIC ACID",
+      "author": "Jasmine Lee",
+      "rating": 4,
+      "title": "Gentle on post-acne pigmentation",
+      "comment": "Fade speed is impressive. Turmeric usually stains but this clear golden serum is elegant and spotless.",
+      "date": "6 days ago",
+      "status": "approved",
+      "featured": false,
+      "verified": true,
+      "skinConcern": "Post-Blemish Marks"
+    },
+    {
+      "id": 5,
+      "productId": 8,
+      "productName": "ROSE QUARTZ ROLLER & GUA SHA",
+      "author": "Maya Lin",
+      "rating": 5,
+      "title": "Heaviest, coldest Brazilian quartz I have ever held",
+      "comment": "Nightly lymphatic drainage with the Medicube pink serum has transformed my morning jawline puffiness.",
+      "date": "1 week ago",
+      "status": "approved",
+      "featured": true,
+      "verified": true,
+      "skinConcern": "Puffiness & Lymphatic Flow"
+    },
+    {
+      "id": 6,
+      "productId": 1,
+      "productName": "MEDICUBE PDRN PINK",
+      "author": "Jordan Taylor",
+      "rating": 5,
+      "title": "Fast shipping and beautifully packaged",
+      "comment": "Came in 2 days in sustainable insulated box. Bottle was sealed with Seoul verification badge intact.",
+      "date": "2 hours ago",
+      "status": "pending",
+      "featured": false,
+      "verified": true,
+      "skinConcern": "First-time Customer"
+    },
+    {
+      "id": 7,
+      "productId": 4,
+      "productName": "BIODANCE BIO-COLLAGEN MASK",
+      "author": "Rebecca Thorne",
+      "rating": 5,
+      "title": "Woke up looking like a glazed ceramic dumpling",
+      "comment": "Left it on overnight for 6 hours until transparent. My pores are literally invisible this morning.",
+      "date": "Just now",
+      "status": "pending",
+      "featured": false,
+      "verified": true,
+      "skinConcern": "Enlarged Pores"
+    }
+  ],
+  "content": {
+    "announcementText": "DIRECT FROM SEOUL · COMPLIMENTARY EXPRESS DISPATCH OVER $40",
+    "promoCode": "GLOW15",
+    "promoBadge": "15% OFF AT CHECKOUT",
+    "heroHeadline": "SEOUL CELLULAR RENEWAL",
+    "heroSubhead": "Biomimetic Salmon PDRN · Pure NAD+ · Rose Quartz Contour",
+    "heroTagline": "Curated clinical Korean skincare designed to deliver luminous hydration, dermal density, and true glass glow.",
+    "bannerPromoTitle": "THE GLOW ARCHITECTURE",
+    "bannerPromoSubtitle": "Clinical Korean botanical actives engineered for rapid cellular barrier rebound.",
+    "bannerPromoDiscount": "USE CODE GLOW15 FOR 15% OFF FIRST RITUAL",
+    "brandStoryTitle": "PURITY · POTENCY · PRESERVATION",
+    "brandStoryText": "Li Fei Beauty curates strictly authentic, temperature-controlled Korean formulations direct from Seoul's premier dermatological research laboratories."
+  },
+  "users": [
+    {
+      "id": "ADMIN-01",
+      "email": "admin@lifeibeauty.com",
+      "name": "Pablo Kelvin (Store Owner)",
+      "role": "superadmin",
+      "pass": "admin123"
+    }
+  ]
+}

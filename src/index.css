@@ -560,6 +560,14 @@ body {
   }
 }
 
+.site-header {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 65;
+  flex-shrink: 0;
+}
+
 .site-header :is(button, a):focus-visible {
   outline: 2px solid #4a0818;
   outline-offset: 2px;

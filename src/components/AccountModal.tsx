@@ -19,7 +19,8 @@ import {
   MapPin,
   RefreshCw,
   Copy,
-  Check
+  Check,
+  ChevronDown
 } from 'lucide-react';
 import { Product } from '../types';
 
@@ -79,6 +80,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   onUpdateProfile,
 }) => {
   const [activeTab, setActiveTab] = useState<'points' | 'orders' | 'tracking' | 'profile' | 'wishlist' | 'favorites'>(initialTab);
+  const [wishlistSort, setWishlistSort] = useState<'newest' | 'price-asc' | 'price-desc'>('newest');
   const [pastOrders] = useState<PastOrder[]>([]);
 
   // Personal Information State (Lifted to App.tsx)
@@ -144,9 +146,30 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
   const wishlistedProducts = catalog.filter((p) => wishlistIds.includes(p.id));
 
+  const getProductPrice = (p: Product): number => {
+    if (typeof p.numericPrice === 'number' && !isNaN(p.numericPrice)) {
+      return p.numericPrice;
+    }
+    const parsed = parseFloat(String(p.price || '').replace(/[^0-9.]/g, ''));
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
+  const sortedWishlistedProducts = [...wishlistedProducts].sort((a, b) => {
+    if (wishlistSort === 'price-asc') {
+      return getProductPrice(a) - getProductPrice(b);
+    }
+    if (wishlistSort === 'price-desc') {
+      return getProductPrice(b) - getProductPrice(a);
+    }
+    // 'newest' (Newest Added: latest in wishlistIds appears first)
+    const aIdx = wishlistIds.indexOf(a.id);
+    const bIdx = wishlistIds.indexOf(b.id);
+    return bIdx - aIdx;
+  });
+
   const handleAddAllWishlist = () => {
     if (!onAddToCart) return;
-    wishlistedProducts.forEach((prod) => {
+    sortedWishlistedProducts.forEach((prod) => {
       onAddToCart(prod);
     });
   };
@@ -316,7 +339,29 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                   </h4>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center flex-wrap gap-2">
+                  {wishlistedProducts.length > 0 && (
+                    <div className="flex items-center gap-1.5">
+                      <label htmlFor="wishlist-sort-select" className="text-xs text-slate-500 font-medium whitespace-nowrap">
+                        Sort:
+                      </label>
+                      <div className="relative">
+                        <select
+                          id="wishlist-sort-select"
+                          aria-label="Sort saved products"
+                          value={wishlistSort}
+                          onChange={(e) => setWishlistSort(e.target.value as 'newest' | 'price-asc' | 'price-desc')}
+                          className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:border-[#FFCDF2] focus:border-[#EC3460] focus:ring-1 focus:ring-[#EC3460] rounded-xl pl-2.5 pr-7 py-1.5 appearance-none cursor-pointer transition-colors shadow-2xs outline-none"
+                        >
+                          <option value="newest">Newest Added</option>
+                          <option value="price-asc">Price: Low to High</option>
+                          <option value="price-desc">Price: High to Low</option>
+                        </select>
+                        <ChevronDown size={13} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                      </div>
+                    </div>
+                  )}
+
                   {onNavigateSection && (
                     <button
                       type="button"
@@ -368,7 +413,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {wishlistedProducts.map((product) => {
+                  {sortedWishlistedProducts.map((product) => {
                     const isAdded = !!addedModalIds[product.id];
 
                     return (
@@ -382,12 +427,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                           className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-200/50 cursor-pointer"
                           style={{ backgroundColor: product.panel }}
                         >
-                          <img 
-                            src={product.src} 
-                            alt={product.name} 
-                            referrerPolicy="no-referrer"
-                            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
-                          />
+                          {product.src ? (
+                            <img 
+                              src={product.src} 
+                              alt={product.name} 
+                              referrerPolicy="no-referrer"
+                              className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform"
+                            />
+                          ) : null}
                         </div>
 
                         {/* Info */}
@@ -651,7 +698,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                       {activeTrackedOrder.items.map((item, idx) => (
                         <div key={idx} className="flex items-center justify-between text-xs bg-slate-50 p-2 rounded-xl">
                           <div className="flex items-center gap-2">
-                            <img src={item.image} alt={item.name} className="w-8 h-8 rounded-lg object-cover object-center bg-white border border-slate-200" />
+                            {item.image ? (
+                              <img src={item.image} alt={item.name} className="w-8 h-8 rounded-lg object-cover object-center bg-white border border-slate-200" />
+                            ) : (
+                              <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] text-slate-400 font-bold">LF</div>
+                            )}
                             <div>
                               <span className="font-bold text-slate-800 block truncate max-w-[180px]">{item.name}</span>
                               <span className="text-[10px] text-slate-500">Qty: {item.quantity} · {item.volume}</span>
@@ -725,7 +776,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                         {order.items.map((item, idx) => (
                           <div key={idx} className="flex items-center justify-between text-xs bg-white p-2 rounded-xl border border-slate-100">
                             <div className="flex items-center gap-2">
-                              <img src={item.image} alt={item.name} className="w-8 h-8 rounded-lg object-cover object-center bg-[#FAF7F5] border border-slate-200" />
+                              {item.image ? (
+                                <img src={item.image} alt={item.name} className="w-8 h-8 rounded-lg object-cover object-center bg-[#FAF7F5] border border-slate-200" />
+                              ) : (
+                                <div className="w-8 h-8 rounded-lg bg-[#FAF7F5] border border-slate-200 flex items-center justify-center text-[10px] text-slate-400 font-bold">LF</div>
+                              )}
                               <div className="truncate max-w-[200px]">
                                 <span className="font-semibold text-slate-900 block truncate">{item.name}</span>
                                 <span className="text-[10px] text-slate-500">{item.volume} · Qty {item.quantity}</span>
@@ -1008,7 +1063,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                                 className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-100 cursor-pointer"
                                 onClick={() => onQuickView && onQuickView(product)}
                               >
-                                <img src={product.src} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                {product.src ? (
+                                  <img src={product.src} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                ) : null}
                               </div>
                               <div className="flex-1 min-w-0">
                                 <h5 
@@ -1053,3 +1110,5 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     </div>
   );
 };
+
+export default AccountModal;

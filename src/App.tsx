@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
 import { Header } from './components/Header';
 import { StaticHero } from './components/StaticHero';
 import { REFERENCE_HEROES, referenceHeroForPath, referenceHeroForProduct, type ReferenceHero } from './data/referenceHeroes';
@@ -17,6 +17,7 @@ import { Newsletter } from './components/Newsletter';
 import { Footer } from './components/Footer';
 
 import { ProductDetailModal } from './components/ProductDetailModal';
+import { BrandShoppingModal } from './components/BrandShoppingModal';
 import { CartDrawer } from './components/CartDrawer';
 import { SearchModal } from './components/SearchModal';
 import { PolicyModal } from './components/PolicyModal';
@@ -25,6 +26,7 @@ import { ShopifyConnectModal } from './components/ShopifyConnectModal';
 import { QuickAddWidget } from './components/QuickAddWidget';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { TrackOrderModal } from './components/TrackOrderModal';
+import { AccountModal } from './components/AccountModal';
 
 import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData, AdminUser } from './types';
 import { createShopifyCheckout, getShopifyConfig, getShopifyProducts } from './services/shopify';
@@ -34,7 +36,6 @@ import { usePersistentBag } from './hooks/usePersistentBag';
 import { getStorefrontContent, type StorefrontContent } from './services/storefrontContent';
 import { trackShoppingEvent } from './services/analytics';
 
-const AccountModal = lazy(() => import('./components/AccountModal').then(module => ({ default: module.AccountModal })));
 const AdminPortal = lazy(() => import('./components/admin/AdminPortal').then(module => ({ default: module.AdminPortal })));
 
 export function App() {
@@ -190,6 +191,7 @@ export function App() {
   const [trackOrderParams, setTrackOrderParams] = useState({ orderNumber: '', email: '' });
   const [policyType, setPolicyType] = useState<'shipping' | 'returns' | 'privacy' | 'terms' | null>(null);
   const [aboutContactMode, setAboutContactMode] = useState<'about' | 'contact' | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<'medicube' | 'biodance' | 'cerave' | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -208,6 +210,12 @@ export function App() {
       if (path === '/pages/about-us') setAboutContactMode('about');
       if (path === '/pages/contact') setAboutContactMode('contact');
       if (path === '/pages/faqs') document.getElementById('faq-section')?.scrollIntoView();
+      if (typeof setSelectedBrand === 'function') {
+        if (path === '/brands/medicube' || path === '/collections/medicube') setSelectedBrand('medicube');
+        else if (path === '/brands/biodance' || path === '/collections/biodance') setSelectedBrand('biodance');
+        else if (path === '/brands/cerave' || path === '/collections/cerave') setSelectedBrand('cerave');
+        else if (isNavigation && !path.startsWith('/brands/') && !path.startsWith('/collections/')) setSelectedBrand(null);
+      }
       let handle = '';
       try { handle = path.startsWith('/products/') ? decodeURIComponent(path.slice('/products/'.length)) : ''; }
       catch { showToast('This product link is invalid. Please choose an item from the catalog.'); }
@@ -232,46 +240,112 @@ export function App() {
   // Category filter state for BestSellers
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  // Wishlist state
-  const [wishlistIds, setWishlistIds] = useState<number[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('lifei_wishlist');
-        if (saved) return JSON.parse(saved);
-      } catch (e) {
-        // ignore
+  // Customer-isolated Wishlist Utilities
+  const getCustomerWishlistKey = (email?: string): string => {
+    const trimmed = email?.trim().toLowerCase();
+    if (trimmed && trimmed.includes('@')) {
+      return `lifei_wishlist_${trimmed}`;
+    }
+    return 'lifei_wishlist_guest';
+  };
+
+  const sanitizeWishlist = (raw: unknown): number[] => {
+    if (!Array.isArray(raw)) return [];
+    // Purge legacy demo IDs [1, 2, 3, 4] that caused the 4 favorites demo bug
+    const demoSet = new Set([1, 2, 3, 4]);
+    if (raw.length === 4 && raw.every(id => demoSet.has(id))) {
+      return [];
+    }
+    return raw.filter((id): id is number => typeof id === 'number' && Number.isFinite(id) && id > 0);
+  };
+
+  const loadWishlistForCustomer = (email?: string): number[] => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const key = getCustomerWishlistKey(email);
+      const saved = localStorage.getItem(key);
+      if (saved) {
+        return sanitizeWishlist(JSON.parse(saved));
       }
+      // Purge any legacy shared key with demo data
+      const legacy = localStorage.getItem('lifei_wishlist');
+      if (legacy) {
+        const parsed = JSON.parse(legacy);
+        const cleaned = sanitizeWishlist(parsed);
+        localStorage.removeItem('lifei_wishlist');
+        if (cleaned.length > 0) {
+          localStorage.setItem(key, JSON.stringify(cleaned));
+          return cleaned;
+        }
+      }
+    } catch {
+      // ignore
     }
     return [];
+  };
+
+  const saveWishlistForCustomer = (ids: number[], email?: string) => {
+    if (typeof window === 'undefined') return;
+    try {
+      const key = getCustomerWishlistKey(email);
+      localStorage.setItem(key, JSON.stringify(ids));
+    } catch {
+      // ignore
+    }
+  };
+
+  // Wishlist state - isolated per customer account and verified against catalog
+  const [wishlistIds, setWishlistIds] = useState<number[]>(() => {
+    return loadWishlistForCustomer(profileInfo?.email);
   });
 
-  // Sync mechanism for wishlistIds backup
+  // Load correct favorites when customer profile email changes
   useEffect(() => {
-    // Immediate save for responsiveness is already in handleToggleWishlist
-    // but we add a robust periodic sync for consistency during rapid changes
-    const syncInterval = setInterval(() => {
-      try {
-        localStorage.setItem('lifei_wishlist', JSON.stringify(wishlistIds));
-      } catch (e) {
-        // ignore
-      }
-    }, 5000); // Sync every 5 seconds
+    const customerList = loadWishlistForCustomer(profileInfo?.email);
+    setWishlistIds(customerList);
+  }, [profileInfo?.email]);
 
-    return () => clearInterval(syncInterval);
-  }, [wishlistIds]);
+  // Sync mechanism for wishlistIds cross-tab real-time updates for active customer
+  useEffect(() => {
+    const currentKey = getCustomerWishlistKey(profileInfo?.email);
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === currentKey && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (Array.isArray(parsed)) {
+            setWishlistIds(sanitizeWishlist(parsed));
+          }
+        } catch {
+          // ignore
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, [profileInfo?.email]);
+
+  // Clean ghost or demo IDs once catalog products are loaded
+  useEffect(() => {
+    if (products.length > 0 && wishlistIds.length > 0) {
+      const productIds = new Set(products.map(p => p.id));
+      const valid = wishlistIds.filter(id => productIds.has(id));
+      if (valid.length !== wishlistIds.length) {
+        setWishlistIds(valid);
+        saveWishlistForCustomer(valid, profileInfo?.email);
+      }
+    }
+  }, [products, profileInfo?.email]);
 
   const handleToggleWishlist = (productId: number) => {
     setWishlistIds((prev) => {
       const exists = prev.includes(productId);
       const updated = exists ? prev.filter((id) => id !== productId) : [...prev, productId];
-      try {
-        localStorage.setItem('lifei_wishlist', JSON.stringify(updated));
-      } catch (e) {
-        // ignore
-      }
+      saveWishlistForCustomer(updated, profileInfo?.email);
       const prod = products.find((p) => p.id === productId);
       if (prod) {
-        showToast(exists ? `Removed ${prod.name} from wishlist` : `Saved ${prod.name} to wishlist ❤️`);
+        showToast(exists ? `Removed ${prod.name} from favorites` : `Saved ${prod.name} to favorites ❤️`);
         triggerWishlistNotification(prod, exists);
       }
       return updated;
@@ -360,13 +434,19 @@ export function App() {
     if (!background) setIsProductsLoading(true);
     try {
       const liveProducts = await getShopifyProducts(24);
-      setProducts(liveProducts);
+      const seenIds = new Set<number>();
+      const deduplicated = liveProducts.filter(p => {
+        if (seenIds.has(p.id)) return false;
+        seenIds.add(p.id);
+        return true;
+      });
+      setProducts(deduplicated);
       setIsShopifyConnected(true);
       setProductError(null);
-      if (liveProducts.length === 0) {
+      if (deduplicated.length === 0) {
         setProductError('No products are available through this Shopify storefront. Check that products are Active and published to the sales channel associated with Storefront access.');
       } else if (showNotice) {
-        showToast(`Connected to Shopify! Loaded ${liveProducts.length} live products.`);
+        showToast(`Connected to Shopify! Loaded ${deduplicated.length} live products.`);
       }
     } catch (error) {
       if (!background) setProducts([]);
@@ -425,7 +505,8 @@ export function App() {
       }
       return [...prev, { product, quantity, variantId, selectedSize: product.volume }];
     });
-    // Pop up darker pink notification from Quick Add on bottom-right corner
+    // Pop up notification just like saved to wishlist
+    showToast(`Added ${product.name} to bag 🛍️`);
     triggerCartNotification(product, quantity, product.volume);
     trackShoppingEvent('add_to_cart', [{ product, quantity, variantId }]);
     return true;
@@ -485,8 +566,14 @@ export function App() {
   };
 
   const closeRoutedView = () => {
-    if (/^\/(products|policies|pages)\//.test(window.location.pathname)) window.history.replaceState({}, '', '/');
+    if (/^\/(products|policies|pages|brands|collections)\//.test(window.location.pathname)) window.history.replaceState({}, '', '/');
     setRoutePath(window.location.pathname.replace(/\/$/, '') || '/');
+  };
+
+  const handleSelectBrand = (brandId: 'medicube' | 'biodance' | 'cerave') => {
+    setSelectedBrand(brandId);
+    window.history.pushState({}, '', `/brands/${brandId}`);
+    setRoutePath(`/brands/${brandId}`);
   };
 
   const handleClearCart = () => {
@@ -495,6 +582,7 @@ export function App() {
 
   const scrollToSection = (sectionId: string) => {
     setQuickViewProduct(null);
+    setSelectedBrand(null);
     closeRoutedView();
     const behavior = sectionId === 'hero' || window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
     const el = document.getElementById(sectionId);
@@ -514,9 +602,17 @@ export function App() {
   if (kojicAcidProduct) quickAddProducts.push(kojicAcidProduct);
 
   const productReference = referenceHeroForProduct(quickViewProduct);
+
+  // Only valid products currently in the catalog count as customer favorites
+  const validWishlistIds = useMemo(() => {
+    if (products.length === 0) return wishlistIds;
+    return wishlistIds.filter((id) => products.some((p) => p.id === id));
+  }, [products, wishlistIds]);
+  const realWishlistCount = products.length > 0 ? validWishlistIds.length : 0;
+
   const headerProps = {
     cartCount: totalCartCount,
-    wishlistCount: wishlistIds.length,
+    wishlistCount: realWishlistCount,
     profileIncomplete,
     onOpenCart: () => setCartOpen(true),
     onOpenSearch: () => setSearchOpen(true),
@@ -572,14 +668,14 @@ export function App() {
         onQuickView={(p) => setQuickViewProduct(p)}
         onAddToCart={(p) => handleAddToCart(p)}
         onBuyNow={handleBuyNow}
-        wishlistIds={wishlistIds}
+        wishlistIds={validWishlistIds}
         onToggleWishlist={handleToggleWishlist}
       />
 
       {/* 5b. Dedicated My Favorites Section */}
       <MyFavoritesSection
         products={products}
-        wishlistIds={wishlistIds}
+        wishlistIds={validWishlistIds}
         onToggleWishlist={handleToggleWishlist}
         onAddToCart={(p) => handleAddToCart(p)}
         onQuickView={(p) => setQuickViewProduct(p)}
@@ -589,6 +685,7 @@ export function App() {
       {/* 6. Shop by Category Grid */}
       <CategoryGrid
         products={products}
+        onSelectBrand={handleSelectBrand}
         onSelectCategory={(catId) => setSelectedCategory(catId)}
         onNavigateSection={scrollToSection}
       />
@@ -605,7 +702,7 @@ export function App() {
         products={products}
         onQuickView={(p) => setQuickViewProduct(p)}
         onAddToCart={(p) => handleAddToCart(p)}
-        wishlistIds={wishlistIds}
+        wishlistIds={validWishlistIds}
         onToggleWishlist={handleToggleWishlist}
       />
 
@@ -646,15 +743,40 @@ export function App() {
       />
 
       {/* Modals & Drawers */}
+      {/* Dedicated Brand Shopping Page / Modal */}
+      <BrandShoppingModal
+        brandId={selectedBrand}
+        isOpen={Boolean(selectedBrand)}
+        onClose={() => {
+          setSelectedBrand(null);
+          closeRoutedView();
+        }}
+        products={products}
+        onQuickView={(p) => setQuickViewProduct(p)}
+        onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
+        wishlistIds={validWishlistIds}
+        onToggleWishlist={handleToggleWishlist}
+        header={<Header {...headerProps} />}
+      />
+
       {/* Product Detail Modal (PDP with full structure: Product → Rating → Price → Benefits → Add → Buy → Ingredients → How to Use → Results → Reviews → Recommended) */}
       <ProductDetailModal
-        brandHeader={productReference ? <Header {...headerProps} reference={productReference} /> : undefined}
+        brandHeader={<Header {...headerProps} reference={productReference} />}
         product={quickViewProduct ? products.find(product => product.id === quickViewProduct.id) || null : null}
         allProducts={products}
-        onClose={() => { setQuickViewProduct(null); closeRoutedView(); }}
+        onClose={() => {
+          setQuickViewProduct(null);
+          if (selectedBrand) {
+            window.history.replaceState({}, '', `/brands/${selectedBrand}`);
+            setRoutePath(`/brands/${selectedBrand}`);
+          } else {
+            closeRoutedView();
+          }
+        }}
         onAddToCart={handleAddToCart}
         onSelectRecommended={(p) => setQuickViewProduct(p)}
-        isWishlisted={quickViewProduct ? wishlistIds.includes(quickViewProduct.id) : false}
+        isWishlisted={quickViewProduct ? validWishlistIds.includes(quickViewProduct.id) : false}
         onToggleWishlist={handleToggleWishlist}
         onOpenPolicy={setPolicyType}
         onOpenContact={() => setAboutContactMode('contact')}
@@ -684,27 +806,29 @@ export function App() {
       />
 
       {/* Customer Account & Glow Rewards Modal */}
-      {accountOpen && <Suspense fallback={<div role="status" className="fixed inset-0 z-[140] bg-white/95 flex items-center justify-center">Loading your account…</div>}><AccountModal
-        isOpen={accountOpen}
-        onClose={() => setAccountOpen(false)}
-        wishlistIds={wishlistIds}
-        products={products}
-        onToggleWishlist={handleToggleWishlist}
-        onQuickView={(product) => {
-          setAccountOpen(false);
-          setQuickViewProduct(product);
-        }}
-        onAddToCart={(product) => {
-          handleAddToCart(product);
-          setAccountOpen(false);
-          setCartOpen(true);
-        }}
-        initialTab={accountTab}
-        onNavigateSection={scrollToSection}
-        onOpenTrackOrder={(num, mail) => handleOpenTrackOrder(num, mail)}
-        profileInfo={profileInfo}
-        onUpdateProfile={handleUpdateProfile}
-      /></Suspense>}
+      {accountOpen && (
+        <AccountModal
+          isOpen={accountOpen}
+          onClose={() => setAccountOpen(false)}
+          wishlistIds={validWishlistIds}
+          products={products}
+          onToggleWishlist={handleToggleWishlist}
+          onQuickView={(product) => {
+            setAccountOpen(false);
+            setQuickViewProduct(product);
+          }}
+          onAddToCart={(product) => {
+            handleAddToCart(product);
+            setAccountOpen(false);
+            setCartOpen(true);
+          }}
+          initialTab={accountTab}
+          onNavigateSection={scrollToSection}
+          onOpenTrackOrder={(num, mail) => handleOpenTrackOrder(num, mail)}
+          profileInfo={profileInfo}
+          onUpdateProfile={handleUpdateProfile}
+        />
+      )}
 
       {/* Track My Order Modal */}
       <TrackOrderModal
@@ -741,18 +865,23 @@ export function App() {
         onConnected={() => loadProducts(true)}
       />
 
-      {/* Floating Quick Add Mini-Widget (Top 3 Best Sellers for returning visitors) */}
-      {!heroVisible && <QuickAddWidget
+      {/* Floating Quick Add Mini-Widget (Top 3 Best Sellers for returning visitors) and Popups */}
+      <QuickAddWidget
         products={quickAddProducts}
+        showLauncher={!heroVisible}
         onAddToCart={(p) => handleAddToCart(p)}
         onQuickView={(p) => setQuickViewProduct(p)}
         onOpenCart={() => setCartOpen(true)}
+        onOpenWishlist={() => {
+          setAccountTab('wishlist');
+          setAccountOpen(true);
+        }}
         cartCount={totalCartCount}
         cartNotification={cartNotification}
         wishlistNotification={wishlistNotification}
         onDismissNotification={handleDismissCartNotification}
         onDismissWishlistNotification={handleDismissWishlistNotification}
-      />}
+      />
 
       {/* Floating Store Admin Trigger - Completely hidden unless authenticated as admin */}
       {isAdminAuthenticated && (
@@ -796,7 +925,7 @@ export function App() {
       />
 
       {/* General Notification (Wishlist, Promo, Sync in Light Theme) */}
-      {toastMessage && !cartNotification && (
+      {toastMessage && !cartNotification && !wishlistNotification && (
         <aside 
           aria-live="polite"
           className="fixed bottom-22 right-6 z-[95] bg-white/95 text-slate-900 px-4.5 py-3 rounded-2xl shadow-2xl shadow-slate-200/50 flex items-center gap-3 animate-in slide-in-from-bottom duration-200 border border-[#FFCDF2] backdrop-blur-md"

@@ -152,7 +152,7 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
               <ResponsiveProductImage
                 src={recommendedProduct.src}
                 alt={recommendedProduct.name}
-                className="w-full h-full object-contain object-center drop-shadow-md transition-transform duration-500"
+                className="w-full h-full object-cover object-center drop-shadow-md transition-transform duration-500"
               />
             </div>
           </div>
