@@ -21,6 +21,15 @@ const headerProps = {
   onOpenContact: noop,
 };
 
+test('initial document enables mobile sizing and safe areas without restricting zoom', () => {
+  const document = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  const head = document.match(/<head>([\s\S]*?)<\/head>/i)?.[1] || '';
+  const viewports = head.match(/<meta\b[^>]*\bname=["']viewport["'][^>]*>/gi) || [];
+  assert.equal(viewports.length, 1);
+  assert.match(viewports[0], /content="width=device-width, initial-scale=1, viewport-fit=cover"/);
+  assert.doesNotMatch(viewports[0], /user-scalable|maximum-scale|minimum-scale/);
+});
+
 test('all three reference heroes render immediately with original artwork and real product destinations without catalog data', () => {
   for (const reference of REFERENCE_HEROES) {
     const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
