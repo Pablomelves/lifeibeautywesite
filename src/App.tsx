@@ -34,7 +34,7 @@ import { getStoreContentSettings, verifyAdminSession } from './services/adminSer
 import { Check, SlidersHorizontal } from 'lucide-react';
 import { usePersistentBag } from './hooks/usePersistentBag';
 import { getStorefrontContent, type StorefrontContent } from './services/storefrontContent';
-import { trackShoppingEvent } from './services/analytics';
+import { trackShoppingEvent, trackPageView } from './services/analytics';
 
 const AdminPortal = lazy(() => import('./components/admin/AdminPortal').then(module => ({ default: module.AdminPortal })));
 
@@ -231,6 +231,10 @@ export function App() {
     window.addEventListener('popstate', handleNavigation);
     return () => window.removeEventListener('popstate', handleNavigation);
   }, [products]);
+
+  useEffect(() => {
+    trackPageView(routePath);
+  }, [routePath]);
 
   const handleOpenTrackOrder = (orderNum = '', orderEmail = '') => {
     setTrackOrderParams({ orderNumber: orderNum, email: orderEmail });
@@ -868,7 +872,8 @@ export function App() {
       {/* Floating Quick Add Mini-Widget (Top 3 Best Sellers for returning visitors) and Popups */}
       <QuickAddWidget
         products={quickAddProducts}
-        showLauncher={!heroVisible}
+        showLauncher={!heroVisible && !cartOpen}
+        isCartOpen={cartOpen}
         onAddToCart={(p) => handleAddToCart(p)}
         onQuickView={(p) => setQuickViewProduct(p)}
         onOpenCart={() => setCartOpen(true)}

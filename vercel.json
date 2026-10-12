@@ -10,8 +10,35 @@
       "destination": "/api/shopify/graphql"
     },
     {
+      "source": "/api/shopify/",
+      "destination": "/api/shopify/graphql"
+    },
+    {
+      "source": "/api/bag/",
+      "destination": "/api/bag"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
     }
   ]
 }

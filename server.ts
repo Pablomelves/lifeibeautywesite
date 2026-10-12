@@ -20,6 +20,8 @@ import {
   parseCookies 
 } from './src/services/authSecurity.ts';
 import { handleNodeRequest } from './api/shopify/graphql.ts';
+import { handleBagNodeRequest } from './api/bag.ts';
+import { checkRateLimit, getClientIp, getSecurityHeaders } from './api/lib/security.ts';
 
 // Load environment variables if available
 const envPath = path.resolve(process.cwd(), '.env');
@@ -144,6 +146,14 @@ const ai = new GoogleGenAI({
 
 app.use(express.json({ limit: '15mb' }));
 
+app.use((_req, res, next) => {
+  const headers = getSecurityHeaders();
+  for (const [k, v] of Object.entries(headers)) {
+    res.setHeader(k, v);
+  }
+  next();
+});
+
 // ----------------------------------------------------------------------
 // URL Route Guard for /admin pages (Server-side protection)
 // ----------------------------------------------------------------------
@@ -174,6 +184,13 @@ app.use(async (req: Request, res: Response, next: NextFunction) => {
 // 1. Authentication
 // ----------------------------------------------------------------------
 app.post('/api/auth/login', async (req: Request, res: Response) => {
+  const clientIp = getClientIp(req);
+  const rate = checkRateLimit(`login:${clientIp}`, 6, 15 * 60 * 1000);
+  if (!rate.allowed) {
+    res.status(429).json({ success: false, error: 'Too many login attempts. Please wait 15 minutes.' });
+    return;
+  }
+
   const { email, pass } = req.body;
   const { secret, expectedEmail, expectedPass } = getAdminCredentials();
 
@@ -427,6 +444,13 @@ app.get('/api/discounts', (_req: Request, res: Response) => {
 });
 
 app.post('/api/discounts/validate', (req: Request, res: Response) => {
+  const clientIp = getClientIp(req);
+  const rate = checkRateLimit(`discount-guess:${clientIp}`, 15, 60000);
+  if (!rate.allowed) {
+    res.status(429).json({ valid: false, message: 'Too many discount code attempts. Please slow down.' });
+    return;
+  }
+
   const { code, subtotal } = req.body;
   const clean = (code || '').trim().toUpperCase();
   const disc = db.discounts.find((d: any) => d.code === clean);
@@ -471,6 +495,13 @@ app.put('/api/reviews/:id', requireAdmin, (req: Request, res: Response) => {
 
 // Public: Customer review submission (pending moderation)
 app.post('/api/reviews', (req: Request, res: Response) => {
+  const clientIp = getClientIp(req);
+  const rate = checkRateLimit(`review-submit:${clientIp}`, 5, 60000);
+  if (!rate.allowed) {
+    res.status(429).json({ success: false, error: 'Too many reviews submitted. Please wait a moment.' });
+    return;
+  }
+
   const newRev = req.body;
   const nextId = db.reviews.length > 0 ? Math.max(...db.reviews.map((r: any) => r.id)) + 1 : 1;
   const review = {
@@ -613,6 +644,13 @@ app.post('/api/gemini/recommendations', async (req: Request, res: Response) => {
 // ----------------------------------------------------------------------
 app.all(['/api/shopify/graphql', '/api/shopify'], async (req: Request, res: Response) => {
   await handleNodeRequest(req, res);
+});
+
+// ----------------------------------------------------------------------
+// 12. Persistent Shopping Bag API
+// ----------------------------------------------------------------------
+app.all('/api/bag', async (req: Request, res: Response) => {
+  await handleBagNodeRequest(req, res);
 });
 
 // ----------------------------------------------------------------------

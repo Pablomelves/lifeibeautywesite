@@ -1,3 +1,5 @@
+import { checkRateLimit, getSecurityHeaders } from '../lib/security.js';
+
 interface GraphqlPart {
   data?: Record<string, unknown>;
   path?: (string | number)[];
@@ -59,15 +61,31 @@ export async function processShopifyRequest(options: ProcessShopifyOptions): Pro
   const responseHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
     'Cache-Control': 'no-store',
+    ...getSecurityHeaders(),
   };
 
-  const { method } = options;
+  const { method, clientIp } = options;
   if (method !== 'POST' && method !== 'GET') {
     return {
       status: 405,
       headers: { ...responseHeaders, Allow: 'GET, POST' },
       body: { error: 'Method not allowed' },
     };
+  }
+
+  // Rate Limiting per Client IP
+  if (clientIp) {
+    const rateCheck = checkRateLimit(`shopify-ip:${clientIp}`, 120, 60000);
+    if (!rateCheck.allowed) {
+      return {
+        status: 429,
+        headers: {
+          ...responseHeaders,
+          'Retry-After': String(rateCheck.retryAfterSec),
+        },
+        body: { error: 'Too many requests to the store API. Please slow down.' },
+      };
+    }
   }
 
   const domain = (process.env.SHOPIFY_STORE_DOMAIN || 'maison-co-store1.myshopify.com')
@@ -107,6 +125,10 @@ export async function processShopifyRequest(options: ProcessShopifyOptions): Pro
     };
   }
 
+  if (typeof options.body === 'string' && options.body.length > 64000) {
+    return { status: 413, headers: responseHeaders, body: { error: 'Request body is too large' } };
+  }
+
   let parsedBody: { query?: string; variables?: Record<string, unknown> } = {};
   if (typeof options.body === 'string') {
     try {
@@ -123,6 +145,30 @@ export async function processShopifyRequest(options: ProcessShopifyOptions): Pro
 
   if (typeof query !== 'string' || !query.trim()) {
     return { status: 400, headers: responseHeaders, body: { error: 'GraphQL query is required' } };
+  }
+
+  // Prevent automated cart spam and discount code guessing
+  if (clientIp && /\bcartCreate\b/.test(query)) {
+    const cartRate = checkRateLimit(`shopify-cart:${clientIp}`, 35, 60000);
+    if (!cartRate.allowed) {
+      return {
+        status: 429,
+        headers: { ...responseHeaders, 'Retry-After': String(cartRate.retryAfterSec) },
+        body: { error: 'Too many checkout or cart attempts. Please wait a moment.' },
+      };
+    }
+
+    const input = (variables as any)?.input;
+    if (input?.discountCodes?.length) {
+      const discountRate = checkRateLimit(`shopify-discount:${clientIp}`, 20, 300000);
+      if (!discountRate.allowed) {
+        return {
+          status: 429,
+          headers: { ...responseHeaders, 'Retry-After': String(discountRate.retryAfterSec) },
+          body: { error: 'Too many discount code attempts. Please try again later.' },
+        };
+      }
+    }
   }
 
   const shopifyEndpoint = `https://${domain}/api/${apiVersion}/graphql.json`;

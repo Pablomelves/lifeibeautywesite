@@ -24,16 +24,23 @@ async function shopifyFetch<T>(query: string, variables: Record<string, unknown>
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query, variables }),
       cache: 'no-store',
-      signal: AbortSignal.timeout(15000),
+      signal: typeof AbortSignal.timeout === 'function' ? AbortSignal.timeout(15000) : undefined,
     });
 
-    if (res.status === 404 || res.headers.get('content-type')?.includes('text/html')) {
-      throw new Error('The Shopify connection endpoint is unavailable. The Netlify Shopify function must be deployed with this website.');
+    const contentType = res.headers.get('content-type') || '';
+    if (res.status === 404 || contentType.includes('text/html') || !contentType.includes('application/json')) {
+      throw new Error('The Shopify connection endpoint is unavailable. Please check the connection settings.');
     }
 
-    const json = await res.json();
+    let json: any;
+    try {
+      json = await res.json();
+    } catch {
+      throw new Error('Unexpected non-JSON response received from Shopify API.');
+    }
+
     if (!res.ok) {
-      throw new Error(json.error || `Shopify request failed (HTTP ${res.status}). Verify the Netlify connection settings and Shopify product publication.`);
+      throw new Error(json.error || `Shopify request failed (HTTP ${res.status}). Verify connection settings and Shopify product publication.`);
     }
     if (json.errors?.length || !json.data) {
       throw new Error('Shopify rejected the request. Verify Storefront API permissions and product publication for this sales channel.');

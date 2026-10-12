@@ -6,6 +6,7 @@ import { Product, CartNotificationData, WishlistNotificationData } from '../type
 interface QuickAddWidgetProps {
   products: Product[];
   showLauncher?: boolean;
+  isCartOpen?: boolean;
   onAddToCart: (product: Product) => boolean | void;
   onQuickView: (product: Product) => void;
   onOpenCart: () => void;
@@ -22,6 +23,7 @@ interface QuickAddWidgetProps {
 export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({
   products,
   showLauncher = true,
+  isCartOpen = false,
   onAddToCart,
   onQuickView,
   onOpenCart,
@@ -36,6 +38,9 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [addedProductId, setAddedProductId] = useState<number | null>(null);
+
+  // When cart drawer is open, do not render or obscure cart controls
+  if (isCartOpen) return null;
 
   // Take top 3 best-selling products
   const top3Products = (products && products.length >= 3 ? products.slice(0, 3) : products).slice(0, 3);

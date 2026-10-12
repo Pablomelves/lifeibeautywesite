@@ -64,6 +64,16 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const promoPending = useRef(false);
   const [checkingPromo, setCheckingPromo] = useState(false);
 
+  React.useEffect(() => {
+    if (isOpen) {
+      const orig = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = orig;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const shopifyConfig = getShopifyConfig();
@@ -130,12 +140,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-[130] bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200 font-inter"
+      className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-xs flex justify-end animate-in fade-in duration-200 font-inter"
       onClick={onClose}
     >
       <div 
         ref={modal}
-        className="w-full max-w-md bg-white text-slate-900 h-full flex flex-col shadow-2xl relative"
+        className="w-full max-w-full sm:max-w-md bg-white text-slate-900 h-full flex flex-col shadow-2xl relative"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -278,10 +288,27 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             {promoSuccessMsg && (
               <span className="text-[11px] text-emerald-700 font-bold">{promoSuccessMsg}</span>
             )}
-            {discountAmount > 0 && (
+            {activeDiscountCode && (
               <div className="flex items-center justify-between text-xs text-[#B31940] bg-[#FFF0F9] border border-[#FFCDF2] px-3 py-1.5 rounded-lg font-medium">
-                <span>Code {activeDiscountCode || 'PROMO'} applied!</span>
-                <span className="font-mono font-bold">-${discountAmount.toFixed(2)}</span>
+                <div className="flex items-center gap-1.5">
+                  <Check size={13} className="text-emerald-600 shrink-0" />
+                  <span>Code <strong>{activeDiscountCode}</strong> applied!</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {discountAmount > 0 && <span className="font-mono font-bold">-${discountAmount.toFixed(2)}</span>}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveDiscountCode('');
+                      setPromoCode('');
+                      setPromoSuccessMsg(null);
+                      setPromoError(null);
+                    }}
+                    className="text-[11px] underline text-slate-500 hover:text-[#EC3460] cursor-pointer"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             )}
 
