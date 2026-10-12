@@ -19,6 +19,7 @@ import {
   timingSafeEqual, 
   parseCookies 
 } from './src/services/authSecurity.ts';
+import { handleNodeRequest } from './api/shopify/graphql.ts';
 
 // Load environment variables if available
 const envPath = path.resolve(process.cwd(), '.env');
@@ -605,6 +606,13 @@ app.post('/api/gemini/recommendations', async (req: Request, res: Response) => {
     console.error('Gemini Recommendation Error:', err);
     res.status(500).json({ error: 'Failed to generate recommendations', message: err.message });
   }
+});
+
+// ----------------------------------------------------------------------
+// 11. Shopify Storefront API Proxy
+// ----------------------------------------------------------------------
+app.all(['/api/shopify/graphql', '/api/shopify'], async (req: Request, res: Response) => {
+  await handleNodeRequest(req, res);
 });
 
 // ----------------------------------------------------------------------
