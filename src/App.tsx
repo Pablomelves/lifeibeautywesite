@@ -28,9 +28,10 @@ import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { TrackOrderModal } from './components/TrackOrderModal';
 import { AccountModal } from './components/AccountModal';
 
-import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData, AdminUser } from './types';
+import { Product, CartItem, StoreContentSettings, CartNotificationData, WishlistNotificationData, AdminUser, CustomerUser, CustomerProfileInfo } from './types';
 import { createShopifyCheckout, getShopifyConfig, getShopifyProducts } from './services/shopify';
 import { getStoreContentSettings, verifyAdminSession } from './services/adminService';
+import { subscribeToCustomerAuth, signOutCustomer } from './services/firebase';
 import { Check, SlidersHorizontal } from 'lucide-react';
 import { usePersistentBag } from './hooks/usePersistentBag';
 import { getStorefrontContent, type StorefrontContent } from './services/storefrontContent';
@@ -52,30 +53,99 @@ export function App() {
   // Storefront dynamic content
   const [contentSettings, setContentSettings] = useState<StoreContentSettings>(() => getStoreContentSettings());
 
+  const DEFAULT_PROFILE: CustomerProfileInfo = {
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    country: 'South Korea',
+    zip: '',
+    skinGoal: 'Glass Skin Luminosity & Firming',
+    skinType: 'Combination / Dehydrated',
+    sensitivity: 'Mild (Prefers Fragrance-Free Korean Formulations)'
+  };
+
+  const getCustomerProfileKey = (user: CustomerUser | null): string => {
+    if (user?.uid) {
+      return `lifei_profile_${user.uid}`;
+    }
+    return 'lifei_profile_info';
+  };
+
+  const createInitialCustomerProfile = (user: CustomerUser): CustomerProfileInfo => {
+    const names = (user.displayName || '').trim().split(/\s+/);
+    const firstName = names[0] || '';
+    const lastName = names.slice(1).join(' ') || '';
+    return {
+      ...DEFAULT_PROFILE,
+      firstName,
+      lastName,
+      email: user.email || '',
+      photoURL: user.photoURL || undefined,
+    };
+  };
+
+  // Authenticated customer state (strictly isolated from admin state)
+  const [customerUser, setCustomerUser] = useState<CustomerUser | null>(null);
+
   // Personal Information State (Lifted for global reactivity)
-  const [profileInfo, setProfileInfo] = useState(() => {
+  const [profileInfo, setProfileInfo] = useState<CustomerProfileInfo>(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('lifei_profile_info');
-        if (saved) return JSON.parse(saved);
+        if (saved) return { ...DEFAULT_PROFILE, ...JSON.parse(saved) };
       } catch (e) {
         // ignore
       }
     }
-    return {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      country: 'South Korea',
-      zip: '',
-      skinGoal: 'Glass Skin Luminosity & Firming',
-      skinType: 'Combination / Dehydrated',
-      sensitivity: 'Mild (Prefers Fragrance-Free Korean Formulations)'
-    };
+    return { ...DEFAULT_PROFILE };
   });
+
+  // Synchronize authenticated customer session with Firebase Auth
+  useEffect(() => {
+    const unsubscribe = subscribeToCustomerAuth((user) => {
+      setCustomerUser(user);
+      if (typeof window === 'undefined') return;
+
+      if (user) {
+        const userKey = `lifei_profile_${user.uid}`;
+        const saved = localStorage.getItem(userKey);
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setProfileInfo({ ...DEFAULT_PROFILE, ...parsed });
+          } catch {
+            const initial = createInitialCustomerProfile(user);
+            localStorage.setItem(userKey, JSON.stringify(initial));
+            setProfileInfo(initial);
+          }
+        } else {
+          // Initialize isolated customer profile from Google identity without overwriting other customers
+          const initial = createInitialCustomerProfile(user);
+          localStorage.setItem(userKey, JSON.stringify(initial));
+          setProfileInfo(initial);
+        }
+      } else {
+        // Safe revert to guest profile on sign-out without deleting saved customer data
+        const guestSaved = localStorage.getItem('lifei_profile_info');
+        if (guestSaved) {
+          try {
+            setProfileInfo({ ...DEFAULT_PROFILE, ...JSON.parse(guestSaved) });
+          } catch {
+            setProfileInfo({ ...DEFAULT_PROFILE });
+          }
+        } else {
+          setProfileInfo({ ...DEFAULT_PROFILE });
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   const profileIncomplete = !profileInfo.firstName || !profileInfo.lastName || !profileInfo.email;
 
@@ -416,11 +486,16 @@ export function App() {
     setProfileInfo(newInfo);
     if (typeof window !== 'undefined') {
       try {
-        localStorage.setItem('lifei_profile_info', JSON.stringify(newInfo));
+        const key = getCustomerProfileKey(customerUser);
+        localStorage.setItem(key, JSON.stringify(newInfo));
       } catch (e) {
         // ignore
       }
     }
+  };
+
+  const handleCustomerSignOut = async () => {
+    await signOutCustomer();
   };
 
   const showToast = (message: string) => {
@@ -831,6 +906,9 @@ export function App() {
           onOpenTrackOrder={(num, mail) => handleOpenTrackOrder(num, mail)}
           profileInfo={profileInfo}
           onUpdateProfile={handleUpdateProfile}
+          customerUser={customerUser}
+          onCustomerSignedIn={(user) => setCustomerUser(user)}
+          onCustomerSignedOut={handleCustomerSignOut}
         />
       )}
 

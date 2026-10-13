@@ -292,3 +292,25 @@ export interface AdminUser {
   name: string;
   role: 'superadmin' | 'manager' | 'editor';
 }
+
+export interface CustomerUser {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL: string | null;
+}
+
+export interface CustomerProfileInfo {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  country: string;
+  zip: string;
+  skinGoal: string;
+  skinType: string;
+  sensitivity?: string;
+  photoURL?: string;
+}

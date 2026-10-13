@@ -22,7 +22,8 @@ import {
   Check,
   ChevronDown
 } from 'lucide-react';
-import { Product } from '../types';
+import { Product, CustomerUser } from '../types';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 export interface OrderItem {
   id: number;
@@ -63,6 +64,9 @@ interface AccountModalProps {
   onOpenTrackOrder?: (orderNumber: string, email: string) => void;
   profileInfo: any;
   onUpdateProfile: (info: any) => void;
+  customerUser?: CustomerUser | null;
+  onCustomerSignedIn?: (user: CustomerUser) => void;
+  onCustomerSignedOut?: () => void;
 }
 
 export const AccountModal: React.FC<AccountModalProps> = ({ 
@@ -78,6 +82,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   onOpenTrackOrder,
   profileInfo,
   onUpdateProfile,
+  customerUser = null,
+  onCustomerSignedIn,
+  onCustomerSignedOut,
 }) => {
   const [activeTab, setActiveTab] = useState<'points' | 'orders' | 'tracking' | 'profile' | 'wishlist' | 'favorites'>(initialTab);
   const [wishlistSort, setWishlistSort] = useState<'newest' | 'price-asc' | 'price-desc'>('newest');
@@ -849,6 +856,34 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     Edit Profile
                   </button>
                 )}
+              </div>
+
+              {/* Google Customer Authentication & Sync */}
+              <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Account Security & Cloud Sync
+                  </span>
+                  {customerUser ? (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full">
+                      Google Verified
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded-full">
+                      Guest Session
+                    </span>
+                  )}
+                </div>
+                {!customerUser && (
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Sign in with Google to protect your personalized beauty preferences and access your saved favorites across devices.
+                  </p>
+                )}
+                <GoogleSignInButton
+                  currentUser={customerUser}
+                  onSignedIn={onCustomerSignedIn}
+                  onSignedOut={onCustomerSignedOut}
+                />
               </div>
 
               {isEditingProfile ? (
