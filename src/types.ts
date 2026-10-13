@@ -314,3 +314,12 @@ export interface CustomerProfileInfo {
   sensitivity?: string;
   photoURL?: string;
 }
+
+export function isProductSoldOut(product?: { availableForSale?: boolean; stockStatus?: string; stockQuantity?: number } | null): boolean {
+  if (!product) return false;
+  return (
+    product.availableForSale === false ||
+    product.stockStatus === 'Out of Stock' ||
+    (typeof product.stockQuantity === 'number' && product.stockQuantity <= 0)
+  );
+}

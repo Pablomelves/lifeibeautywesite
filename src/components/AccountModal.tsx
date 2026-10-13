@@ -22,7 +22,7 @@ import {
   Check,
   ChevronDown
 } from 'lucide-react';
-import { Product, CustomerUser } from '../types';
+import { Product, CustomerUser, isProductSoldOut } from '../types';
 import { GoogleSignInButton } from './GoogleSignInButton';
 
 export interface OrderItem {
@@ -176,9 +176,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
   const handleAddAllWishlist = () => {
     if (!onAddToCart) return;
-    sortedWishlistedProducts.forEach((prod) => {
-      onAddToCart(prod);
-    });
+    sortedWishlistedProducts
+      .filter((prod) => !isProductSoldOut(prod))
+      .forEach((prod) => {
+        onAddToCart(prod);
+      });
   };
 
   // Dummy order generator
@@ -422,6 +424,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 <div className="space-y-3">
                   {sortedWishlistedProducts.map((product) => {
                     const isAdded = !!addedModalIds[product.id];
+                    const isSoldOut = isProductSoldOut(product);
 
                     return (
                       <div
@@ -431,9 +434,14 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                         {/* Product Thumbnail */}
                         <div 
                           onClick={() => onQuickView && onQuickView(product)}
-                          className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-200/50 cursor-pointer"
+                          className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-200/50 cursor-pointer relative"
                           style={{ backgroundColor: product.panel }}
                         >
+                          {isSoldOut && (
+                            <span className="absolute top-1 left-1 z-10 bg-slate-900/90 text-white text-[7px] font-bold uppercase tracking-wider px-1 py-0.5 rounded shadow-xs">
+                              Sold Out
+                            </span>
+                          )}
                           {product.src ? (
                             <img 
                               src={product.src} 
@@ -451,7 +459,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                               {product.category}
                             </span>
                             <span className="text-[10px] text-slate-400">·</span>
-                            <span className="text-[10px] text-emerald-700 font-semibold">{product.stockStatus}</span>
+                            <span className={`text-[10px] font-semibold ${isSoldOut ? 'text-slate-500' : 'text-emerald-700'}`}>
+                              {isSoldOut ? 'Sold Out' : (product.stockStatus || 'In Stock')}
+                            </span>
                           </div>
                           <h5 
                             onClick={() => onQuickView && onQuickView(product)}
@@ -484,23 +494,29 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                           {onAddToCart && (
                             <button
                               type="button"
+                              disabled={isSoldOut}
                               onClick={() => {
+                                if (isSoldOut) return;
                                 onAddToCart(product);
                                 setAddedModalIds(prev => ({ ...prev, [product.id]: true }));
                                 setTimeout(() => setAddedModalIds(prev => ({ ...prev, [product.id]: false })), 1800);
                               }}
-                              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-1 ${
+                              className={`px-3 py-1.5 text-xs font-semibold rounded-xl transition-all flex items-center gap-1 ${
                                 isAdded
-                                  ? 'bg-emerald-600 text-white'
-                                  : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry'
+                                  ? 'bg-emerald-600 text-white cursor-pointer shadow-xs'
+                                  : isSoldOut
+                                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                                  : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry cursor-pointer'
                               }`}
-                              title="Add to Bag"
+                              title={isSoldOut ? 'Sold Out' : 'Add to Bag'}
                             >
                               {isAdded ? (
                                 <>
                                   <Check size={13} strokeWidth={3} />
                                   <span className="hidden sm:inline">Added!</span>
                                 </>
+                              ) : isSoldOut ? (
+                                <span>Sold Out</span>
                               ) : (
                                 <>
                                   <ShoppingBag size={13} />

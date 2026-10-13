@@ -36,6 +36,7 @@ import { Check, SlidersHorizontal } from 'lucide-react';
 import { usePersistentBag } from './hooks/usePersistentBag';
 import { getStorefrontContent, type StorefrontContent } from './services/storefrontContent';
 import { trackShoppingEvent, trackPageView } from './services/analytics';
+import type { BrandId } from './services/brandService';
 
 const AdminPortal = lazy(() => import('./components/admin/AdminPortal').then(module => ({ default: module.AdminPortal })));
 
@@ -261,7 +262,7 @@ export function App() {
   const [trackOrderParams, setTrackOrderParams] = useState({ orderNumber: '', email: '' });
   const [policyType, setPolicyType] = useState<'shipping' | 'returns' | 'privacy' | 'terms' | null>(null);
   const [aboutContactMode, setAboutContactMode] = useState<'about' | 'contact' | null>(null);
-  const [selectedBrand, setSelectedBrand] = useState<'medicube' | 'biodance' | 'cerave' | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<BrandId | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -284,6 +285,7 @@ export function App() {
         if (path === '/brands/medicube' || path === '/collections/medicube') setSelectedBrand('medicube');
         else if (path === '/brands/biodance' || path === '/collections/biodance') setSelectedBrand('biodance');
         else if (path === '/brands/cerave' || path === '/collections/cerave') setSelectedBrand('cerave');
+        else if (path === '/brands/all' || path === '/collections/all-brands') setSelectedBrand('all');
         else if (isNavigation && !path.startsWith('/brands/') && !path.startsWith('/collections/')) setSelectedBrand(null);
       }
       let handle = '';
@@ -649,7 +651,7 @@ export function App() {
     setRoutePath(window.location.pathname.replace(/\/$/, '') || '/');
   };
 
-  const handleSelectBrand = (brandId: 'medicube' | 'biodance' | 'cerave') => {
+  const handleSelectBrand = (brandId: BrandId) => {
     setSelectedBrand(brandId);
     window.history.pushState({}, '', `/brands/${brandId}`);
     setRoutePath(`/brands/${brandId}`);
@@ -830,6 +832,7 @@ export function App() {
           setSelectedBrand(null);
           closeRoutedView();
         }}
+        onSelectBrand={handleSelectBrand}
         products={products}
         onQuickView={(p) => setQuickViewProduct(p)}
         onAddToCart={handleAddToCart}
@@ -837,6 +840,11 @@ export function App() {
         wishlistIds={validWishlistIds}
         onToggleWishlist={handleToggleWishlist}
         header={<Header {...headerProps} />}
+        headerProps={headerProps}
+        onOpenProduct={(handle) => {
+          window.history.pushState({}, '', `/products/${encodeURIComponent(handle)}`);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }}
       />
 
       {/* Product Detail Modal (PDP with full structure: Product → Rating → Price → Benefits → Add → Buy → Ingredients → How to Use → Results → Reviews → Recommended) */}

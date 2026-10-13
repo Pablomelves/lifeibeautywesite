@@ -31,11 +31,15 @@ export const AdminInventoryTab: React.FC<AdminInventoryTabProps> = ({
   };
 
   const handleSaveAll = () => {
-    const updated = products.map((p) => ({
-      ...p,
-      stockQuantity: stockMap[p.id] !== undefined ? stockMap[p.id] : 35,
-      stockStatus: (stockMap[p.id] || 0) > 0 ? 'In Stock' : 'Out of Stock'
-    }));
+    const updated = products.map((p) => {
+      const currentStock = stockMap[p.id] !== undefined ? stockMap[p.id] : (p.stockQuantity !== undefined ? p.stockQuantity : 35);
+      return {
+        ...p,
+        stockQuantity: currentStock,
+        stockStatus: currentStock > 0 ? 'In Stock' : 'Out of Stock',
+        availableForSale: currentStock > 0
+      };
+    });
     onSaveProducts(updated);
     setSavedNotice(true);
     setTimeout(() => setSavedNotice(false), 2000);

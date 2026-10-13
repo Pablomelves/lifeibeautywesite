@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { ShoppingBag, Check, Zap, X, ChevronUp, ChevronDown, ArrowRight, Heart, Plus, Scale } from 'lucide-react';
-import { Product, CartNotificationData, WishlistNotificationData } from '../types';
+import { Product, CartNotificationData, WishlistNotificationData, isProductSoldOut } from '../types';
 
 interface QuickAddWidgetProps {
   products: Product[];
@@ -275,18 +275,27 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({
           <div className="space-y-2.5">
             {top3Products.map((product, idx) => {
               const isAdded = addedProductId === product.id;
+              const isSoldOut = isProductSoldOut(product);
+
               return (
                 <div
                   key={`${product.id}-${idx}`}
                   onClick={() => onQuickView(product)}
                   className="flex items-center gap-3 p-2 rounded-2xl hover:bg-[#FFF0F9]/40 border border-slate-100 hover:border-[#FFCDF2]/60 transition-all cursor-pointer group"
                 >
-                  <ResponsiveProductImage
-                    src={product.src}
-                    alt={product.name}
-                    className="w-12 h-12 rounded-xl object-cover object-center bg-slate-50 border border-slate-100 shrink-0 transition-transform"
-                    loading="lazy"
-                  />
+                  <div className="relative w-12 h-12 shrink-0">
+                    {isSoldOut && (
+                      <span className="absolute top-0.5 left-0.5 z-10 bg-slate-900/90 text-white text-[7px] font-bold uppercase tracking-wider px-1 py-0.2 rounded shadow-xs">
+                        Sold Out
+                      </span>
+                    )}
+                    <ResponsiveProductImage
+                      src={product.src}
+                      alt={product.name}
+                      className="w-full h-full rounded-xl object-cover object-center bg-slate-50 border border-slate-100 transition-transform"
+                      loading="lazy"
+                    />
+                  </div>
 
                   <div className="flex-1 min-w-0">
                     <h5 className="text-[11px] font-bold text-slate-900 truncate uppercase group-hover:text-[#EC3460] transition-colors">
@@ -311,18 +320,23 @@ export const QuickAddWidget: React.FC<QuickAddWidgetProps> = ({
                   <div className="flex flex-col gap-1.5 shrink-0">
                     <button
                       onClick={(e) => handleAdd(e, product)}
-                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center justify-center gap-1 shadow-xs ${
+                      disabled={isSoldOut}
+                      className={`px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1 shadow-xs ${
                         isAdded
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry'
+                          ? 'bg-emerald-600 text-white cursor-pointer'
+                          : isSoldOut
+                          ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                          : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry cursor-pointer'
                       }`}
-                      title={`Add ${product.name} to cart`}
+                      title={isSoldOut ? 'Sold Out' : `Add ${product.name} to cart`}
                     >
                       {isAdded ? (
                         <>
                           <Check size={12} strokeWidth={3} />
                           <span>Added</span>
                         </>
+                      ) : isSoldOut ? (
+                        <span>Sold Out</span>
                       ) : (
                         <>
                           <ShoppingBag size={12} />

@@ -22,7 +22,7 @@ import {
   Maximize2,
   ZoomIn
 } from 'lucide-react';
-import { Product, Review } from '../types';
+import { Product, Review, isProductSoldOut } from '../types';
 
 interface BeforeAfterRollingFacialProps {
   onQuickView?: (product: Product) => void;
@@ -68,6 +68,7 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
   const rollerProduct =
     catalog.find((p) => p.category === 'Tools & Rollers' || p.name.toLowerCase().includes('roller')) ||
     catalog[0];
+  const rollerSoldOut = isProductSoldOut(rollerProduct);
 
   const protocols = [
     {
@@ -196,6 +197,7 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
 
   const handleAddRoller = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (rollerSoldOut) return;
     onAddToCart?.(rollerProduct);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
@@ -546,9 +548,14 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
             {/* Paired Product Card: The Rose Quartz Contour Roller */}
             {rollerProduct && <div className="bg-white rounded-3xl p-6 border border-[#FFCDF2] shadow-md flex gap-4 items-center group">
               <div 
-                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#FFF0F9] border border-[#FFCDF2] flex items-center justify-center shrink-0 cursor-pointer overflow-hidden"
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl bg-[#FFF0F9] border border-[#FFCDF2] flex items-center justify-center shrink-0 cursor-pointer overflow-hidden relative"
                 onClick={() => onQuickView?.(rollerProduct)}
               >
+                {rollerSoldOut && (
+                  <span className="absolute top-1.5 left-1.5 z-10 bg-slate-900/90 text-white text-[7px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shadow-xs">
+                    Sold Out
+                  </span>
+                )}
                 <img 
                   src={rollerProduct.src} 
                   alt={rollerProduct.name}
@@ -591,17 +598,23 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
                   <div className="flex flex-col sm:flex-row items-center gap-2 mt-2">
                     <button
                       onClick={handleAddRoller}
-                      className={`w-full sm:flex-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                      disabled={rollerSoldOut}
+                      className={`w-full sm:flex-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                         added
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                          : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50'
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 cursor-pointer'
+                          : rollerSoldOut
+                          ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                          : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 cursor-pointer'
                       }`}
+                      title={rollerSoldOut ? 'Currently Sold Out' : 'Add to bag'}
                     >
                       {added ? (
                         <>
                           <Check size={14} />
                           <span>In Bag</span>
                         </>
+                      ) : rollerSoldOut ? (
+                        <span>Sold Out</span>
                       ) : (
                         <>
                           <ShoppingBag size={14} />
@@ -610,14 +623,27 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
                       )}
                     </button>
                     <button
+                      disabled={rollerSoldOut}
                       onClick={(e) => {
                         e.stopPropagation();
+                        if (rollerSoldOut) return;
                         onAddToCart?.(rollerProduct);
                       }}
-                      className="w-full sm:flex-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1.5 bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry border border-transparent"
+                      className={`w-full sm:flex-1 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                        rollerSoldOut
+                          ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                          : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry border border-transparent cursor-pointer'
+                      }`}
+                      title={rollerSoldOut ? 'Currently Sold Out' : 'Buy Now'}
                     >
-                      <Sparkles size={14} />
-                      <span>Buy Now</span>
+                      {rollerSoldOut ? (
+                        <span>Sold Out</span>
+                      ) : (
+                        <>
+                          <Sparkles size={14} />
+                          <span>Buy Now</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -1278,15 +1304,21 @@ export const BeforeAfterRollingFacial: React.FC<BeforeAfterRollingFacialProps> =
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
+                    disabled={rollerSoldOut}
                     onClick={() => {
+                      if (rollerSoldOut) return;
                       onAddToCart?.(rollerProduct);
                       setAdded(true);
                       setTimeout(() => setAdded(false), 2000);
                     }}
-                    className="bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all shadow-raspberry cursor-pointer flex items-center gap-2 hover:scale-[1.02]"
+                    className={`text-xs font-bold uppercase tracking-wider px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 ${
+                      rollerSoldOut
+                        ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                        : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry cursor-pointer hover:scale-[1.02]'
+                    }`}
                   >
                     <ShoppingBag size={14} />
-                    <span>{added ? 'Added to Bag!' : `Add Roller to Bag (${rollerProduct.price})`}</span>
+                    <span>{rollerSoldOut ? 'Sold Out' : added ? 'Added to Bag!' : `Add Roller to Bag (${rollerProduct.price})`}</span>
                   </button>
 
                   <button

@@ -19,7 +19,7 @@ import {
   Scale,
   ArrowLeft
 } from 'lucide-react';
-import { Product } from '../types';
+import { Product, isProductSoldOut } from '../types';
 import { ProductReviews } from './ProductReviews';
 import { ProductInformationSection } from './ProductInformationSection';
 import { StorefrontHtml } from './StorefrontHtml';
@@ -122,7 +122,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const currentPrice = selectedVariant ? selectedVariant.price : product.price;
   const currentNumericPrice = selectedVariant ? selectedVariant.numericPrice : product.numericPrice;
   const currentOriginalPrice = selectedVariant ? selectedVariant.compareAtPrice : product.originalPrice;
-  const currentAvailable = selectedVariant ? selectedVariant.availableForSale : product.availableForSale;
+  const currentAvailable = (selectedVariant ? selectedVariant.availableForSale : product.availableForSale !== false) && product.stockStatus !== 'Out of Stock' && (product.stockQuantity === undefined || product.stockQuantity > 0);
 
   const recommended = (allProducts || [])
     .filter((p) => p.id !== product.id)
@@ -324,11 +324,15 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 className="w-full aspect-square rounded-3xl flex items-center justify-center relative shadow-sm overflow-hidden group"
                 style={{ backgroundColor: activeImage === product.src ? product.panel : '#F8FAFC' }}
               >
-                {product.badge && (
+                {!currentAvailable ? (
+                  <span className="absolute top-2.5 left-2.5 z-10 bg-slate-900/85 backdrop-blur-sm text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-xs">
+                    Sold Out
+                  </span>
+                ) : product.badge ? (
                   <span className="absolute top-2.5 left-2.5 z-10 bg-slate-900/80 backdrop-blur-sm text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-white/10">
                     {product.badge}
                   </span>
-                )}
+                ) : null}
                 
                 {/* Manual Navigation Arrows */}
                 {galleryImages.length > 1 && (
@@ -425,7 +429,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
                 {/* 2. Rating */}
                 <div className="flex items-center gap-2 mt-3 flex-wrap">
-                  <span className="text-xs text-emerald-700 font-semibold">{currentAvailable ? 'In Stock' : 'Out of Stock'}</span>
+                  <span className={`text-xs font-semibold ${currentAvailable ? 'text-emerald-700' : 'text-slate-500'}`}>{currentAvailable ? 'In Stock' : 'Sold Out'}</span>
                 </div>
 
                 {/* 3. Price */}
@@ -518,10 +522,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <button
                     onClick={handleAdd}
                     disabled={!currentAvailable || added}
-                    className={`flex-1 font-semibold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-raspberry flex items-center justify-center gap-2 ${
-                      added
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-[#EC3460] hover:bg-[#D8224F] text-white'
+                    className={`flex-1 font-semibold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
+                      !currentAvailable
+                        ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                        : added
+                        ? 'bg-emerald-600 text-white cursor-pointer shadow-raspberry'
+                        : 'bg-[#EC3460] hover:bg-[#D8224F] text-white cursor-pointer shadow-raspberry'
                     }`}
                   >
                     {added ? (
@@ -563,13 +569,19 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 <button
                   onClick={handleBuyNow}
                   disabled={isBuyingNow || !currentAvailable}
-                  className="w-full bg-slate-900 hover:bg-slate-800 disabled:opacity-60 text-white font-semibold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
+                  className={`w-full font-semibold text-xs uppercase tracking-wider py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 ${
+                    !currentAvailable
+                      ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                      : 'bg-slate-900 hover:bg-slate-800 text-white cursor-pointer shadow-md'
+                  }`}
                 >
                   {isBuyingNow ? (
                     <>
                       <Loader2 size={16} className="animate-spin" />
                       <span>Creating Shopify Checkout...</span>
                     </>
+                  ) : !currentAvailable ? (
+                    <span>Sold out</span>
                   ) : (
                     <>
                       <Sparkles size={16} />
@@ -604,9 +616,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   className="p-4 bg-slate-50 hover:bg-slate-100/80 rounded-2xl border border-slate-200/60 transition-all cursor-pointer flex flex-col justify-between"
                 >
                   <div 
-                    className="w-full aspect-square rounded-xl overflow-hidden flex items-center justify-center mb-3 border border-slate-200/50"
+                    className="w-full aspect-square rounded-xl overflow-hidden flex items-center justify-center mb-3 border border-slate-200/50 relative"
                     style={{ backgroundColor: rec.panel }}
                   >
+                    {isProductSoldOut(rec) && (
+                      <span className="absolute top-2 left-2 z-10 bg-slate-900/85 text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full shadow-xs">
+                        Sold Out
+                      </span>
+                    )}
                     <ResponsiveProductImage src={rec.src} alt={rec.name} className="w-full h-full object-cover object-center" />
                   </div>
                   <div>

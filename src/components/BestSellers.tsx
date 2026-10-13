@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { Star, ShoppingBag, Eye, Sparkles, Check, Heart, Scale } from 'lucide-react';
-import { Product } from '../types';
+import { Product, isProductSoldOut } from '../types';
 import { belongsToCollection } from '../services/collectionRules';
 import { isProductOfBrand } from '../services/brandService';
 
@@ -49,6 +49,7 @@ const ProductCard: React.FC<{
   const [isHovered, setIsHovered] = useState(false);
   const [justWishlisted, setJustWishlisted] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  const isSoldOut = isProductSoldOut(product);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);
@@ -94,11 +95,15 @@ const ProductCard: React.FC<{
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Badge */}
-        {product.badge && (
+        {isSoldOut ? (
+          <span className="absolute top-2.5 left-2.5 z-20 bg-slate-900/85 text-white text-[8px] sm:text-[9px] font-bold uppercase tracking-widest px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full shadow-xs pointer-events-none backdrop-blur-xs">
+            Sold Out
+          </span>
+        ) : product.badge ? (
           <span className="absolute top-2.5 left-2.5 z-20 bg-[#EC3460]/85 text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full shadow-xs pointer-events-none border border-white/10 backdrop-blur-[1px]">
             {product.badge}
           </span>
-        )}
+        ) : null}
 
         {/* Action Buttons: Wishlist & Quick View & Compare */}
         <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
@@ -184,10 +189,19 @@ const ProductCard: React.FC<{
       <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between">
         <div>
           {/* Stars & Reviews */}
-          <div className="flex items-center gap-1 mb-1 sm:mb-1.5">
+          <div className="flex items-center justify-between gap-1 mb-1 sm:mb-1.5">
             <span className="text-[9px] sm:text-[11px] text-slate-500 font-medium">
               {product.volume}
             </span>
+            {isSoldOut ? (
+              <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-wider text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded-md">
+                Sold Out
+              </span>
+            ) : (
+              <span className="text-[8px] sm:text-[9px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md">
+                In Stock
+              </span>
+            )}
           </div>
 
           {/* Title */}
@@ -227,19 +241,23 @@ const ProductCard: React.FC<{
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-1.5 sm:gap-2">
             <button
               onClick={(e) => handleAdd(e, product)}
-              disabled={product.availableForSale === false || isAdded}
-              className={`flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center justify-center gap-1 ${
+              disabled={isSoldOut || isAdded}
+              className={`flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1 ${
                 isAdded
-                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 animate-pop'
-                  : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50'
+                  ? 'bg-emerald-100 text-emerald-800 border border-emerald-200 animate-pop cursor-pointer'
+                  : isSoldOut
+                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                  : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 cursor-pointer'
               }`}
-              title="Add to your cart"
+              title={isSoldOut ? 'Currently Sold Out' : 'Add to your cart'}
             >
               {isAdded ? (
                 <>
                   <Check size={isMobile ? 12 : 14} />
                   <span>In Bag</span>
                 </>
+              ) : isSoldOut ? (
+                <span>Sold Out</span>
               ) : (
                 <>
                   <ShoppingBag size={isMobile ? 12 : 14} />
@@ -251,18 +269,29 @@ const ProductCard: React.FC<{
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                if (isSoldOut) return;
                 if (onBuyNow) {
                   onBuyNow(product);
                 } else {
                   if (onAddToCart(product) === false) return;
                 }
               }}
-              className="flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 cursor-pointer flex items-center justify-center gap-1 bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry border border-transparent"
-              title="Buy now and checkout"
-              disabled={product.availableForSale === false}
+              className={`flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1 ${
+                isSoldOut
+                  ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                  : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry border border-transparent cursor-pointer'
+              }`}
+              title={isSoldOut ? 'Currently Sold Out' : 'Buy now and checkout'}
+              disabled={isSoldOut}
             >
-              <Sparkles size={isMobile ? 12 : 14} />
-              <span className="xs:inline">Buy</span>
+              {isSoldOut ? (
+                <span>Sold Out</span>
+              ) : (
+                <>
+                  <Sparkles size={isMobile ? 12 : 14} />
+                  <span className="xs:inline">Buy</span>
+                </>
+              )}
             </button>
           </div>
         </div>

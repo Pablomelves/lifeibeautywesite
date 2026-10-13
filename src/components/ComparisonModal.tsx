@@ -1,7 +1,7 @@
 import React from 'react';
 import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { X, Check, ShoppingBag, Sparkles, Scale } from 'lucide-react';
-import { Product } from '../types';
+import { Product, isProductSoldOut } from '../types';
 
 interface ComparisonModalProps {
   isOpen: boolean;
@@ -90,11 +90,16 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                   </button>
 
                   {/* Header Visual */}
-                  <div className="h-[280px] p-6 border-b border-slate-100 flex flex-col items-center text-center">
+                  <div className="h-[280px] p-6 border-b border-slate-100 flex flex-col items-center text-center relative">
                     <div 
-                      className="w-32 h-32 rounded-2xl mb-4 flex items-center justify-center border border-[#FFCDF2]/40 overflow-hidden"
+                      className="w-32 h-32 rounded-2xl mb-4 flex items-center justify-center border border-[#FFCDF2]/40 overflow-hidden relative"
                       style={{ backgroundColor: product.panel }}
                     >
+                      {isProductSoldOut(product) && (
+                        <span className="absolute top-2 left-2 z-10 bg-slate-900/85 text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full shadow-xs">
+                          Sold Out
+                        </span>
+                      )}
                       <ResponsiveProductImage src={product.src} alt={product.name} className="w-full h-full object-cover object-center drop-shadow-md" />
                     </div>
                     <h3 className="font-anton text-base uppercase leading-tight line-clamp-2 text-slate-900">{product.name}</h3>
@@ -136,11 +141,22 @@ export const ComparisonModal: React.FC<ComparisonModalProps> = ({
                   {/* Actions */}
                   <div className="p-6 flex flex-col gap-2">
                     <button 
-                      onClick={() => onAddToCart(product)}
-                      className="w-full bg-[#EC3460] hover:bg-[#D8224F] text-white text-[10px] font-bold uppercase tracking-wider py-3 rounded-xl transition-all shadow-raspberry flex items-center justify-center gap-2 cursor-pointer"
+                      onClick={() => !isProductSoldOut(product) && onAddToCart(product)}
+                      disabled={isProductSoldOut(product)}
+                      className={`w-full text-[10px] font-bold uppercase tracking-wider py-3 rounded-xl transition-all flex items-center justify-center gap-2 ${
+                        isProductSoldOut(product)
+                          ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                          : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry cursor-pointer'
+                      }`}
                     >
-                      <ShoppingBag size={14} />
-                      <span>Add to Bag</span>
+                      {isProductSoldOut(product) ? (
+                        <span>Sold Out</span>
+                      ) : (
+                        <>
+                          <ShoppingBag size={14} />
+                          <span>Add to Bag</span>
+                        </>
+                      )}
                     </button>
                     <button 
                       className="w-full bg-white text-slate-900 border border-slate-200 text-[10px] font-bold uppercase tracking-wider py-3 rounded-xl hover:bg-slate-50 transition-all flex items-center justify-center gap-2 cursor-pointer"

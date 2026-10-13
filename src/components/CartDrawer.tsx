@@ -15,7 +15,7 @@ import {
   RefreshCw,
   Loader2
 } from 'lucide-react';
-import { CartItem } from '../types';
+import { CartItem, isProductSoldOut } from '../types';
 import { createShopifyCheckout, getShopifyConfig, validateShopifyDiscount } from '../services/shopify';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { trackShoppingEvent } from '../services/analytics';
@@ -199,9 +199,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               return (
                 <div key={itemKey} className="py-4 first:pt-0 flex gap-4 items-center">
                   <div 
-                    className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-200/50"
+                    className="w-20 h-20 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-200/50 relative"
                     style={{ backgroundColor: item.product.panel }}
                   >
+                    {isProductSoldOut(item.product) && (
+                      <span className="absolute top-1.5 left-1.5 z-10 bg-slate-900/90 text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded shadow-xs">
+                        Sold Out
+                      </span>
+                    )}
                     <ResponsiveProductImage 
                       src={item.product.src} 
                       alt={item.product.name}
@@ -218,7 +223,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         <p className="text-[11px] text-slate-500 truncate">
                           {item.selectedSize || item.product.volume}
                         </p>
-                        {item.product.availableForSale === false && <p className="text-[11px] text-[#B31940] font-semibold">Sold out — remove this item before checkout.</p>}
+                        {isProductSoldOut(item.product) && <p className="text-[11px] text-[#B31940] font-semibold mt-0.5">Sold out — remove this item before checkout.</p>}
                       </div>
                       <span className="text-xs font-bold font-mono tabular-nums text-slate-900">
                         ${(item.product.numericPrice * item.quantity).toFixed(2)}
@@ -241,7 +246,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                           onClick={() => onUpdateQuantity(item.product.id, 1, itemVariantId)}
                           className="p-1 text-slate-500 hover:text-[#EC3460] cursor-pointer"
                           aria-label="Increase quantity"
-                          disabled={item.product.availableForSale === false || item.quantity >= 999}
+                          disabled={isProductSoldOut(item.product) || item.quantity >= 999}
                         >
                           <Plus size={13} />
                         </button>
@@ -343,11 +348,19 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             ) : (
               <button
                 onClick={handleCheckout}
-                disabled={isLoading || items.some(item => item.product.availableForSale === false)}
-                className="w-full bg-[#EC3460] hover:bg-[#D8224F] text-white font-semibold text-xs uppercase tracking-wider py-4 rounded-2xl shadow-raspberry transition-all cursor-pointer flex items-center justify-center gap-2 mt-1"
+                disabled={isLoading || items.some(item => isProductSoldOut(item.product))}
+                className={`w-full font-semibold text-xs uppercase tracking-wider py-4 rounded-2xl transition-all flex items-center justify-center gap-2 mt-1 ${
+                  items.some(item => isProductSoldOut(item.product))
+                    ? 'bg-slate-200 text-slate-500 cursor-not-allowed shadow-none'
+                    : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry cursor-pointer'
+                }`}
               >
                 <ShieldCheck size={18} />
-                <span>BUY NOW · ${finalTotal.toFixed(2)}</span>
+                <span>
+                  {items.some(item => isProductSoldOut(item.product))
+                    ? 'Remove Sold Out Items to Checkout'
+                    : `BUY NOW · $${finalTotal.toFixed(2)}`}
+                </span>
               </button>
             )}
 

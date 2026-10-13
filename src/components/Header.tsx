@@ -13,7 +13,7 @@ import {
 import { CATEGORIES } from '../data/storeData';
 import type { ReferenceHero } from '../data/referenceHeroes';
 
-interface HeaderProps {
+export interface HeaderProps {
   reference?: ReferenceHero;
   referenceOverlay?: boolean;
   pageHeader?: boolean;

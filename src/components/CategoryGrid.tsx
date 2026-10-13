@@ -1,10 +1,10 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { Product } from '../types';
-import { BRANDS, getProductsForBrand, BrandInfo } from '../services/brandService';
+import { BRANDS, getProductsForBrand, BrandInfo, BrandId } from '../services/brandService';
 
 interface CategoryGridProps {
-  onSelectBrand?: (brandId: 'medicube' | 'biodance' | 'cerave') => void;
+  onSelectBrand?: (brandId: BrandId) => void;
   onSelectCategory: (catId: string) => void;
   onNavigateSection: (sectionId: string) => void;
   products?: Product[];
@@ -64,8 +64,17 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
             return (
               <div
                 key={brand.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`Shop ${brand.name} collection`}
                 onClick={() => handleClick(brand)}
-                className={`group p-6 rounded-3xl bg-gradient-to-br ${brand.bgGradient} border border-[#FFCDF2]/40 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between cursor-pointer hover:border-[#EC3460]/40`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleClick(brand);
+                  }
+                }}
+                className={`group p-6 rounded-3xl bg-gradient-to-br ${brand.bgGradient} border border-[#FFCDF2]/40 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between cursor-pointer hover:border-[#EC3460]/40 focus:outline-none focus:ring-2 focus:ring-[#EC3460] focus:ring-offset-2`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">

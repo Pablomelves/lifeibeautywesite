@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { Search, X, Sparkles, ArrowRight, Loader2, Scale, Clock } from 'lucide-react';
-import { Product } from '../types';
+import { Product, isProductSoldOut } from '../types';
 import { searchShopifyProducts, getShopifyConfig } from '../services/shopify';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
 import { trackShoppingEvent } from '../services/analytics';
@@ -253,7 +253,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                     className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 border border-slate-100 cursor-pointer transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center" style={{ backgroundColor: prod.panel }}>
+                      <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center relative" style={{ backgroundColor: prod.panel }}>
+                        {isProductSoldOut(prod) && (
+                          <span className="absolute top-1 left-1 z-10 bg-slate-900/90 text-white text-[7px] font-bold uppercase tracking-wider px-1 py-0.5 rounded shadow-xs">
+                            Sold Out
+                          </span>
+                        )}
                         <ResponsiveProductImage src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center" />
                       </div>
                       <div>
@@ -261,7 +266,14 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                         <span className="text-[11px] text-slate-500">{prod.subtitle}</span>
                       </div>
                     </div>
-                    <span className="text-xs font-bold font-mono text-slate-900">{prod.price}</span>
+                    <div className="flex flex-col items-end gap-0.5">
+                      <span className="text-xs font-bold font-mono text-slate-900">{prod.price}</span>
+                      {isProductSoldOut(prod) && (
+                        <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                          Sold Out
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -301,7 +313,12 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                     className="flex items-center justify-between p-3.5 rounded-2xl hover:bg-rose-50/50 border border-slate-200/60 cursor-pointer transition-all group"
                   >
                     <div className="flex items-center gap-3.5">
-                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center" style={{ backgroundColor: prod.panel }}>
+                      <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-slate-200/50 flex items-center justify-center relative" style={{ backgroundColor: prod.panel }}>
+                        {isProductSoldOut(prod) && (
+                          <span className="absolute top-1 left-1 z-10 bg-slate-900/90 text-white text-[7px] font-bold uppercase tracking-wider px-1 py-0.5 rounded shadow-xs">
+                            Sold Out
+                          </span>
+                        )}
                         <ResponsiveProductImage src={prod.src} alt={prod.name} className="w-full h-full object-cover object-center transition-transform" />
                       </div>
                       <div>
@@ -319,7 +336,14 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold font-mono text-slate-900">{prod.price}</span>
+                      <div className="flex flex-col items-end gap-0.5">
+                        <span className="text-xs font-bold font-mono text-slate-900">{prod.price}</span>
+                        {isProductSoldOut(prod) && (
+                          <span className="text-[9px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                            Sold Out
+                          </span>
+                        )}
+                      </div>
                       {onToggleComparison && (
                         <button
                           onClick={(e) => {

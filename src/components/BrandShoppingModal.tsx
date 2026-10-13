@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { X, ArrowRight, ArrowLeft, ShoppingBag, Heart, Check, Sparkles, ChevronRight, LayoutGrid, Grid, Eye } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { X, ArrowRight, ArrowLeft, ShoppingBag, Heart, Check, Sparkles, ChevronRight, ChevronLeft, LayoutGrid, Grid, Eye } from 'lucide-react';
 import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { Product, ShopifyVariant } from '../types';
-import { getBrandById, getProductsForBrand } from '../services/brandService';
+import { getBrandById, getProductsForBrand, BRANDS, ALL_BRANDS_INFO, type BrandId, type BrandInfo } from '../services/brandService';
 import { useModalAccessibility } from '../hooks/useModalAccessibility';
 
 interface BrandShoppingModalProps {
-  brandId: 'medicube' | 'biodance' | 'cerave' | null;
+  brandId: BrandId | null;
   isOpen: boolean;
   onClose: () => void;
   products: Product[];
@@ -16,6 +16,9 @@ interface BrandShoppingModalProps {
   wishlistIds?: number[];
   onToggleWishlist?: (productId: number) => void;
   header?: React.ReactNode;
+  headerProps?: any;
+  onOpenProduct?: (handle: string) => void;
+  onSelectBrand?: (brandId: BrandId) => void;
 }
 
 interface BrandProductCardProps {
@@ -286,13 +289,42 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
   wishlistIds = [],
   onToggleWishlist,
   header,
+  onSelectBrand,
 }) => {
   const modalRef = useModalAccessibility(isOpen, onClose);
+  const stripScrollRef = useRef<HTMLDivElement>(null);
   const [gridView, setGridView] = useState<'standard' | 'compact'>('standard');
+  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'name'>('featured');
   if (!isOpen || !brandId) return null;
 
   const brand = getBrandById(brandId);
-  const matchingProducts = getProductsForBrand(products, brandId);
+  const rawMatchingProducts = getProductsForBrand(products, brandId);
+  const matchingProducts = [...rawMatchingProducts].sort((a, b) => {
+    if (sortBy === 'price-asc') return (a.numericPrice ?? 0) - (b.numericPrice ?? 0);
+    if (sortBy === 'price-desc') return (b.numericPrice ?? 0) - (a.numericPrice ?? 0);
+    if (sortBy === 'name') return a.name.localeCompare(b.name);
+    return 0;
+  });
+
+  const handleScrollStrip = (direction: 'left' | 'right') => {
+    if (stripScrollRef.current) {
+      const offset = direction === 'left' ? -260 : 260;
+      stripScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    }
+  };
+
+  const handleBrandSelect = (targetBrandId: BrandId) => {
+    if (onSelectBrand) {
+      onSelectBrand(targetBrandId);
+    }
+  };
+
+  const brandFilterItems: BrandInfo[] = [
+    ...BRANDS,
+    ALL_BRANDS_INFO,
+  ];
+
+  const allCuratedCount = getProductsForBrand(products, 'all').length;
 
   return (
     <div
@@ -344,6 +376,186 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
           </div>
         </div>
 
+        {/* Medicube Official Brand Lineup Banner (Only displayed on Medicube collection) */}
+        {brandId === 'medicube' && (
+          <section
+            aria-label="Medicube Official Brand Lineup Banner"
+            className="w-full bg-white border-b border-slate-200/80 overflow-hidden"
+          >
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6">
+              <div className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-white border border-slate-100 shadow-xs flex items-center justify-center p-2 sm:p-4 bg-radial from-slate-50/50 to-white">
+                <picture className="w-full flex items-center justify-center">
+                  {/* Modern WebP tailored for smaller screen widths (<= 768px) to optimize loading performance */}
+                  <source
+                    type="image/webp"
+                    media="(max-width: 768px)"
+                    srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7-mobile.webp"
+                  />
+                  {/* PNG tailored for smaller screen widths (<= 768px) */}
+                  <source
+                    type="image/png"
+                    media="(max-width: 768px)"
+                    srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7-mobile.png"
+                  />
+                  {/* Desktop / tablet displays use the full-resolution master asset */}
+                  <source
+                    media="(min-width: 769px)"
+                    srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7.png"
+                  />
+                  <img
+                    src="/5931077C-048F-40AA-B867-AEFF21A819B7.png"
+                    srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7-mobile.webp 768w, /5931077C-048F-40AA-B867-AEFF21A819B7-mobile.png 768w, /5931077C-048F-40AA-B867-AEFF21A819B7.png 1920w"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 95vw, 1280px"
+                    alt="Medicube Official Skincare Lineup — Zero Pore, Exosome Shot, Age-R Booster Pro, PDRN Pink Peptide, Collagen & Deep Vita C"
+                    className="w-full h-auto object-contain object-center max-h-[260px] sm:max-h-[380px] md:max-h-[460px] lg:max-h-[520px]"
+                    loading="eager"
+                    fetchPriority="high"
+                    referrerPolicy="no-referrer"
+                  />
+                </picture>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Horizontal Brand Filter Strip (Positioned directly below the Medicube collection banner) */}
+        <section
+          aria-label="Curated Brands Quick Switch Strip"
+          className="w-full bg-slate-50/95 border-b border-slate-200/90 py-3 sm:py-3.5 px-4 sm:px-6 lg:px-8 transition-colors"
+        >
+          <div className="max-w-7xl mx-auto">
+            {/* Header row with metadata & quick scroll controls */}
+            <div className="flex items-center justify-between gap-3 mb-2.5">
+              <div className="flex items-center gap-2 text-xs text-slate-600">
+                <span className="w-2 h-2 rounded-full bg-[#EC3460] shrink-0" />
+                <span className="font-bold uppercase tracking-[0.16em] text-[10px] sm:text-[11px] text-slate-900 whitespace-nowrap">
+                  Curated Brand Filter
+                </span>
+                <span className="text-slate-300">·</span>
+                <span className="text-[11px] text-slate-500 hidden sm:inline whitespace-nowrap">
+                  Toggle between Medicube, Biodance & authorized brands without leaving collection view
+                </span>
+                <span className="text-[11px] text-slate-500 sm:hidden whitespace-nowrap">
+                  Quick Brand Toggle
+                </span>
+              </div>
+
+              {/* Scroll buttons for desktop */}
+              <div className="hidden sm:flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleScrollStrip('left')}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-200/70 transition-colors cursor-pointer"
+                  title="Scroll brand strip left"
+                  aria-label="Scroll brand strip left"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleScrollStrip('right')}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-200/70 transition-colors cursor-pointer"
+                  title="Scroll brand strip right"
+                  aria-label="Scroll brand strip right"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable button strip */}
+            <div className="relative">
+              <div
+                ref={stripScrollRef}
+                role="tablist"
+                aria-label="Curated Brands Navigation Strip"
+                className="flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar scroll-smooth py-1 w-full"
+              >
+                {brandFilterItems.map((item) => {
+                  const isActive = brandId === item.id;
+                  const count = item.id === 'all'
+                    ? allCuratedCount
+                    : getProductsForBrand(products, item.id).length;
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      onClick={() => handleBrandSelect(item.id)}
+                      className={`group shrink-0 min-w-[210px] sm:min-w-[240px] p-2.5 sm:p-3 rounded-2xl flex items-center justify-between gap-3 transition-all duration-200 cursor-pointer text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-[#EC3460] ${
+                        isActive
+                          ? 'bg-white shadow-sm ring-2'
+                          : 'bg-white/80 hover:bg-white text-slate-700 hover:text-slate-900 border border-slate-200/90 hover:border-slate-300 shadow-2xs hover:shadow-xs'
+                      }`}
+                      style={
+                        isActive
+                          ? {
+                              borderColor: item.accentColor || '#EC3460',
+                              borderWidth: '2px',
+                              boxShadow: `0 4px 14px -3px ${item.accentColor ? item.accentColor + '25' : 'rgba(236,52,96,0.18)'}`,
+                            }
+                          : undefined
+                      }
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {/* Brand Product/Logo Thumbnail */}
+                        <div className="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-2xs">
+                          {item.image ? (
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-contain"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <Sparkles size={16} className="text-slate-400" />
+                          )}
+                        </div>
+
+                        {/* Brand Names & Tagline */}
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 leading-tight">
+                            <span className="font-anton uppercase tracking-wide text-xs sm:text-sm text-slate-900 truncate">
+                              {item.name}
+                            </span>
+                            {item.koreanTag && (
+                              <span className="text-[10px] text-slate-400 font-medium truncate">
+                                {item.koreanTag}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[10px] sm:text-[11px] text-slate-500 truncate mt-0.5">
+                            {item.tag}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right indicator: Active badge or product count */}
+                      <div className="shrink-0 flex items-center pl-1">
+                        {isActive ? (
+                          <span
+                            className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-white px-2.5 py-0.5 rounded-full shadow-2xs whitespace-nowrap"
+                            style={{ backgroundColor: item.accentColor || '#EC3460' }}
+                          >
+                            <Check size={10} strokeWidth={3} />
+                            <span>Active</span>
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-mono tabular-nums text-slate-500 bg-slate-100 group-hover:bg-slate-200/70 px-2 py-0.5 rounded-md transition-colors whitespace-nowrap">
+                            {count} {count === 1 ? 'item' : 'items'}
+                          </span>
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Brand Banner Header */}
         <div className={`p-6 sm:p-10 bg-gradient-to-br ${brand?.bgGradient || 'from-rose-50 to-pink-50'} border-b border-slate-200/80`}>
           <div className="max-w-7xl mx-auto">
@@ -375,37 +587,54 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500 font-medium">Grid View:</span>
-            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
-              <button
-                type="button"
-                onClick={() => setGridView('compact')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  gridView === 'compact'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-                title="2-Column Grid View"
-                aria-label="2-Column Grid View"
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5">
+              <label htmlFor="brand-sort-select" className="text-xs text-slate-500 font-medium">Sort:</label>
+              <select
+                id="brand-sort-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'featured' | 'price-asc' | 'price-desc' | 'name')}
+                className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 font-medium focus:outline-none focus:border-[#EC3460] cursor-pointer"
               >
-                <Grid size={13} />
-                <span>2 Col</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setGridView('standard')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  gridView === 'standard'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-900'
-                }`}
-                title="4-Column Grid View"
-                aria-label="4-Column Grid View"
-              >
-                <LayoutGrid size={13} />
-                <span>4 Col</span>
-              </button>
+                <option value="featured">Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="name">Alphabetical</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 font-medium hidden sm:inline">Grid:</span>
+              <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+                <button
+                  type="button"
+                  onClick={() => setGridView('compact')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    gridView === 'compact'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                  title="2-Column Grid View"
+                  aria-label="2-Column Grid View"
+                >
+                  <Grid size={13} />
+                  <span>2 Col</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGridView('standard')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    gridView === 'standard'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-900'
+                  }`}
+                  title="4-Column Grid View"
+                  aria-label="4-Column Grid View"
+                >
+                  <LayoutGrid size={13} />
+                  <span>4 Col</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

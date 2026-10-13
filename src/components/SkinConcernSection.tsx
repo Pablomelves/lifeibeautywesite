@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ResponsiveProductImage } from './ResponsiveProductImage';
-import { Sun, Shield, Sparkles, Droplets, CheckCircle2, ArrowRight, ShoppingBag, Heart, Scale } from 'lucide-react';
+import { Sun, Shield, Sparkles, Droplets, CheckCircle2, ArrowRight, ShoppingBag, Heart, Scale, Check } from 'lucide-react';
 import { SKIN_CONCERNS } from '../data/storeData';
-import { Product } from '../types';
+import { Product, isProductSoldOut } from '../types';
 
 interface SkinConcernSectionProps {
   onQuickView: (product: Product) => void;
@@ -30,6 +30,7 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
   const catalog = products || [];
   const activeConcern = SKIN_CONCERNS.find((c) => c.id === activeConcernId) || SKIN_CONCERNS[0];
   const recommendedProduct = catalog.find((p) => p.id === activeConcern.recommendedProductId) || catalog[0];
+  const isSoldOut = isProductSoldOut(recommendedProduct);
 
   const isWishlisted = recommendedProduct ? wishlistIds.includes(recommendedProduct.id) : false;
 
@@ -107,9 +108,17 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
               style={{ backgroundColor: recommendedProduct.panel }}
               onClick={() => onQuickView(recommendedProduct)}
             >
-              <span className="absolute top-4 left-4 z-10 bg-[#EC3460] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-xs">
-                Target Solution
-              </span>
+              <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+                {isSoldOut ? (
+                  <span className="bg-slate-900/85 text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-xs backdrop-blur-xs">
+                    Sold Out
+                  </span>
+                ) : (
+                  <span className="bg-[#EC3460] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-xs">
+                    Target Solution
+                  </span>
+                )}
+              </div>
 
               {/* Wishlist Button */}
               {onToggleWishlist && (
@@ -204,22 +213,53 @@ export const SkinConcernSection: React.FC<SkinConcernSectionProps> = ({
             {/* Actions: Add to Cart (Left) and Buy Now (Right) */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-6 border-t border-slate-200/70">
               <button
-                onClick={() => handleAddToCartWithAnim(recommendedProduct)}
-                className={`w-full sm:flex-1 bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 font-semibold text-[11px] uppercase tracking-wider py-4 px-6 rounded-2xl transition-all cursor-pointer flex items-center justify-center gap-2 ${isAdded ? 'animate-pop' : ''}`}
+                disabled={isSoldOut}
+                onClick={() => !isSoldOut && handleAddToCartWithAnim(recommendedProduct)}
+                className={`w-full sm:flex-1 font-semibold text-[11px] uppercase tracking-wider py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 ${
+                  isAdded
+                    ? 'bg-emerald-600 text-white cursor-pointer animate-pop'
+                    : isSoldOut
+                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                    : 'bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 cursor-pointer'
+                }`}
+                title={isSoldOut ? 'Currently Sold Out' : 'Add To Cart'}
               >
-                <ShoppingBag size={16} />
-                <span>{isAdded ? 'Added to Bag!' : 'Add To Cart'}</span>
+                {isAdded ? (
+                  <>
+                    <Check size={16} strokeWidth={3} />
+                    <span>Added to Bag!</span>
+                  </>
+                ) : isSoldOut ? (
+                  <span>Sold Out</span>
+                ) : (
+                  <>
+                    <ShoppingBag size={16} />
+                    <span>Add To Cart</span>
+                  </>
+                )}
               </button>
 
               <button
+                disabled={isSoldOut}
                 onClick={() => {
+                  if (isSoldOut) return;
                   handleAddToCartWithAnim(recommendedProduct);
-                  // In a real app, this would trigger checkout
                 }}
-                className={`w-full sm:flex-1 bg-[#EC3460] hover:bg-[#D8224F] text-white font-semibold text-[11px] uppercase tracking-wider py-4 px-6 rounded-2xl shadow-raspberry transition-all cursor-pointer flex items-center justify-center gap-2 ${isAdded ? 'animate-pop' : ''}`}
+                className={`w-full sm:flex-1 font-semibold text-[11px] uppercase tracking-wider py-4 px-6 rounded-2xl transition-all flex items-center justify-center gap-2 ${
+                  isSoldOut
+                    ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                    : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry cursor-pointer'
+                } ${isAdded ? 'animate-pop' : ''}`}
+                title={isSoldOut ? 'Currently Sold Out' : 'Buy Now'}
               >
-                <Sparkles size={16} />
-                <span>Buy Now · {recommendedProduct.price}</span>
+                {isSoldOut ? (
+                  <span>Sold Out</span>
+                ) : (
+                  <>
+                    <Sparkles size={16} />
+                    <span>Buy Now · {recommendedProduct.price}</span>
+                  </>
+                )}
               </button>
 
               <button

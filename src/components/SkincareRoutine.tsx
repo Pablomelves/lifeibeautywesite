@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ResponsiveProductImage } from './ResponsiveProductImage';
 import { ROUTINE_STEPS } from '../data/storeData';
-import { Product } from '../types';
+import { Product, isProductSoldOut } from '../types';
 import { Check, ArrowRight, Sparkles, Droplets } from 'lucide-react';
 
 interface SkincareRoutineProps {
@@ -103,58 +103,79 @@ export const SkincareRoutine: React.FC<SkincareRoutineProps> = ({
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {stepProducts.map((product, idx) => (
-                <div
-                  key={`${product.id}-${idx}`}
-                  onClick={() => onQuickView?.(product)}
-                  className="bg-white rounded-2xl p-4 border border-[#FFCDF2]/50 shadow-xs hover:shadow-md transition-all flex gap-4 items-center cursor-pointer group hover:border-[#EC3460]/40"
-                >
-                  <div 
-                    className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden relative shrink-0 border border-slate-200/50"
-                    style={{ backgroundColor: product.panel }}
-                  >
-                    <ResponsiveProductImage
-                      src={product.src}
-                      alt={product.name}
-                      className="w-full h-full object-cover object-center transition-transform"
-                    />
-                  </div>
+              {stepProducts.map((product, idx) => {
+                const isSoldOut = isProductSoldOut(product);
 
-                  <div className="flex-1 min-w-0">
-                    <h5 className="font-bold text-xs uppercase text-slate-900 truncate group-hover:text-[#EC3460] transition-colors">
-                      {product.name}
-                    </h5>
-                    <p className="text-[11px] text-slate-500 truncate mb-2">
-                      {product.subtitle}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold font-mono tabular-nums text-slate-900">
-                        {product.price}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onAddToCart?.(product);
-                          }}
-                          className="text-[9px] bg-slate-50 hover:bg-[#FFF0F9] text-slate-900 hover:text-[#EC3460] border border-slate-200 font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-colors cursor-pointer"
-                        >
-                          Add
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onAddToCart?.(product);
-                          }}
-                          className="text-[9px] bg-[#EC3460] hover:bg-[#D8224F] text-white font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-colors cursor-pointer shadow-raspberry"
-                        >
-                          Buy Now
-                        </button>
+                return (
+                  <div
+                    key={`${product.id}-${idx}`}
+                    onClick={() => onQuickView?.(product)}
+                    className="bg-white rounded-2xl p-4 border border-[#FFCDF2]/50 shadow-xs hover:shadow-md transition-all flex gap-4 items-center cursor-pointer group hover:border-[#EC3460]/40"
+                  >
+                    <div 
+                      className="w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden relative shrink-0 border border-slate-200/50"
+                      style={{ backgroundColor: product.panel }}
+                    >
+                      {isSoldOut && (
+                        <span className="absolute top-1 left-1 z-10 bg-slate-900/90 text-white text-[7px] font-bold uppercase tracking-wider px-1 py-0.5 rounded shadow-xs">
+                          Sold Out
+                        </span>
+                      )}
+                      <ResponsiveProductImage
+                        src={product.src}
+                        alt={product.name}
+                        className="w-full h-full object-cover object-center transition-transform"
+                      />
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <h5 className="font-bold text-xs uppercase text-slate-900 truncate group-hover:text-[#EC3460] transition-colors">
+                        {product.name}
+                      </h5>
+                      <p className="text-[11px] text-slate-500 truncate mb-2">
+                        {product.subtitle}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold font-mono tabular-nums text-slate-900">
+                          {product.price}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            disabled={isSoldOut}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!isSoldOut) onAddToCart?.(product);
+                            }}
+                            className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-colors ${
+                              isSoldOut
+                                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                                : 'bg-slate-50 hover:bg-[#FFF0F9] text-slate-900 hover:text-[#EC3460] border border-slate-200 cursor-pointer'
+                            }`}
+                            title={isSoldOut ? 'Currently Sold Out' : 'Add to cart'}
+                          >
+                            {isSoldOut ? 'Sold Out' : 'Add'}
+                          </button>
+                          <button
+                            disabled={isSoldOut}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!isSoldOut) onAddToCart?.(product);
+                            }}
+                            className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-lg transition-colors ${
+                              isSoldOut
+                                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed shadow-none'
+                                : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry cursor-pointer'
+                            }`}
+                            title={isSoldOut ? 'Currently Sold Out' : 'Buy Now'}
+                          >
+                            {isSoldOut ? 'Sold Out' : 'Buy Now'}
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

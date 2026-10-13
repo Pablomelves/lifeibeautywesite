@@ -13,7 +13,7 @@ import {
   Star,
   Scale
 } from 'lucide-react';
-import { Product } from '../types';
+import { Product, isProductSoldOut } from '../types';
 
 interface MyFavoritesSectionProps {
   products: Product[];
@@ -69,8 +69,9 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
   };
 
   const handleAddAll = () => {
-    if (favoriteProducts.length === 0) return;
-    favoriteProducts.forEach((prod) => {
+    const availableFavorites = favoriteProducts.filter((prod) => !isProductSoldOut(prod));
+    if (availableFavorites.length === 0) return;
+    availableFavorites.forEach((prod) => {
       onAddToCart(prod);
     });
     setAddedAll(true);
@@ -167,6 +168,7 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8 items-stretch">
             {favoriteProducts.map((product, pIdx) => {
               const isAdded = !!addedIds[product.id];
+              const isSoldOut = isProductSoldOut(product);
 
               return (
                 <div
@@ -239,7 +241,11 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
 
                     {/* Badge or Category (Top Left) */}
                     <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1">
-                      {product.badge ? (
+                      {isSoldOut ? (
+                        <span className="bg-slate-950/85 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border border-white/20">
+                          Sold Out
+                        </span>
+                      ) : product.badge ? (
                         <span className="bg-slate-950/80 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full border border-white/20">
                           {product.badge}
                         </span>
@@ -256,8 +262,12 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                     <div>
                       {/* Rating & Stock */}
                       <div className="flex items-center justify-between text-xs mb-1 sm:mb-1.5">
-                        <span className="hidden xs:inline text-[9px] sm:text-[10px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">
-                          {product.stockStatus}
+                        <span className={`hidden xs:inline text-[9px] sm:text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                          isSoldOut
+                            ? 'text-slate-600 bg-slate-100'
+                            : 'text-emerald-700 bg-emerald-50'
+                        }`}>
+                          {isSoldOut ? 'Sold Out' : (product.stockStatus || 'In Stock')}
                         </span>
                       </div>
 
@@ -301,18 +311,23 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
                         <button
                           type="button"
                           onClick={(e) => handleAddSingle(e, product)}
-                          className={`flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl font-semibold text-[9px] sm:text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-1 shadow-xs ${
+                          disabled={isSoldOut}
+                          className={`flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl font-semibold text-[9px] sm:text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1 shadow-xs ${
                             isAdded
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50'
+                              ? 'bg-emerald-600 text-white cursor-pointer'
+                              : isSoldOut
+                              ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                              : 'bg-white text-slate-900 border border-slate-200 hover:bg-slate-50 cursor-pointer'
                           }`}
-                          title={`Add ${product.name} to bag`}
+                          title={isSoldOut ? 'Currently Sold Out' : `Add ${product.name} to bag`}
                         >
                           {isAdded ? (
                             <>
                               <Check size={isMobile ? 12 : 14} strokeWidth={3} />
                               <span>Added</span>
                             </>
+                          ) : isSoldOut ? (
+                            <span>Sold Out</span>
                           ) : (
                             <>
                               <ShoppingBag size={isMobile ? 12 : 14} />
@@ -323,18 +338,30 @@ export const MyFavoritesSection: React.FC<MyFavoritesSectionProps> = ({
 
                         <button
                           type="button"
+                          disabled={isSoldOut}
                           onClick={(e) => {
                             e.stopPropagation();
+                            if (isSoldOut) return;
                             if (onBuyNow) {
                               onBuyNow(product);
                             } else {
                               if (onAddToCart(product) === false) return;
                             }
                           }}
-                          className="flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 bg-[#EC3460] hover:bg-[#D8224F] text-white rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer shadow-raspberry flex items-center justify-center gap-1"
+                          className={`flex-1 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[9px] sm:text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-1 ${
+                            isSoldOut
+                              ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                              : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry cursor-pointer'
+                          }`}
                         >
-                          <Sparkles size={isMobile ? 12 : 14} />
-                          <span>Buy</span>
+                          {isSoldOut ? (
+                            <span>Sold Out</span>
+                          ) : (
+                            <>
+                              <Sparkles size={isMobile ? 12 : 14} />
+                              <span>Buy</span>
+                            </>
+                          )}
                         </button>
 
                         {/* Quick View Button - Hidden on very small mobile */}
