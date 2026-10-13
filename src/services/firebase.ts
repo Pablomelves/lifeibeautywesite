@@ -22,14 +22,25 @@ const getEnvVar = (key: string): string => {
   return '';
 };
 
-// Six VITE_FIREBASE_* environment variables with fallback defaults for positive-aurora-k4mm2
-const firebaseConfig = {
-  apiKey: getEnvVar('VITE_FIREBASE_API_KEY'),
-  authDomain: getEnvVar('VITE_FIREBASE_AUTH_DOMAIN') || 'positive-aurora-k4mm2.firebaseapp.com',
-  projectId: getEnvVar('VITE_FIREBASE_PROJECT_ID') || 'positive-aurora-k4mm2',
-  storageBucket: getEnvVar('VITE_FIREBASE_STORAGE_BUCKET') || 'positive-aurora-k4mm2.firebasestorage.app',
-  messagingSenderId: getEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID'),
-  appId: getEnvVar('VITE_FIREBASE_APP_ID'),
+// Outdated legacy project IDs or values to ignore
+const LEGACY_PROJECT_PREFIX = 'positive-aurora';
+
+const getCleanFirebaseEnvVar = (key: string, defaultValue: string): string => {
+  const val = getEnvVar(key);
+  if (val && !val.includes(LEGACY_PROJECT_PREFIX) && !val.includes('837761236523') && !val.includes('CkmmVuhQht32ZMfp7jcEwNQ3G3zR0Lo2I')) {
+    return val;
+  }
+  return defaultValue;
+};
+
+// Six VITE_FIREBASE_* environment variables with exact values for the lifeibeauty Firebase project
+export const firebaseConfig = {
+  apiKey: getCleanFirebaseEnvVar('VITE_FIREBASE_API_KEY', 'AIzaSyAztZxZwtVdeiYOtPjJn0KMfR63SIMKez4'),
+  authDomain: getCleanFirebaseEnvVar('VITE_FIREBASE_AUTH_DOMAIN', 'lifeibeauty.firebaseapp.com'),
+  projectId: getCleanFirebaseEnvVar('VITE_FIREBASE_PROJECT_ID', 'lifeibeauty'),
+  storageBucket: getCleanFirebaseEnvVar('VITE_FIREBASE_STORAGE_BUCKET', 'lifeibeauty.firebasestorage.app'),
+  messagingSenderId: getCleanFirebaseEnvVar('VITE_FIREBASE_MESSAGING_SENDER_ID', '832141637137'),
+  appId: getCleanFirebaseEnvVar('VITE_FIREBASE_APP_ID', '1:832141637137:web:e246d8b6dd041b77b2a3b0'),
 };
 
 let appInstance: FirebaseApp | null = null;

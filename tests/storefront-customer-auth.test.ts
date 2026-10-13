@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { GoogleSignInButton } from '../src/components/GoogleSignInButton';
-import { resolveFirebaseAuthErrorMessage } from '../src/services/firebase';
+import { resolveFirebaseAuthErrorMessage, firebaseConfig } from '../src/services/firebase';
 import type { CustomerUser } from '../src/types';
 
 test('resolveFirebaseAuthErrorMessage handles popup-closed-by-user gracefully', () => {
@@ -124,4 +124,13 @@ test('Customer authentication state is completely separate from administrator se
   const CUSTOMER_PREFIX = 'lifei_profile_';
 
   assert.ok(!ADMIN_STORAGE_KEY.startsWith(CUSTOMER_PREFIX));
+});
+
+test('Firebase configuration targets the lifeibeauty project with exact credentials', () => {
+  assert.equal(firebaseConfig.projectId, 'lifeibeauty');
+  assert.equal(firebaseConfig.authDomain, 'lifeibeauty.firebaseapp.com');
+  assert.equal(firebaseConfig.storageBucket, 'lifeibeauty.firebasestorage.app');
+  assert.equal(firebaseConfig.messagingSenderId, '832141637137');
+  assert.equal(firebaseConfig.appId, '1:832141637137:web:e246d8b6dd041b77b2a3b0');
+  assert.equal(firebaseConfig.apiKey, 'AIzaSyAztZxZwtVdeiYOtPjJn0KMfR63SIMKez4');
 });
