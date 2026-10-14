@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ResponsiveProductImage } from './ResponsiveProductImage';
-import { Star, ShoppingBag, Eye, Sparkles, Check, Heart, Scale } from 'lucide-react';
+import { Star, ShoppingBag, Eye, Sparkles, Check, Heart, Scale, ArrowRight } from 'lucide-react';
 import { Product, isProductSoldOut } from '../types';
 import { belongsToCollection } from '../services/collectionRules';
-import { isProductOfBrand } from '../services/brandService';
+import { isProductOfBrand, getProductsForBrand, BRANDS, type BrandId, type BrandInfo } from '../services/brandService';
+import { STORE_CATEGORIES, isProductInCategory, getCategoryById } from '../services/categoryFilter';
 
 interface BestSellersProps {
   onQuickView: (product: Product) => void;
@@ -48,10 +49,12 @@ const ProductCard: React.FC<{
   const galleryRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const [justWishlisted, setJustWishlisted] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 640);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+  const [isBuying, setIsBuying] = useState(false);
   const isSoldOut = isProductSoldOut(product);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
     const handleResize = () => setIsMobile(window.innerWidth < 640);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -214,7 +217,7 @@ const ProductCard: React.FC<{
 
           {/* Key Actives Chips - Hidden on very small mobile */}
           <div className="hidden xs:flex flex-wrap gap-1 mt-2 sm:mt-3">
-            {product.keyIngredients.slice(0, 1).map((ing, i) => (
+            {(product.keyIngredients || []).slice(0, 1).map((ing, i) => (
               <span
                 key={i}
                 className="text-[9px] sm:text-[10px] bg-[#FFF0F9] text-[#B31940] px-1.5 py-0.5 rounded-md font-medium border border-[#FFCDF2]/50"
@@ -267,25 +270,34 @@ const ProductCard: React.FC<{
             </button>
 
             <button
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                if (isSoldOut) return;
-                if (onBuyNow) {
-                  onBuyNow(product);
-                } else {
-                  if (onAddToCart(product) === false) return;
+                if (isSoldOut || isBuying) return;
+                setIsBuying(true);
+                try {
+                  if (onBuyNow) {
+                    await onBuyNow(product);
+                  } else {
+                    if (onAddToCart(product) === false) return;
+                  }
+                } finally {
+                  setIsBuying(false);
                 }
               }}
               className={`flex-1 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1 ${
                 isSoldOut
                   ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                  : isBuying
+                  ? 'bg-[#EC3460]/80 text-white cursor-wait opacity-80'
                   : 'bg-[#EC3460] hover:bg-[#D8224F] text-white shadow-raspberry border border-transparent cursor-pointer'
               }`}
               title={isSoldOut ? 'Currently Sold Out' : 'Buy now and checkout'}
-              disabled={isSoldOut}
+              disabled={isSoldOut || isBuying}
             >
               {isSoldOut ? (
                 <span>Sold Out</span>
+              ) : isBuying ? (
+                <span>Wait...</span>
               ) : (
                 <>
                   <Sparkles size={isMobile ? 12 : 14} />
@@ -316,35 +328,24 @@ export const BestSellers: React.FC<BestSellersProps> = ({
   comparisonIds = [],
   onToggleComparison,
 }) => {
-  const [activeTab, setActiveTab] = useState<'all' | 'serums' | 'masks' | 'moisturizers'>('all');
+  const [activeTab, setActiveTab] = useState<BrandId>('all');
   const [addedId, setAddedId] = useState<number | null>(null);
 
   const currentProducts = products || [];
 
-  const filteredProducts = currentProducts.filter((product) => {
-    // If selectedCategory from menu/category grid/brand is active and not 'all'
-    if (selectedCategory && selectedCategory !== 'all') {
+  // Synchronize activeTab if selectedCategory changes externally
+  useEffect(() => {
+    if (selectedCategory) {
       const lower = selectedCategory.toLowerCase();
-      if (['medicube', 'biodance', 'cerave'].includes(lower)) {
-        return isProductOfBrand(product, lower);
-      }
-      if (!belongsToCollection(product, selectedCategory)) {
-        return false;
+      if (['medicube', 'biodance', 'cerave', 'all'].includes(lower)) {
+        setActiveTab(lower as BrandId);
       }
     }
+  }, [selectedCategory]);
 
-    if (activeTab === 'all') return true;
-    if (activeTab === 'serums') return belongsToCollection(product, 'serums');
-    if (activeTab === 'masks') return belongsToCollection(product, 'masks') || belongsToCollection(product, 'cleansers');
-    if (activeTab === 'moisturizers') return belongsToCollection(product, 'moisturizers');
-    return true;
-  });
-
-  const handleTabChange = (tab: 'all' | 'serums' | 'masks' | 'moisturizers') => {
+  const handleTabChange = (tab: BrandId) => {
     setActiveTab(tab);
-    if (selectedCategory && selectedCategory !== 'all') {
-      onSelectCategory('all');
-    }
+    onSelectCategory(tab);
   };
 
   const handleAdd = (e: React.MouseEvent, product: Product) => {
@@ -354,11 +355,33 @@ export const BestSellers: React.FC<BestSellersProps> = ({
     setTimeout(() => setAddedId(null), 1800);
   };
 
+  // Check if an external collection/category filter is active that isn't a brand
+  const isExternalCategoryFilter = Boolean(
+    selectedCategory &&
+    selectedCategory !== 'all' &&
+    !['medicube', 'biodance', 'cerave', 'laneige', 'beauty-of-joseon', 'anua'].includes(selectedCategory.toLowerCase())
+  );
+
+  const activeCategoryInfo = getCategoryById(selectedCategory);
+
+  const categoryFilteredProducts = isExternalCategoryFilter
+    ? currentProducts.filter((product) => isProductInCategory(product, selectedCategory))
+    : currentProducts;
+
+  // Selected brand info if a single brand is active
+  const selectedBrandInfo = activeTab !== 'all' ? BRANDS.find((b) => b.id === activeTab) : null;
+  const selectedBrandProducts = activeTab !== 'all' ? getProductsForBrand(currentProducts, activeTab) : [];
+
+  // Other products not associated with the 3 main brands
+  const otherCuratedProducts = currentProducts.filter(
+    (p) => !isProductOfBrand(p, 'medicube') && !isProductOfBrand(p, 'biodance') && !isProductOfBrand(p, 'cerave')
+  );
+
   return (
     <section id="bestsellers" className="py-20 sm:py-28 bg-[#FFF5FA] font-inter">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 sm:mb-12 gap-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#EC3460]">
@@ -374,84 +397,156 @@ export const BestSellers: React.FC<BestSellersProps> = ({
                 </button>
               ) : null}
             </div>
-            <h2 className="font-anton text-3xl sm:text-5xl uppercase tracking-tight text-slate-900 leading-none">
-              FEATURED & BEST SELLERS
-            </h2>
+            <div className="flex items-center gap-3 mt-1 flex-wrap">
+              <h2 className="font-anton text-3xl sm:text-5xl uppercase tracking-tight text-slate-900 leading-none">
+                BRANDS AND BEST SELLERS
+              </h2>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('all');
+                  onSelectCategory('all');
+                }}
+                className="text-xs font-bold uppercase tracking-wider text-[#EC3460] hover:text-[#B31940] underline underline-offset-4 flex items-center gap-1 cursor-pointer py-1 ml-auto md:ml-0"
+              >
+                <span>VIEW ALL PRODUCTS</span>
+                <ArrowRight size={13} aria-hidden="true" />
+              </button>
+            </div>
             <p className="text-sm text-slate-600 max-w-xl mt-3 leading-relaxed">
-              Explore current store products, available options, and published descriptions before choosing your skincare.
+              Explore authentic Seoul clinical formulations, organized by Korea&apos;s leading skincare brands with each product curated for your skin ritual.
             </p>
           </div>
 
-          {/* Filter Tabs */}
+          {/* Filter Tabs: Replaced category tabs with Brands */}
           <div className="flex items-center gap-1.5 p-1 bg-white/80 border border-[#FFCDF2] rounded-2xl overflow-x-auto shadow-xs">
             <button
+              type="button"
               onClick={() => handleTabChange('all')}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                activeTab === 'all'
+              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                activeTab === 'all' && !isExternalCategoryFilter
                   ? 'bg-[#EC3460] text-white shadow-raspberry'
                   : 'text-slate-600 hover:text-[#EC3460]'
               }`}
             >
-              All Best Sellers
+              <span>All Brands</span>
+              {currentProducts.length > 0 && (
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    activeTab === 'all' && !isExternalCategoryFilter
+                      ? 'bg-white/20 text-white'
+                      : 'bg-slate-100 text-slate-500'
+                  }`}
+                >
+                  {currentProducts.length}
+                </span>
+              )}
             </button>
-            <button
-              onClick={() => handleTabChange('serums')}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                activeTab === 'serums'
-                  ? 'bg-[#EC3460] text-white shadow-raspberry'
-                  : 'text-slate-600 hover:text-[#EC3460]'
-              }`}
-            >
-              Glass Serums
-            </button>
-            <button
-              onClick={() => handleTabChange('masks')}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                activeTab === 'masks'
-                  ? 'bg-[#EC3460] text-white shadow-raspberry'
-                  : 'text-slate-600 hover:text-[#EC3460]'
-              }`}
-            >
-              Masks & Prep
-            </button>
-            <button
-              onClick={() => handleTabChange('moisturizers')}
-              className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap ${
-                activeTab === 'moisturizers'
-                  ? 'bg-[#EC3460] text-white shadow-raspberry'
-                  : 'text-slate-600 hover:text-[#EC3460]'
-              }`}
-            >
-              Barrier Creams
-            </button>
+
+            {BRANDS.map((brand) => {
+              const count = getProductsForBrand(currentProducts, brand.id).length;
+              const isActive = activeTab === brand.id && !isExternalCategoryFilter;
+
+              return (
+                <button
+                  key={brand.id}
+                  type="button"
+                  onClick={() => handleTabChange(brand.id)}
+                  className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                    isActive
+                      ? 'bg-[#EC3460] text-white shadow-raspberry'
+                      : 'text-slate-600 hover:text-[#EC3460]'
+                  }`}
+                >
+                  <span>{brand.name}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isActive ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Selected Category Filter Pill if set from header or category grid */}
-        {selectedCategory && selectedCategory !== 'all' && (
-          <div className="mb-8 flex items-center gap-2">
-            <span className="text-xs text-slate-500">Filtered by:</span>
-            <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider bg-[#FFF0F9] text-[#B31940] border border-[#FFCDF2] px-3 py-1 rounded-full">
-              <span>{selectedCategory}</span>
+        {/* Shop by Category Navigation Bar */}
+        <div className="mb-8 flex items-center gap-2 overflow-x-auto pb-2 no-scrollbar">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mr-1 shrink-0">
+            Shop by Category:
+          </span>
+          {STORE_CATEGORIES.map((cat) => {
+            const isCatActive = isExternalCategoryFilter
+              ? (selectedCategory || '').toLowerCase() === cat.id
+              : cat.id === 'all';
+
+            return (
               <button
-                onClick={() => onSelectCategory('all')}
-                className="hover:text-black cursor-pointer font-sans text-sm ml-1"
-                aria-label="Clear category filter"
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  if (cat.id === 'all') {
+                    onSelectCategory('all');
+                    setActiveTab('all');
+                  } else {
+                    onSelectCategory(cat.id);
+                  }
+                }}
+                className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
+                  isCatActive
+                    ? 'bg-[#EC3460] text-white shadow-raspberry'
+                    : 'bg-white text-slate-700 border border-[#FFCDF2]/70 hover:border-[#EC3460]/40 hover:text-[#EC3460]'
+                }`}
               >
-                ✕
+                <span>{cat.name}</span>
               </button>
-            </span>
+            );
+          })}
+        </div>
+
+        {/* Category Header Banner when filtered */}
+        {isExternalCategoryFilter && (
+          <div className="mb-8 pb-4 border-b border-[#FFCDF2]/70 flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-[#FFCDF2] bg-[#FFF0F9] text-[#EC3460] shadow-2xs">
+                  {activeCategoryInfo.koreanTag} · {activeCategoryInfo.name}
+                </span>
+                <span className="text-xs font-semibold text-slate-400">
+                  {categoryFilteredProducts.length} {categoryFilteredProducts.length === 1 ? 'Curated Formula' : 'Curated Formulas'}
+                </span>
+              </div>
+              <h3 className="font-anton text-2xl sm:text-4xl uppercase tracking-tight text-slate-900 leading-none">
+                {activeCategoryInfo.name}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1.5 leading-relaxed">
+                {activeCategoryInfo.description}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                onSelectCategory('all');
+                setActiveTab('all');
+              }}
+              className="self-start md:self-end text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-[#EC3460] transition-colors flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-white border border-slate-200 shadow-2xs hover:border-[#EC3460]/40 cursor-pointer"
+            >
+              <span>← View All Products</span>
+            </button>
           </div>
         )}
 
-        {/* Product Cards Grid */}
+        {/* Product Showcase */}
         {isLoading ? (
           <div className="py-20 text-center bg-white rounded-3xl border border-[#FFCDF2]/60 p-8 shadow-xs">
             <div className="inline-block w-8 h-8 border-4 border-[#EC3460] border-t-transparent rounded-full animate-spin mb-4" />
             <p className="text-slate-800 text-sm font-semibold">Loading live products from Shopify...</p>
             <p className="text-slate-400 text-xs mt-1">Connecting to store catalog and retrieving inventory.</p>
           </div>
-        ) : errorMessage && filteredProducts.length === 0 ? (
+        ) : errorMessage && currentProducts.length === 0 ? (
           <div className="py-16 text-center bg-white rounded-3xl border border-[#FFCDF2]/60 p-8 shadow-xs">
             <p className="text-slate-800 text-base font-semibold mb-2">Unable to Load Shopify Products</p>
             <p className="text-slate-500 text-xs max-w-md mx-auto leading-relaxed mb-6">{errorMessage}</p>
@@ -465,9 +560,10 @@ export const BestSellers: React.FC<BestSellersProps> = ({
               </button>
             )}
           </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-8">
-            {filteredProducts.length === 0 ? (
+        ) : isExternalCategoryFilter ? (
+          /* When filtered by an external category */
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
+            {categoryFilteredProducts.length === 0 ? (
               <div className="col-span-full py-16 text-center bg-white rounded-3xl border border-[#FFCDF2]/60 p-8 shadow-xs">
                 <p className="text-slate-600 text-sm font-medium">No formulas currently found matching this filter.</p>
                 <button
@@ -481,7 +577,7 @@ export const BestSellers: React.FC<BestSellersProps> = ({
                 </button>
               </div>
             ) : (
-              filteredProducts.map((product, idx) => (
+              categoryFilteredProducts.map((product, idx) => (
                 <ProductCard
                   key={`${product.id}-${idx}`}
                   product={product}
@@ -496,6 +592,191 @@ export const BestSellers: React.FC<BestSellersProps> = ({
                   onToggleComparison={onToggleComparison}
                 />
               ))
+            )}
+          </div>
+        ) : activeTab !== 'all' && selectedBrandInfo ? (
+          /* Single Brand Showcase */
+          <div>
+            {/* Brand Header */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 pb-4 border-b border-[#FFCDF2]/70 gap-4">
+              <div>
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span
+                    className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border shadow-2xs"
+                    style={{
+                      borderColor: `${selectedBrandInfo.accentColor}40`,
+                      backgroundColor: `${selectedBrandInfo.accentColor}12`,
+                      color: selectedBrandInfo.accentColor || '#EC3460',
+                    }}
+                  >
+                    {selectedBrandInfo.koreanTag} · {selectedBrandInfo.tag}
+                  </span>
+                  <span className="text-xs font-semibold text-slate-400">
+                    {selectedBrandProducts.length} {selectedBrandProducts.length === 1 ? 'Curated Formula' : 'Curated Formulas'}
+                  </span>
+                </div>
+                <h3 className="font-anton text-2xl sm:text-4xl uppercase tracking-tight text-slate-900 leading-none">
+                  {selectedBrandInfo.name}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1.5 leading-relaxed">
+                  {selectedBrandInfo.description}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('all')}
+                className="self-start md:self-end text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-[#EC3460] transition-colors flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-white border border-slate-200 shadow-2xs hover:border-[#EC3460]/40 cursor-pointer"
+              >
+                <span>← All Brands & Best Sellers</span>
+              </button>
+            </div>
+
+            {selectedBrandProducts.length === 0 ? (
+              <div className="py-16 text-center bg-white rounded-3xl border border-[#FFCDF2]/60 p-8 shadow-xs">
+                <p className="text-slate-600 text-sm font-medium">No formulas currently found for {selectedBrandInfo.name}.</p>
+                <button
+                  onClick={() => handleTabChange('all')}
+                  className="mt-4 px-5 py-2.5 bg-[#EC3460] hover:bg-[#D8224F] text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-raspberry"
+                >
+                  View All Brands
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
+                {selectedBrandProducts.map((product, idx) => (
+                  <ProductCard
+                    key={`${product.id}-${activeTab}-${idx}`}
+                    product={product}
+                    isAdded={addedId === product.id}
+                    wishlistIds={wishlistIds}
+                    onToggleWishlist={onToggleWishlist}
+                    onQuickView={onQuickView}
+                    handleAdd={handleAdd}
+                    onAddToCart={onAddToCart}
+                    onBuyNow={onBuyNow}
+                    isComparing={comparisonIds.includes(product.id)}
+                    onToggleComparison={onToggleComparison}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Divide each brand with its curated products */
+          <div>
+            {currentProducts.length === 0 ? (
+              <div className="py-16 text-center bg-white rounded-3xl border border-[#FFCDF2]/60 p-8 shadow-xs">
+                <p className="text-slate-600 text-sm font-medium">No formulas currently found in the catalog.</p>
+              </div>
+            ) : (
+              <>
+                {BRANDS.map((brand) => {
+                  const brandProducts = getProductsForBrand(currentProducts, brand.id);
+                  if (brandProducts.length === 0) return null;
+
+                  return (
+                    <div key={brand.id} className="mb-14 sm:mb-20 last:mb-0">
+                      {/* Brand Divider / Curate Header */}
+                      <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 pb-4 border-b border-[#FFCDF2]/70 gap-4">
+                        <div>
+                          <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <span
+                              className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border shadow-2xs"
+                              style={{
+                                borderColor: `${brand.accentColor}40`,
+                                backgroundColor: `${brand.accentColor}12`,
+                                color: brand.accentColor || '#EC3460',
+                              }}
+                            >
+                              {brand.koreanTag} · {brand.tag}
+                            </span>
+                            <span className="text-xs font-semibold text-slate-400">
+                              {brandProducts.length} {brandProducts.length === 1 ? 'Curated Formula' : 'Curated Formulas'}
+                            </span>
+                          </div>
+                          <h3 className="font-anton text-2xl sm:text-4xl uppercase tracking-tight text-slate-900 leading-none">
+                            {brand.name}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1.5 leading-relaxed">
+                            {brand.description}
+                          </p>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleTabChange(brand.id)}
+                          className="self-start md:self-end text-xs font-bold uppercase tracking-wider text-slate-700 hover:text-[#EC3460] transition-colors flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-white border border-slate-200 shadow-2xs hover:border-[#EC3460]/40 cursor-pointer"
+                        >
+                          <span>View {brand.name} Only</span>
+                          <ArrowRight size={13} />
+                        </button>
+                      </div>
+
+                      {/* Brand Product Grid */}
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
+                        {brandProducts.map((product, idx) => (
+                          <ProductCard
+                            key={`${product.id}-${brand.id}-${idx}`}
+                            product={product}
+                            isAdded={addedId === product.id}
+                            wishlistIds={wishlistIds}
+                            onToggleWishlist={onToggleWishlist}
+                            onQuickView={onQuickView}
+                            handleAdd={handleAdd}
+                            onAddToCart={onAddToCart}
+                            onBuyNow={onBuyNow}
+                            isComparing={comparisonIds.includes(product.id)}
+                            onToggleComparison={onToggleComparison}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Additional Curated Essentials if any non-brand products exist */}
+                {otherCuratedProducts.length > 0 && (
+                  <div className="mb-14 sm:mb-20 last:mb-0">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 pb-4 border-b border-[#FFCDF2]/70 gap-4">
+                      <div>
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                          <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-slate-200 bg-white text-slate-800 shadow-2xs">
+                            엄선된 에센셜 · Seoul Best Sellers
+                          </span>
+                          <span className="text-xs font-semibold text-slate-400">
+                            {otherCuratedProducts.length} {otherCuratedProducts.length === 1 ? 'Curated Formula' : 'Curated Formulas'}
+                          </span>
+                        </div>
+                        <h3 className="font-anton text-2xl sm:text-4xl uppercase tracking-tight text-slate-900 leading-none">
+                          MORE CURATED ESSENTIALS
+                        </h3>
+                        <p className="text-xs sm:text-sm text-slate-600 max-w-2xl mt-1.5 leading-relaxed">
+                          Authorized authentic skincare essentials and best-selling daily ritual treatments.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-6 lg:gap-8">
+                      {otherCuratedProducts.map((product, idx) => (
+                        <ProductCard
+                          key={`${product.id}-other-${idx}`}
+                          product={product}
+                          isAdded={addedId === product.id}
+                          wishlistIds={wishlistIds}
+                          onToggleWishlist={onToggleWishlist}
+                          onQuickView={onQuickView}
+                          handleAdd={handleAdd}
+                          onAddToCart={onAddToCart}
+                          onBuyNow={onBuyNow}
+                          isComparing={comparisonIds.includes(product.id)}
+                          onToggleComparison={onToggleComparison}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

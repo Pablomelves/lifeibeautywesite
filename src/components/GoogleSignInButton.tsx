@@ -19,44 +19,53 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState<string | null>(null);
+  const isPendingRef = React.useRef(false);
 
   const handleSignIn = async () => {
-    if (isLoading) return; // Prevent duplicate requests
+    if (isLoading || isPendingRef.current) return;
+    isPendingRef.current = true;
     setIsLoading(true);
     setErrorMessage(null);
     setSuccessNotice(null);
 
-    const result = await signInWithGooglePopup();
-    setIsLoading(false);
-
-    if (result.success && result.user) {
-      setSuccessNotice(`Welcome back, ${result.user.displayName || 'Beauty Insider'}!`);
-      setTimeout(() => setSuccessNotice(null), 4000);
-      if (onSignedIn) {
-        onSignedIn(result.user);
+    try {
+      const result = await signInWithGooglePopup();
+      if (result.success && result.user) {
+        setSuccessNotice(`Welcome back, ${result.user.displayName || 'Beauty Insider'}!`);
+        setTimeout(() => setSuccessNotice(null), 4000);
+        if (onSignedIn) {
+          onSignedIn(result.user);
+        }
+      } else if (result.error) {
+        setErrorMessage(result.error);
       }
-    } else if (result.error) {
-      setErrorMessage(result.error);
+    } finally {
+      isPendingRef.current = false;
+      setIsLoading(false);
     }
   };
 
   const handleSignOut = async () => {
-    if (isLoading) return;
+    if (isLoading || isPendingRef.current) return;
+    isPendingRef.current = true;
     setIsLoading(true);
     setErrorMessage(null);
     setSuccessNotice(null);
 
-    const result = await signOutCustomer();
-    setIsLoading(false);
-
-    if (result.success) {
-      setSuccessNotice('Signed out of Google session.');
-      setTimeout(() => setSuccessNotice(null), 3000);
-      if (onSignedOut) {
-        onSignedOut();
+    try {
+      const result = await signOutCustomer();
+      if (result.success) {
+        setSuccessNotice('Signed out of Google session.');
+        setTimeout(() => setSuccessNotice(null), 3000);
+        if (onSignedOut) {
+          onSignedOut();
+        }
+      } else if (result.error) {
+        setErrorMessage(result.error);
       }
-    } else if (result.error) {
-      setErrorMessage(result.error);
+    } finally {
+      isPendingRef.current = false;
+      setIsLoading(false);
     }
   };
 

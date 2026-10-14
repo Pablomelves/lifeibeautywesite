@@ -43,6 +43,7 @@ const BrandProductCard: React.FC<BrandProductCardProps> = ({
   });
   const [quantity, setQuantity] = useState<number>(1);
   const [added, setAdded] = useState<boolean>(false);
+  const [isBuying, setIsBuying] = useState<boolean>(false);
 
   const selectedVariant: ShopifyVariant | undefined = product.variants?.find(v => v.id === selectedVariantId) || product.variants?.[0];
   const isAvailable = selectedVariant ? selectedVariant.availableForSale : product.availableForSale;
@@ -52,7 +53,7 @@ const BrandProductCard: React.FC<BrandProductCardProps> = ({
 
   const handleAdd = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isAvailable) return;
+    if (!isAvailable || added) return;
     const itemToAdd: Product = {
       ...product,
       selectedVariantId: selectedVariant?.id,
@@ -65,9 +66,10 @@ const BrandProductCard: React.FC<BrandProductCardProps> = ({
     setTimeout(() => setAdded(false), 2000);
   };
 
-  const handleBuy = (e: React.MouseEvent) => {
+  const handleBuy = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isAvailable) return;
+    if (!isAvailable || isBuying) return;
+    setIsBuying(true);
     const itemToAdd: Product = {
       ...product,
       selectedVariantId: selectedVariant?.id,
@@ -75,10 +77,14 @@ const BrandProductCard: React.FC<BrandProductCardProps> = ({
       numericPrice: currentNumericPrice,
       volume: selectedVariant && selectedVariant.title !== 'Default Title' ? selectedVariant.title : product.volume,
     };
-    if (onBuyNow) {
-      onBuyNow(itemToAdd, quantity);
-    } else {
-      onAddToCart(itemToAdd, quantity);
+    try {
+      if (onBuyNow) {
+        await onBuyNow(itemToAdd, quantity);
+      } else {
+        onAddToCart(itemToAdd, quantity);
+      }
+    } finally {
+      setIsBuying(false);
     }
   };
 
@@ -168,7 +174,7 @@ const BrandProductCard: React.FC<BrandProductCardProps> = ({
             )}
           </div>
 
-          <h4 className="font-anton text-xs sm:text-base uppercase tracking-tight text-slate-900 line-clamp-2 group-hover:text-[#EC3460] transition-colors leading-tight min-h-[2rem] sm:min-h-[2.5rem]">
+          <h4 className="font-bold text-slate-950 text-xs sm:text-base leading-tight sm:leading-snug group-hover:text-[#EC3460] transition-colors uppercase line-clamp-2 min-h-[2rem] sm:min-h-[2.5rem]">
             {product.name}
           </h4>
 
@@ -267,10 +273,19 @@ const BrandProductCard: React.FC<BrandProductCardProps> = ({
           <button
             type="button"
             onClick={handleBuy}
-            className="w-full py-2 sm:py-2.5 px-3 bg-[#EC3460] hover:bg-[#D8224F] text-white rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 shadow-raspberry hover:scale-[1.01] cursor-pointer"
+            disabled={isBuying}
+            className={`w-full py-2 sm:py-2.5 px-3 bg-[#EC3460] hover:bg-[#D8224F] text-white rounded-xl text-[9px] sm:text-[10px] font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 shadow-raspberry hover:scale-[1.01] ${
+              isBuying ? 'opacity-70 cursor-wait' : 'cursor-pointer'
+            }`}
           >
-            <span>Buy Now</span>
-            <ArrowRight size={12} />
+            {isBuying ? (
+              <span>Preparing Checkout...</span>
+            ) : (
+              <>
+                <span>Buy Now</span>
+                <ArrowRight size={12} />
+              </>
+            )}
           </button>
         )}
       </div>
@@ -294,14 +309,31 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
   const modalRef = useModalAccessibility(isOpen, onClose);
   const stripScrollRef = useRef<HTMLDivElement>(null);
   const [gridView, setGridView] = useState<'standard' | 'compact'>('standard');
-  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'name'>('featured');
+  const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'newest' | 'sales' | 'name'>('featured');
+  const [onlySales, setOnlySales] = useState<boolean>(false);
   if (!isOpen || !brandId) return null;
+
+  const isProductOnSale = (p: Product) => {
+    if (p.originalPrice && p.price && p.originalPrice !== p.price) return true;
+    if (p.badge && /sale|off|save|deal|popular|bestseller/i.test(p.badge)) return true;
+    if (p.variants?.some(v => v.compareAtPrice && v.compareAtPrice !== v.price)) return true;
+    return false;
+  };
 
   const brand = getBrandById(brandId);
   const rawMatchingProducts = getProductsForBrand(products, brandId);
-  const matchingProducts = [...rawMatchingProducts].sort((a, b) => {
+  const productsAfterSalesFilter = onlySales ? rawMatchingProducts.filter(isProductOnSale) : rawMatchingProducts;
+
+  const matchingProducts = [...productsAfterSalesFilter].sort((a, b) => {
     if (sortBy === 'price-asc') return (a.numericPrice ?? 0) - (b.numericPrice ?? 0);
     if (sortBy === 'price-desc') return (b.numericPrice ?? 0) - (a.numericPrice ?? 0);
+    if (sortBy === 'newest') return (b.id ?? 0) - (a.id ?? 0);
+    if (sortBy === 'sales') {
+      const aSale = isProductOnSale(a) ? 1 : 0;
+      const bSale = isProductOnSale(b) ? 1 : 0;
+      if (bSale !== aSale) return bSale - aSale;
+      return (b.numericPrice ?? 0) - (a.numericPrice ?? 0);
+    }
     if (sortBy === 'name') return a.name.localeCompare(b.name);
     return 0;
   });
@@ -349,7 +381,7 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
         {/* Collection Sub-bar with Back Button & Breadcrumbs */}
         <div className={`border-b border-slate-100 bg-white/95 backdrop-blur-sm sticky ${header ? 'top-[72px] sm:top-[80px]' : 'top-0'} z-30`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onClose}
@@ -359,10 +391,12 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
                 <ArrowLeft size={16} />
                 <span>Back</span>
               </button>
-              <ChevronRight size={12} />
-              <span>Shop by Brand</span>
-              <ChevronRight size={12} />
-              <span className="text-[#EC3460] font-bold">{brand?.name}</span>
+              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <ChevronRight size={12} className="text-slate-300" />
+                <span>Shop by Brand</span>
+                <ChevronRight size={12} className="text-slate-300" />
+                <span className="text-[#EC3460]">{brand?.name}</span>
+              </div>
             </div>
 
             <button
@@ -382,32 +416,50 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
             aria-label="Medicube Official Brand Lineup Banner"
             className="w-full bg-white border-b border-slate-200/80 overflow-hidden"
           >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-6">
-              <div className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl bg-white border border-slate-100 shadow-xs flex items-center justify-center p-2 sm:p-4 bg-radial from-slate-50/50 to-white">
+            <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 py-2.5 sm:py-5 md:py-6">
+              <div className="relative w-full overflow-hidden rounded-xl sm:rounded-2xl md:rounded-3xl bg-white border border-slate-100 shadow-xs flex items-center justify-center p-1 sm:p-3 md:p-4 bg-radial from-slate-50/50 to-white">
                 <picture className="w-full flex items-center justify-center">
-                  {/* Modern WebP tailored for smaller screen widths (<= 768px) to optimize loading performance */}
+                  {/* Mobile device mode (<= 768px): Tailored high-DPI WebP */}
                   <source
                     type="image/webp"
                     media="(max-width: 768px)"
                     srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7-mobile.webp"
                   />
-                  {/* PNG tailored for smaller screen widths (<= 768px) */}
+                  {/* Mobile device mode (<= 768px): Tailored high-DPI PNG */}
                   <source
                     type="image/png"
                     media="(max-width: 768px)"
                     srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7-mobile.png"
                   />
-                  {/* Desktop / tablet displays use the full-resolution master asset */}
+                  {/* Tablet device mode (769px - 1024px): Tailored high-resolution WebP */}
+                  <source
+                    type="image/webp"
+                    media="(min-width: 769px) and (max-width: 1024px)"
+                    srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7-tablet.webp"
+                  />
+                  {/* Tablet device mode (769px - 1024px): Tailored high-resolution PNG */}
+                  <source
+                    type="image/png"
+                    media="(min-width: 769px) and (max-width: 1024px)"
+                    srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7-tablet.png"
+                  />
+                  {/* Desktop device mode (> 1024px): Ultra-crisp master WebP */}
+                  <source
+                    type="image/webp"
+                    media="(min-width: 1025px)"
+                    srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7.webp"
+                  />
+                  {/* Desktop / tablet displays master fallback */}
                   <source
                     media="(min-width: 769px)"
                     srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7.png"
                   />
                   <img
                     src="/5931077C-048F-40AA-B867-AEFF21A819B7.png"
-                    srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7-mobile.webp 768w, /5931077C-048F-40AA-B867-AEFF21A819B7-mobile.png 768w, /5931077C-048F-40AA-B867-AEFF21A819B7.png 1920w"
+                    srcSet="/5931077C-048F-40AA-B867-AEFF21A819B7-mobile.webp 768w, /5931077C-048F-40AA-B867-AEFF21A819B7-mobile.png 768w, /5931077C-048F-40AA-B867-AEFF21A819B7-tablet.webp 1152w, /5931077C-048F-40AA-B867-AEFF21A819B7.png 1920w"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 95vw, 1280px"
                     alt="Medicube Official Skincare Lineup — Zero Pore, Exosome Shot, Age-R Booster Pro, PDRN Pink Peptide, Collagen & Deep Vita C"
-                    className="w-full h-auto object-contain object-center max-h-[260px] sm:max-h-[380px] md:max-h-[460px] lg:max-h-[520px]"
+                    className="w-full h-auto object-contain object-center max-h-[220px] sm:max-h-[360px] md:max-h-[460px] lg:max-h-[520px]"
                     loading="eager"
                     fetchPriority="high"
                     referrerPolicy="no-referrer"
@@ -517,7 +569,7 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
                         {/* Brand Names & Tagline */}
                         <div className="min-w-0">
                           <div className="flex items-center gap-1.5 leading-tight">
-                            <span className="font-anton uppercase tracking-wide text-xs sm:text-sm text-slate-900 truncate">
+                            <span className="font-bold uppercase tracking-wider text-xs sm:text-sm text-slate-950 truncate">
                               {item.name}
                             </span>
                             {item.koreanTag && (
@@ -587,18 +639,38 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
+            {/* Sales Quick Filter */}
+            <button
+              type="button"
+              onClick={() => setOnlySales(prev => !prev)}
+              aria-pressed={onlySales}
+              className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer border ${
+                onlySales
+                  ? 'bg-[#EC3460] text-white border-[#EC3460] shadow-2xs'
+                  : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900'
+              }`}
+              title="Filter by products on sale or with special offers"
+            >
+              <Sparkles size={12} className={onlySales ? 'text-white' : 'text-[#EC3460]'} />
+              <span>On Sale</span>
+            </button>
+
+            {/* Sorting Dropdown Component */}
             <div className="flex items-center gap-1.5">
               <label htmlFor="brand-sort-select" className="text-xs text-slate-500 font-medium">Sort:</label>
               <select
                 id="brand-sort-select"
+                aria-label="Sort collection products"
                 value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'featured' | 'price-asc' | 'price-desc' | 'name')}
-                className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-slate-700 font-medium focus:outline-none focus:border-[#EC3460] cursor-pointer"
+                onChange={(e) => setSortBy(e.target.value as 'featured' | 'price-asc' | 'price-desc' | 'newest' | 'sales' | 'name')}
+                className="text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 text-slate-700 font-medium focus:outline-none focus:border-[#EC3460] cursor-pointer"
               >
                 <option value="featured">Featured</option>
                 <option value="price-asc">Price: Low to High</option>
                 <option value="price-desc">Price: High to Low</option>
+                <option value="newest">Newest Arrivals</option>
+                <option value="sales">Sales &amp; Offers</option>
                 <option value="name">Alphabetical</option>
               </select>
             </div>
@@ -644,7 +716,7 @@ export const BrandShoppingModal: React.FC<BrandShoppingModalProps> = ({
           {matchingProducts.length === 0 ? (
             <div className="py-16 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200 p-8">
               <Sparkles size={32} className="mx-auto text-slate-400 mb-3" />
-              <h3 className="font-anton text-lg uppercase text-slate-800">
+              <h3 className="font-bold text-lg uppercase text-slate-900">
                 No Published {brand?.name} Products Found
               </h3>
               <p className="text-xs text-slate-500 max-w-md mx-auto mt-2 leading-relaxed">

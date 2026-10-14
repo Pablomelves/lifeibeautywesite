@@ -87,7 +87,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   onCustomerSignedOut,
 }) => {
   const [activeTab, setActiveTab] = useState<'points' | 'orders' | 'tracking' | 'profile' | 'wishlist' | 'favorites'>(initialTab);
-  const [wishlistSort, setWishlistSort] = useState<'newest' | 'price-asc' | 'price-desc'>('newest');
+  const [wishlistSort, setWishlistSort] = useState<'date-added' | 'newest' | 'price-asc' | 'price-desc'>('date-added');
   const [pastOrders] = useState<PastOrder[]>([]);
 
   // Personal Information State (Lifted to App.tsx)
@@ -358,11 +358,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                         <select
                           id="wishlist-sort-select"
                           aria-label="Sort saved products"
-                          value={wishlistSort}
-                          onChange={(e) => setWishlistSort(e.target.value as 'newest' | 'price-asc' | 'price-desc')}
+                          value={wishlistSort === 'newest' ? 'date-added' : wishlistSort}
+                          onChange={(e) => setWishlistSort(e.target.value as 'date-added' | 'price-asc' | 'price-desc')}
                           className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:border-[#FFCDF2] focus:border-[#EC3460] focus:ring-1 focus:ring-[#EC3460] rounded-xl pl-2.5 pr-7 py-1.5 appearance-none cursor-pointer transition-colors shadow-2xs outline-none"
                         >
-                          <option value="newest">Newest Added</option>
+                          <option value="date-added">Date Added</option>
                           <option value="price-asc">Price: Low to High</option>
                           <option value="price-desc">Price: High to Low</option>
                         </select>

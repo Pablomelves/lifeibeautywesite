@@ -1,16 +1,27 @@
-# Medicube Brand Collection Hero Banner
+# Medicube Brand Collection Official Hero Banner
 
-Below is the verified Medicube product lineup reference image for the official hero banner under Shop by Brand:
+The Medicube brand collection banner has been updated with the official Medicube clinical skincare lineup picture, replacing the previous LiFei placeholder logo banner.
 
-![Medicube Product Lineup Banner](5931077C-048F-40AA-B867-AEFF21A819B7.png)
+![Medicube Brand Collection Official Lineup](1B41116E-3C2A-49F6-9681-D5DB0563F7AC.jpeg)
 
-### Included Products
-1. **Zero Pore Blackhead Mud Mask** (100g / 3.52 oz)
-2. **One Day Exosome Shot 2000** (30ml / 1.01 fl. oz.)
-3. **Zero Pore Pad** (155g / 5.46 oz. 70 pads)
-4. **Age-R Skincare Device** (Derma-S)
-5. **PDRN Pink Peptide Serum** (30ml / 1.01 fl. oz.)
-6. **Collagen Night Wrapping Mask** (75ml / 2.53 fl. oz.)
-7. **Collagen Jelly Cream** (50ml / 1.69 fl. oz.)
-8. **Deep Vita C Capsule Cream** (55g / 1.99 oz.)
-9. **PDRN Pink Collagen Gel Mask** 4EA
+---
+
+### Featured Products in Lineup
+1. **Zero Pore Pad** (Dual-textured pore tightening pads)
+2. **PDRN Pink Peptide Serum** (Rose Salmon DNA cellular renewal ampoule)
+3. **Age-R Skincare Device** (Derma-S / Booster Pro facial therapy)
+4. **Collagen Jelly Cream** (Plumping freeze-dried collagen elasticity cream)
+5. **Collagen Night Wrapping Mask** (Peel-off occlusion night treatment)
+6. **Deep Vita C Capsule Cream** (Radiance & pigmentation targeting cream)
+7. **Exosome Shot 2000** (Spicule exosome dermal resurfacing treatment)
+
+---
+
+### Responsive Device Mode Optimization
+The banner is rendered using an adaptive HTML5 `<picture>` element with dedicated asset crops and resolutions for all 3 device modes:
+
+| Device Mode | Viewport Width | Formats Served | Display Constraints |
+| :--- | :--- | :--- | :--- |
+| **Mobile** | $\le 768\text{px}$ | High-DPI WebP & PNG (768w) | `max-h-[220px] sm:max-h-[360px]`, `object-contain`, zero clipping |
+| **Tablet** | $769\text{px} - 1024\text{px}$ | High-Resolution WebP & PNG (1152w) | `md:max-h-[460px]`, centered studio layout |
+| **Desktop** | $\ge 1025\text{px}$ | Master Ultra-Crisp WebP & PNG (1920w) | `lg:max-h-[520px]`, full panoramic breadth |

@@ -1,6 +1,6 @@
 import type { Product } from '../types';
 
-export type BrandId = 'medicube' | 'biodance' | 'cerave' | 'all';
+export type BrandId = 'medicube' | 'biodance' | 'cerave' | 'laneige' | 'beauty-of-joseon' | 'anua' | 'all';
 
 export interface BrandInfo {
   id: BrandId;
@@ -60,6 +60,39 @@ export const BRANDS: BrandInfo[] = [
     image: '/products/skincare-3.png',
     accentColor: '#2563EB',
   },
+  {
+    id: 'laneige',
+    name: 'Laneige',
+    tag: 'Water Science Hydration',
+    koreanTag: '라네즈',
+    description: 'Pioneering sleeping masks, water bank hydration systems, and iconic lip care formulations.',
+    bgGradient: 'from-[#F0FDF4] to-[#DCFCE7]',
+    tagColor: 'text-[#16A34A] bg-white border border-[#BBF7D0]',
+    image: '/products/skincare-4.png',
+    accentColor: '#16A34A',
+  },
+  {
+    id: 'beauty-of-joseon',
+    name: 'Beauty of Joseon',
+    tag: 'Hanbang Herbal Wisdom',
+    koreanTag: '조선미녀',
+    description: 'Traditional Korean Hanbang herbal extracts reinterpreted into modern soothing and brightening serums.',
+    bgGradient: 'from-[#FFFBEB] to-[#FEF3C7]',
+    tagColor: 'text-[#D97706] bg-white border border-[#FDE68A]',
+    image: '/products/medicube-turmeric.jpg',
+    accentColor: '#D97706',
+  },
+  {
+    id: 'anua',
+    name: 'Anua',
+    tag: 'Heartleaf Calm Rituals',
+    koreanTag: '아누아',
+    description: 'Minimalist calming skincare packed with Korean heartleaf extract for sensitive and breakout-prone skin.',
+    bgGradient: 'from-[#FAF5FF] to-[#F3E8FF]',
+    tagColor: 'text-[#9333EA] bg-white border border-[#E9D5FF]',
+    image: '/products/medicube-pink.jpg',
+    accentColor: '#9333EA',
+  },
 ];
 
 export function isProductOfBrand(product: Product, brandId: string): boolean {
@@ -98,6 +131,15 @@ export function isProductOfBrand(product: Product, brandId: string): boolean {
   if (target === 'cerave') {
     return searchCorpus.includes('cerave');
   }
+  if (target === 'laneige') {
+    return searchCorpus.includes('laneige') || searchCorpus.includes('lip sleeping mask');
+  }
+  if (target === 'beauty-of-joseon') {
+    return searchCorpus.includes('beauty of joseon') || searchCorpus.includes('joseon') || searchCorpus.includes('relief sun');
+  }
+  if (target === 'anua') {
+    return searchCorpus.includes('anua') || searchCorpus.includes('heartleaf');
+  }
   return false;
 }
 
@@ -107,7 +149,10 @@ export function getProductsForBrand(products: Product[], brandId: string): Produ
     return (products || []).filter(product =>
       isProductOfBrand(product, 'medicube') ||
       isProductOfBrand(product, 'biodance') ||
-      isProductOfBrand(product, 'cerave')
+      isProductOfBrand(product, 'cerave') ||
+      isProductOfBrand(product, 'laneige') ||
+      isProductOfBrand(product, 'beauty-of-joseon') ||
+      isProductOfBrand(product, 'anua')
     );
   }
   return (products || []).filter(product => isProductOfBrand(product, brandId));

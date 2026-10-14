@@ -7,9 +7,10 @@ interface StaticHeroProps {
   products: Product[];
   onSelectReference: (reference: ReferenceHero) => void;
   onOpenProduct: (handle: string) => void;
+  onOpenBrand?: (brandId?: string) => void;
 }
 
-export function StaticHero({ reference, products, onSelectReference, onOpenProduct }: StaticHeroProps) {
+export function StaticHero({ reference, products = [], onSelectReference, onOpenProduct, onOpenBrand }: StaticHeroProps) {
   const activeIndex = REFERENCE_HEROES.findIndex(hero => hero.id === reference.id);
   const gesture = useRef<{ pointerId: number; startX: number; startY: number } | null>(null);
   const suppressClick = useRef(false);
@@ -18,6 +19,13 @@ export function StaticHero({ reference, products, onSelectReference, onOpenProdu
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     onOpenProduct(handle);
+  };
+  const openBrand = (event: React.MouseEvent<HTMLAnchorElement>, brandId = 'all') => {
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    if (onOpenBrand) {
+      event.preventDefault();
+      onOpenBrand(brandId);
+    }
   };
   const placement = (area: ReferenceHero['shop'] | ReferenceHero['details']): React.CSSProperties => ({
     left: `${area.left}%`, top: `${area.top}%`, width: `${area.width}%`, height: `${area.height}%`,
@@ -62,13 +70,14 @@ export function StaticHero({ reference, products, onSelectReference, onOpenProdu
             {REFERENCE_HEROES.map((hero, index) => {
               const handle = products.find(product => product.shopifyId === hero.shopifyId)?.handle || hero.handle;
               const destination = `/products/${encodeURIComponent(handle)}`;
+              const brandDestination = '/brands/all';
               const active = index === activeIndex;
               return (
                 <div key={hero.id} id={`hero-slide-${hero.id}`} className="reference-hero-slide" role="group" aria-roledescription="slide" aria-label={`${index + 1} of 3: ${hero.title}`} aria-hidden={!active} inert={!active} style={{ '--hero-shop-background': hero.shopBackground, '--hero-shop-color': hero.shopColor } as React.CSSProperties}>
                   <div className="reference-hero-composition">
                     <img className="reference-hero-artwork" src={hero.artwork} width={851} height={1848} alt={`${hero.title} — original LiFei Beauty banner with product, promotional text and shopping buttons`} fetchPriority={active ? 'high' : 'low'} loading={active ? 'eager' : 'lazy'} draggable={false} />
                     <a className="reference-hit-target reference-hero-artwork-shop" href={destination} onClick={event => openProduct(event, handle)} style={{ ...placement(hero.shop), top: `min(${hero.shop.top}%, calc(${hero.details.top}% - 48px))` }} aria-label={`SHOP NOW → — ${hero.title}`}><span>SHOP NOW</span><span className="reference-shop-arrow" aria-hidden="true">→</span></a>
-                    <a className="reference-hit-target" href={destination} onClick={event => openProduct(event, handle)} style={placement(hero.details)} aria-label={`VIEW CLINICAL DETAILS — ${hero.title}`} />
+                    <a className="reference-hit-target reference-hero-artwork-details" href={destination} onClick={event => openBrand(event, 'all')} style={placement(hero.details)} aria-label={`SHOW BY BRAND — ${hero.title}`}><span>SHOW BY BRAND</span><span className="reference-details-arrow" aria-hidden="true">→</span></a>
                   </div>
                   <div className="sr-only">
                     <p>LIFE LOOKS BETTER WITH LIFEI</p>
@@ -76,7 +85,7 @@ export function StaticHero({ reference, products, onSelectReference, onOpenProdu
                   </div>
                   <div className="reference-hero-actions">
                     <a className="reference-hero-shop" href={destination} onClick={event => openProduct(event, handle)} aria-label={`SHOP NOW → — ${hero.title}`}><span>SHOP NOW</span><span className="reference-shop-arrow" aria-hidden="true">→</span></a>
-                    <a className="reference-hero-details" href={destination} onClick={event => openProduct(event, handle)} aria-label={`VIEW CLINICAL DETAILS — ${hero.title}`}>VIEW CLINICAL DETAILS</a>
+                    <a className="reference-hero-details" href={destination} onClick={event => openBrand(event, 'all')} aria-label={`SHOW BY BRAND — ${hero.title}`}>SHOW BY BRAND</a>
                   </div>
                 </div>
               );

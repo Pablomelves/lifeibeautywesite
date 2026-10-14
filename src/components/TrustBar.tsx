@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldCheck, Truck, RefreshCw, Sparkles, Award } from 'lucide-react';
+import { Award, Sparkles, ShieldCheck, Truck } from 'lucide-react';
 
 interface TrustBarProps {
   onVerifyClick?: () => void;
@@ -7,85 +7,74 @@ interface TrustBarProps {
 }
 
 export const TrustBar: React.FC<TrustBarProps> = ({ onVerifyClick, onTrackClick }) => {
+  const features = [
+    {
+      icon: Award,
+      title: 'Premium Beauty',
+      description: 'Carefully selected global and Korean brands with proven clinical efficacy.',
+      actionText: 'Explore Brands →',
+      action: onVerifyClick,
+    },
+    {
+      icon: Truck,
+      title: 'Free US Shipping',
+      description: 'On qualifying orders over $75. Complimentary tracking sent to your inbox.',
+      actionText: onTrackClick ? 'Track Order →' : null,
+      action: onTrackClick,
+    },
+    {
+      icon: ShieldCheck,
+      title: '100% Authentic',
+      description: 'Sourced directly from authorized distributors & certified Seoul laboratories.',
+      actionText: 'Verify Sourcing →',
+      action: onVerifyClick,
+    },
+    {
+      icon: Sparkles,
+      title: '30-Day Guarantee',
+      description: 'Easy returns and dedicated customer care for a worry-free skincare journey.',
+      actionText: null,
+      action: undefined,
+    },
+  ];
+
   return (
-    <section className="bg-[#EC3460] text-white border-y border-[#EC3460]/20 py-6 sm:py-8 font-inter shadow-xs">
-      <div className="max-w-7xl mx-auto px-4 sm:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-          {/* Pillar 1 */}
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center text-white shrink-0 shadow-xs">
-              <ShieldCheck size={20} />
-            </div>
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-white">
-                Current Shopify Catalog
-              </h4>
-              <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 leading-relaxed font-medium">
-                Current product descriptions, options, prices, and availability from the store.
-              </p>
-              {onVerifyClick && (
-                <button
-                  onClick={onVerifyClick}
-                  className="mt-1 text-[10px] sm:text-[11px] font-bold underline text-[#FFCDF2] hover:text-white transition-colors cursor-pointer block"
-                >
-                  Store shipping information →
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Pillar 2 */}
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center text-white shrink-0 shadow-xs">
-              <Truck size={20} />
-            </div>
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-white">
-                Shipping at Checkout
-              </h4>
-              <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 leading-relaxed font-medium">
-                Check available shipping methods and costs after entering your delivery details.
-              </p>
-              {onTrackClick && (
-                <button
-                  onClick={onTrackClick}
-                  className="mt-1 text-[10px] sm:text-[11px] font-bold underline text-[#FFCDF2] hover:text-white transition-colors cursor-pointer block"
-                >
-                  Track My Order →
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Pillar 3 */}
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center text-white shrink-0 shadow-xs">
-              <Sparkles size={20} />
-            </div>
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-white">
-                Product Information
-              </h4>
-              <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 leading-relaxed font-medium">
-                Read the published description and manufacturer’s packaging before use.
-              </p>
-            </div>
-          </div>
-
-          {/* Pillar 4 */}
-          <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center text-white shrink-0 shadow-xs">
-              <RefreshCw size={20} />
-            </div>
-            <div>
-              <h4 className="text-xs sm:text-sm font-bold tracking-wide uppercase text-white">
-                Store Support
-              </h4>
-              <p className="text-[11px] sm:text-xs text-white/90 mt-0.5 leading-relaxed font-medium">
-                Check published store policies and contact Li Fei Beauty with any questions.
-              </p>
-            </div>
-          </div>
+    <section 
+      aria-label="Trust and Benefits" 
+      className="site-trust-strip bg-[#FFF1F4] border-y border-[#FFCDF2]/50 py-8 sm:py-10 font-inter"
+    >
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          {features.map((feature, idx) => {
+            const Icon = feature.icon;
+            return (
+              <div 
+                key={idx}
+                className="flex flex-col sm:flex-row items-start gap-3 sm:gap-3.5 p-3 sm:p-4 rounded-2xl bg-white/70 border border-[#FFCDF2]/40 shadow-2xs transition-all hover:bg-white hover:shadow-xs"
+              >
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#FFF0F9] border border-[#FFCDF2] flex items-center justify-center text-[#EC3460] shrink-0 shadow-2xs">
+                  <Icon size={20} aria-hidden="true" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-xs sm:text-sm font-bold tracking-tight text-[#171417]">
+                    {feature.title}
+                  </h3>
+                  <p className="text-[11px] sm:text-xs text-[#6F6870] mt-1 leading-relaxed font-normal">
+                    {feature.description}
+                  </p>
+                  {feature.actionText && feature.action && (
+                    <button
+                      type="button"
+                      onClick={feature.action}
+                      className="mt-1.5 text-[10px] sm:text-[11px] font-semibold text-[#EC3460] hover:text-[#B31940] underline transition-colors cursor-pointer block"
+                    >
+                      {feature.actionText}
+                    </button>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

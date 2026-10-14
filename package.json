@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
-    "test": "tsx --test tests/shopify-*.test.ts tests/storefront-*.test.ts tests/cart-and-bag.test.ts",
+    "test": "tsx --test tests/*.test.ts",
     "test:cart": "tsx --test tests/cart-and-bag.test.ts",
     "test:shopify": "tsx --test tests/shopify-*.test.ts tests/cart-and-bag.test.ts",
     "test:storefront": "tsx --test tests/storefront-*.test.ts",

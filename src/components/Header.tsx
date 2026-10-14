@@ -126,7 +126,10 @@ export const Header: React.FC<HeaderProps> = ({
           </a>
           <button type="button" className="reference-hit-target reference-search-target" onClick={onOpenSearch} aria-label="Search products"><Search aria-hidden="true" /></button>
           <button type="button" className="reference-hit-target reference-account-target" onClick={() => onOpenAccount('profile')} aria-label="Open My Profile personal information"><User aria-hidden="true" /></button>
-          <button type="button" className="reference-hit-target reference-cart-target" onClick={onOpenCart} aria-label={`Shopping Cart, ${cartCount} items`}><ShoppingBag aria-hidden="true" /></button>
+          <button type="button" className="reference-hit-target reference-cart-target" onClick={onOpenCart} aria-label={`Shopping Cart, ${cartCount} items`}>
+            <ShoppingBag aria-hidden="true" />
+            {cartCount > 0 && <span className="reference-cart-badge">{cartCount}</span>}
+          </button>
           <button type="button" className="reference-hit-target reference-menu-target" onClick={() => setMobileNavOpen(previous => !previous)} aria-label="Toggle menu" aria-expanded={mobileNavOpen} aria-controls={navigationId}>{mobileNavOpen ? <X aria-hidden="true" /> : <Menu aria-hidden="true" />}</button>
         </div>
       )}
@@ -151,9 +154,10 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Side: Menu on the right side + Action Icons */}
         <div className="flex items-center gap-4 sm:gap-6 lg:gap-7">
-          {/* Menu on the right side */}
-          <nav className="hidden lg:flex items-center gap-5 xl:gap-6 text-[12px] font-inter font-medium uppercase tracking-[0.12em]">
+          {/* Menu in the center */}
+          <nav className="hidden lg:flex items-center gap-4 xl:gap-5 text-[12px] font-inter font-medium uppercase tracking-[0.10em]">
             <button 
+              type="button"
               onClick={() => onNavigateSection('hero')}
               className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800"
             >
@@ -167,6 +171,7 @@ export const Header: React.FC<HeaderProps> = ({
               onMouseLeave={() => setShopMenuOpen(false)}
             >
               <button 
+                type="button"
                 onClick={() => {
                   onSelectCategory('all');
                   onNavigateSection('bestsellers');
@@ -187,6 +192,7 @@ export const Header: React.FC<HeaderProps> = ({
                   {CATEGORIES.map((cat) => (
                     <button
                       key={cat.id}
+                      type="button"
                       onClick={() => handleCategoryClick(cat.id)}
                       className="flex items-center justify-between px-3 py-2 rounded-xl text-left hover:bg-[#FFF0F9] hover:text-[#EC3460] transition-all text-xs font-medium cursor-pointer"
                     >
@@ -205,77 +211,69 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             <button 
-              onClick={() => onNavigateSection('bestsellers')}
-              className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800 flex items-center gap-1"
-            >
-              <span>Best Sellers</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#EC3460]" />
-            </button>
-
-            {/* Rolling Facial Menu Link */}
-            <button 
-              onClick={() => onNavigateSection('rolling-facial')}
-              className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800 flex items-center gap-1"
-            >
-              <span>Rolling Facial</span>
-              <span className="text-[9px] bg-[#FFF0F9] text-[#B31940] border border-[#FFCDF2] px-1.5 py-0.2 rounded-full font-bold">
-                B&A
-              </span>
-            </button>
-
-            <button 
-              onClick={() => onNavigateSection('concerns')}
+              type="button"
+              onClick={() => {
+                onSelectCategory('skincare');
+                onNavigateSection('bestsellers');
+              }}
               className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800"
             >
-              Concerns
+              Skin Care
             </button>
 
             <button 
-              onClick={() => onNavigateSection('routine')}
+              type="button"
+              onClick={() => {
+                onSelectCategory('makeup');
+                onNavigateSection('bestsellers');
+              }}
               className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800"
             >
-              Routine
+              Makeup
             </button>
 
-            {/* Wishlist Menu Link */}
             <button 
-              onClick={() => onOpenAccount('favorites')}
-              className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800 flex items-center gap-1.5 relative group"
+              type="button"
+              onClick={() => {
+                onSelectCategory('haircare');
+                onNavigateSection('bestsellers');
+              }}
+              className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800"
             >
-              <Heart size={13} className="text-[#EC3460] group-hover:scale-110 transition-transform" />
-              <span>Wishlist</span>
-              {wishlistCount > 0 && (
-                <span 
-                  key={wishlistCount}
-                  className="absolute -top-1.5 -right-2.5 min-w-4 h-4 px-1 bg-[#EC3460] text-white rounded-full text-[9px] font-bold flex items-center justify-center shadow-xs animate-pop"
-                >
-                  {wishlistCount}
-                </span>
-              )}
+              Hair Care
             </button>
 
             <button 
+              type="button"
+              onClick={() => onNavigateSection('shop-by-brand')}
+              className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800"
+            >
+              Brands
+            </button>
+
+            <button 
+              type="button"
               onClick={onOpenAbout}
               className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800"
             >
-              About
+              About Us
             </button>
 
             <button 
+              type="button"
+              onClick={() => onNavigateSection('routine')}
+              className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800"
+            >
+              Blog
+            </button>
+
+            <button 
+              type="button"
               onClick={onOpenContact}
               className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800"
             >
               Contact
             </button>
-
-            {onOpenTrackOrder && (
-              <button 
-                onClick={onOpenTrackOrder}
-                className="hover:text-[#EC3460] transition-colors cursor-pointer py-1 text-slate-800"
-              >
-                Track Order
-              </button>
-            )}
           </nav>
 
           {/* Action Icons: Shopify, Search, Account, Cart */}
@@ -391,33 +389,51 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => {
+                onSelectCategory('skincare');
                 onNavigateSection('bestsellers');
                 setMobileNavOpen(false);
               }}
               className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm"
             >
-              Best Sellers
+              Skin Care
             </button>
             <button
               onClick={() => {
-                onNavigateSection('rolling-facial');
-                setMobileNavOpen(false);
-              }}
-              className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm flex items-center justify-between"
-            >
-              <span>Before & After Rolling Facial</span>
-              <span className="text-[10px] bg-[#FFF0F9] text-[#B31940] px-2 py-0.5 rounded-full font-bold">
-                Clinical
-              </span>
-            </button>
-            <button
-              onClick={() => {
-                onNavigateSection('concerns');
+                onSelectCategory('makeup');
+                onNavigateSection('bestsellers');
                 setMobileNavOpen(false);
               }}
               className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm"
             >
-              Skin Concerns Guide
+              Makeup
+            </button>
+            <button
+              onClick={() => {
+                onSelectCategory('haircare');
+                onNavigateSection('bestsellers');
+                setMobileNavOpen(false);
+              }}
+              className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm"
+            >
+              Hair Care
+            </button>
+            <button
+              onClick={() => {
+                onNavigateSection('shop-by-brand');
+                setMobileNavOpen(false);
+              }}
+              className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm"
+            >
+              Brands
+            </button>
+            <button
+              onClick={() => {
+                onOpenAbout();
+                setMobileNavOpen(false);
+              }}
+              className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm"
+            >
+              About Us
             </button>
             <button
               onClick={() => {
@@ -426,7 +442,16 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm"
             >
-              5-Step Skincare Routine
+              Blog
+            </button>
+            <button
+              onClick={() => {
+                onOpenContact();
+                setMobileNavOpen(false);
+              }}
+              className="text-left py-2 font-medium text-slate-900 hover:text-[#EC3460] text-sm"
+            >
+              Contact
             </button>
             <button
               onClick={() => {

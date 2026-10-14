@@ -4,6 +4,7 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { Header } from '../src/components/Header';
 import { MyFavoritesSection } from '../src/components/MyFavoritesSection';
+import { AccountModal } from '../src/components/AccountModal';
 import type { Product } from '../src/types';
 
 const noop = () => {};
@@ -147,5 +148,27 @@ test('Customer favorites isolation creates separate keys for different customers
   assert.equal(guest, 'lifei_wishlist_guest');
   assert.notEqual(customerA, customerB);
   assert.notEqual(customerA, guest);
+});
+
+test('AccountModal renders wishlist sorting dropdown with Date Added, Price: Low to High, and Price: High to Low', () => {
+  const html = renderToStaticMarkup(
+    React.createElement(AccountModal, {
+      isOpen: true,
+      onClose: noop,
+      initialTab: 'wishlist',
+      wishlistIds: [mockProduct.id],
+      products: [mockProduct],
+      onToggleWishlist: noop,
+      onQuickView: noop,
+      onAddToCart: noop,
+      profileInfo: { firstName: 'Pablo', lastName: 'Kelvin', email: 'pablo.kelvin17@gmail.com' },
+      onUpdateProfile: noop,
+    })
+  );
+
+  assert.ok(html.includes('id="wishlist-sort-select"'));
+  assert.ok(html.includes('Date Added'));
+  assert.ok(html.includes('Price: Low to High'));
+  assert.ok(html.includes('Price: High to Low'));
 });
 

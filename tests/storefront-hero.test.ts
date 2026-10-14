@@ -38,7 +38,7 @@ test('all three reference heroes render immediately with original artwork and re
     assert.ok(html.includes(`href="/products/${reference.handle}"`));
     assert.ok(html.includes(reference.title));
     assert.match(html, /SHOP NOW →/);
-    assert.match(html, /VIEW CLINICAL DETAILS/);
+    assert.match(html, /SHOW BY BRAND/);
     assert.equal((html.match(/aria-pressed="true"/g) || []).length, 1);
     assert.ok(existsSync(new URL(`../public${reference.artwork}`, import.meta.url)));
     assert.ok(existsSync(new URL(`../public${reference.headerArtwork}`, import.meta.url)));
@@ -182,7 +182,7 @@ test('cropped tablet and desktop heroes retain visible shopping links above the 
   for (const reference of REFERENCE_HEROES) {
     const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
     assert.match(html, /class="reference-hero-shop"[^>]*><span>SHOP NOW<\/span><span class="reference-shop-arrow" aria-hidden="true">→<\/span><\/a>/);
-    assert.match(html, /class="reference-hero-details"[^>]*>VIEW CLINICAL DETAILS<\/a>/);
+    assert.match(html, /class="reference-hero-details"[^>]*>SHOW BY BRAND<\/a>/);
   }
 });
 
@@ -215,3 +215,25 @@ test('mobile heroes keep complete artwork and reference-shaped themed shopping c
   assert.ok(document.includes(`background: ${REFERENCE_HEROES[0].shopBackground}`));
   assert.ok(document.includes(`color: ${REFERENCE_HEROES[0].shopColor}`));
 });
+
+test('mobile hero fills edge to edge and displays all buttons including SHOW BY BRAND like the reference', () => {
+  const css = readFileSync(new URL('../src/index.css', import.meta.url), 'utf8');
+  const mobile = css.slice(css.indexOf('@media (max-width: 767px)'));
+  
+  // Hero fills edge to edge with 100% width and proportionate aspect ratio
+  assert.match(mobile, /\.reference-hero-composition \{\s*position: relative;\s*width: 100%;\s*aspect-ratio: 851 \/ 1848;/);
+  assert.match(mobile, /\.reference-hero-composition \.reference-hero-artwork-details/);
+  assert.match(mobile, /\.reference-hero-artwork-details span \{\s*display: inline;/);
+
+  for (const reference of REFERENCE_HEROES) {
+    const html = renderToStaticMarkup(React.createElement(StaticHero, { reference, products: [], onSelectReference: noop, onOpenProduct: noop }));
+    // Both SHOP NOW and SHOW BY BRAND buttons are present with accessible text
+    assert.match(html, /class="reference-hit-target reference-hero-artwork-shop"[^>]*><span>SHOP NOW<\/span><span class="reference-shop-arrow" aria-hidden="true">→<\/span><\/a>/);
+    assert.match(html, /class="reference-hit-target reference-hero-artwork-details"[^>]*><span>SHOW BY BRAND<\/span><span class="reference-details-arrow" aria-hidden="true">→<\/span><\/a>/);
+  }
+
+  const document = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+  assert.match(document, /\.initial-hero-frame \{ position: relative; width: 100%; aspect-ratio: 851 \/ 1848;/);
+  assert.match(document, /class="initial-hero-details"[^>]*><span>SHOW BY BRAND<\/span>/);
+});
+

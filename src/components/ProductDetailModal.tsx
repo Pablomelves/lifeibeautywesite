@@ -152,7 +152,14 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
     };
 
     if (onBuyNowDirect) {
-      onBuyNowDirect(itemToAdd, quantity);
+      checkoutPending.current = true;
+      setIsBuyingNow(true);
+      try {
+        await onBuyNowDirect(itemToAdd, quantity);
+      } finally {
+        checkoutPending.current = false;
+        setIsBuyingNow(false);
+      }
       return;
     }
 

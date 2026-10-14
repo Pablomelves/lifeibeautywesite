@@ -25,10 +25,11 @@
       }
       @media (max-width: 767px) {
         .initial-hero { height: auto; min-height: 0; padding-bottom: 56px; }
-        .initial-hero-frame { position: relative; width: 100%; left: auto; top: auto; transform: none; }
+        .initial-hero-frame { position: relative; width: 100%; aspect-ratio: 851 / 1848; left: auto; top: auto; transform: none; }
         .initial-hero-frame a { display: block; }
-        .initial-hero-frame .initial-hero-shop { display: flex; align-items: center; justify-content: center; gap: clamp(12px, 3.8vw, 28px); border-radius: 999px; background: #ffdae3; color: #780b16; font: 700 clamp(13px, 3.85vw, 28px) sans-serif; letter-spacing: 0.02em; text-decoration: none; }
-        .initial-hero-shop span { display: inline; }
+        .initial-hero-frame .initial-hero-shop { display: flex; align-items: center; justify-content: center; gap: clamp(10px, 3.8vw, 24px); border-radius: 999px; background: #ffdae3; color: #780b16; font: 700 clamp(12px, 3.85vw, 24px) sans-serif; letter-spacing: 0.02em; text-decoration: none; }
+        .initial-hero-frame .initial-hero-details { display: flex; align-items: center; justify-content: flex-start; gap: 4px; width: auto !important; min-width: 130px; white-space: nowrap; color: white; font: 700 clamp(10px, 3.2vw, 13px) sans-serif; letter-spacing: 0.06em; text-decoration: underline; text-underline-offset: 3px; }
+        .initial-hero-shop span, .initial-hero-details span { display: inline; }
         .initial-hero-actions { display: none; }
         .initial-hero-shop:focus-visible { outline: 2px solid #780b16; outline-offset: -4px; }
       }
@@ -118,11 +119,11 @@
           <img src="/hero/medicube-egf-nad.webp" width="851" height="1848" fetchpriority="high" alt="LiFei Beauty — LIFE LOOKS BETTER WITH LIFEI — MEDICUBE EGF NAD FIRMING SERUM" />
           <a href="/" aria-label="LiFei Beauty homepage" style="left:4.8%;top:1.26%;width:45%;height:5.69%"></a>
           <a class="initial-hero-shop" href="/products/age-defying-firming-serum" aria-label="SHOP NOW →" style="left:5.52%;top:min(86.31%, calc(93.02% - 48px));width:49.59%;height:5.41%"><span>SHOP NOW</span><span class="initial-shop-arrow" aria-hidden="true">→</span></a>
-          <a href="/products/age-defying-firming-serum" aria-label="VIEW CLINICAL DETAILS" style="left:5.52%;top:93.02%;width:38.07%;height:2.38%"></a>
+          <a class="initial-hero-details" href="/brands/all" aria-label="SHOW BY BRAND" style="left:5.52%;top:93.02%;width:38.07%;height:2.38%"><span>SHOW BY BRAND</span><span class="initial-details-arrow" aria-hidden="true">→</span></a>
         </div>
         <div class="initial-hero-actions">
           <a href="/products/age-defying-firming-serum" aria-label="SHOP NOW →"><span>SHOP NOW</span><span class="initial-shop-arrow" aria-hidden="true">→</span></a>
-          <a href="/products/age-defying-firming-serum" aria-label="VIEW CLINICAL DETAILS">VIEW CLINICAL DETAILS</a>
+          <a href="/brands/all" aria-label="SHOW BY BRAND">SHOW BY BRAND</a>
         </div>
       </section>
     </div>

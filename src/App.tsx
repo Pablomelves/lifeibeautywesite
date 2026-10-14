@@ -1,13 +1,17 @@
 import React, { useState, useEffect, useRef, useMemo, lazy, Suspense } from 'react';
+import { AnnouncementBar } from './components/AnnouncementBar';
 import { Header } from './components/Header';
 import { StaticHero } from './components/StaticHero';
 import { REFERENCE_HEROES, referenceHeroForPath, referenceHeroForProduct, type ReferenceHero } from './data/referenceHeroes';
 import { TrustBar } from './components/TrustBar';
+import { CategoryTilesSection } from './components/CategoryTilesSection';
+import { PromotionalFeatureBanner } from './components/PromotionalFeatureBanner';
 import { BestSellers } from './components/BestSellers';
 import { MyFavoritesSection } from './components/MyFavoritesSection';
 import { CategoryGrid } from './components/CategoryGrid';
 import { BeforeAfterRollingFacial } from './components/BeforeAfterRollingFacial';
 import { SkinConcernSection } from './components/SkinConcernSection';
+import { ShopByConcern } from './components/ShopByConcern';
 import { WhyLiFei } from './components/WhyLiFei';
 import { SkincareRoutine } from './components/SkincareRoutine';
 import { CustomerReviews } from './components/CustomerReviews';
@@ -713,6 +717,12 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-white text-slate-900 font-inter selection:bg-[#FFCDF2] selection:text-[#4A0818]">
+      {/* 1. Top Announcement Bar */}
+      <AnnouncementBar
+        contentSettings={contentSettings}
+        onOpenTrackOrder={() => handleOpenTrackOrder()}
+      />
+
       {/* 2. Main Navigation Header */}
       <Header
         {...headerProps}
@@ -721,6 +731,7 @@ export function App() {
         referenceOverlay={routePath === '/'}
       />
 
+      {/* 3. Main Hero Banner */}
       <StaticHero
         reference={heroReference}
         products={products}
@@ -729,15 +740,30 @@ export function App() {
           window.history.pushState({}, '', `/products/${encodeURIComponent(handle)}`);
           window.dispatchEvent(new PopStateEvent('popstate'));
         }}
+        onOpenBrand={handleSelectBrand}
       />
 
-      {/* 4. Authenticity & Trust Bar */}
+      {/* 4. Trust and Benefits Strip */}
       <TrustBar 
         onVerifyClick={() => setPolicyType('shipping')}
         onTrackClick={() => handleOpenTrackOrder()} 
       />
 
-      {/* 5. Featured / Best Sellers (4-6 products with tabs, ratings, add to cart) */}
+      {/* 5. Shop by Category (6 Tiles) */}
+      <CategoryTilesSection
+        onSelectCategory={(catId) => setSelectedCategory(catId)}
+        onNavigateSection={scrollToSection}
+      />
+
+      {/* 6. Promotional Feature Banner ("Korean Beauty for Everyday Life") */}
+      <PromotionalFeatureBanner
+        onDiscoverMore={() => {
+          setSelectedCategory('all');
+          scrollToSection('bestsellers');
+        }}
+      />
+
+      {/* 7. Brands and Best Sellers (Curated by brand with tabs, ratings, add to cart) */}
       <BestSellers
         products={products}
         isLoading={isProductsLoading}
@@ -753,7 +779,7 @@ export function App() {
         onToggleWishlist={handleToggleWishlist}
       />
 
-      {/* 5b. Dedicated My Favorites Section */}
+      {/* 8. Dedicated My Favorites Section */}
       <MyFavoritesSection
         products={products}
         wishlistIds={validWishlistIds}
@@ -763,7 +789,7 @@ export function App() {
         onNavigateSection={scrollToSection}
       />
 
-      {/* 6. Shop by Category Grid */}
+      {/* 9. Shop by Brand Grid */}
       <CategoryGrid
         products={products}
         onSelectBrand={handleSelectBrand}
@@ -778,11 +804,12 @@ export function App() {
         onAddToCart={(p) => handleAddToCart(p)}
       />
 
-      {/* 8. Problem → Solution Section (Interactive Skin Concern Finder) */}
-      <SkinConcernSection
+      {/* 8. Shop by Concern Section (Dynamic categorization for Hydration, Firming, Barrier Repair, Brightening, Pore Care) */}
+      <ShopByConcern
         products={products}
         onQuickView={(p) => setQuickViewProduct(p)}
         onAddToCart={(p) => handleAddToCart(p)}
+        onBuyNow={handleBuyNow}
         wishlistIds={validWishlistIds}
         onToggleWishlist={handleToggleWishlist}
       />
